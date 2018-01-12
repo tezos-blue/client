@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Tezos.Client.Engine</AssemblyName>
+    <RootNamespace>SLD.Tezos.Client</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="Topics\Transfer.Client.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Common\Common.csproj" />
+    <ProjectReference Include="..\..\Cryptography\Cryptography.csproj" />
+  </ItemGroup>
+</Project>
