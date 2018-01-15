@@ -6,6 +6,7 @@ namespace SLD.Tezos.Client.Model
 {
 	using Cryptography;
 	using Protocol;
+	using Security;
 	using Simulation;
 
 	[Serializable]
@@ -13,9 +14,8 @@ namespace SLD.Tezos.Client.Model
 	{
 		private string simAccountID;
 
-		public SimulatedIdentity()
+		public SimulatedIdentity() : base("")
 		{
-			Keys = CryptoServices.CreateKeyPair();
 		}
 
 		public SimulatedIdentity(string accountID, IEnumerable<Account> accounts = null) : this()
@@ -57,6 +57,5 @@ namespace SLD.Tezos.Client.Model
 		}
 
 		#endregion Serialization
-
 	}
 }

@@ -52,8 +52,10 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EngineTest.cs" />
+    <Compile Include="SecurityTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -82,12 +82,12 @@ namespace SLD.Tezos.Client
 			// Sign
 			Trace("Sign CreateRequest");
 			task.Signature = CryptoServices.CreateSignature(
-					managerIdentity.Keys.PrivateKey,
+					managerIdentity.Keys.PrivateKey.AccessData(),
 					task.Operation.HexToByteArray()
 					);
 
 			task.SignedOperation = (CryptoServices.AppendSignature(
-					managerIdentity.Keys.PrivateKey,
+					managerIdentity.Keys.PrivateKey.AccessData(),
 					task.Operation.HexToByteArray()
 					))
 					.ToHexString();

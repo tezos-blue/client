@@ -1,44 +1,19 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client
 {
-	using Connections;
 	using Model;
-	using OS;
 	using Protocol;
 	using Simulation;
 
 	[TestClass]
-	public class EngineTest
+	public class EngineTest : ClientTest
 	{
-		private WalletEngine Engine;
-		private SimulatedConnection Connection;
-
 		[TestInitialize]
 		public async Task BeforeEach()
 		{
-			var parameters = new SimulationParameters
-			{
-				AutoBlocks = false,
-				CallLatency = TimeSpan.FromSeconds(0),
-			};
-
-			Connection = new SimulatedConnection(parameters);
-
-			//await Connection.Connect(new InstanceInfo
-			//{
-			//});
-
-			Engine = new WalletEngine(
-				new WalletEngineConfiguration
-				{
-					Connection = Connection,
-					OSLocalStorage = new LocalStorageSimulation(parameters),
-				});
-
-			await Engine.Start();
+			await ConnectToSimulation();
 
 			await Engine.AddIdentity("Identity", "");
 		}
@@ -353,7 +328,6 @@ namespace SLD.Tezos.Client
 
 			// Source
 			Assert.IsFalse(source.HasPendingChanges);
-
 		}
 
 		[TestMethod]

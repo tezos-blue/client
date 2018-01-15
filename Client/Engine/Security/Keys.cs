@@ -40,7 +40,8 @@ namespace SLD.Tezos.Client.Security
     [Serializable]
     public class PrivateKey : Secret<PrivateKey>, ISerializable
     {
-        public PrivateKey(byte[] data)
+		// SECURITY
+        public PrivateKey(byte[] data, string passphrase)
         {
             this.Data = data;
         }

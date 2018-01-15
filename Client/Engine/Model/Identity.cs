@@ -14,12 +14,18 @@ namespace SLD.Tezos.Client.Model
 	{
 		public Identity()
 		{
-			Keys = Guard.CreateKeyPair();
 			Stereotype = "Identity";
 			accounts.Add(this);
 		}
 
+		public Identity(string passphrase) : this()
+		{
+			Keys = Guard.CreateKeyPair(passphrase);
+		}
+
+		// SECURITY
 		public KeyPair Keys { get; protected set; }
+
 		public override string AccountID => Keys.PublicKey.Hash;
 
 		public override Identity Manager => this;

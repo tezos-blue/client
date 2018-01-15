@@ -6,8 +6,6 @@ namespace SLD.Tezos.Cryptography
 {
 	using Blake2;
 	using Chaos.NaCl;
-	using SLD.Tezos.Client.Security;
-	using System.Threading.Tasks;
 
 	public static class CryptoServices
 	{
@@ -61,17 +59,6 @@ namespace SLD.Tezos.Cryptography
 			Ed25519.KeyPairFromSeed(out publicKey, out privateKey, seed);
 		}
 
-		public static KeyPair CreateKeyPair()
-		{
-			CreateKeyPair(out byte[] publicKey, out byte[] privateKey);
-
-			return new KeyPair
-			{
-				PublicKey = new PublicKey(publicKey),
-				PrivateKey = new PrivateKey(privateKey),
-			};
-		}
-
 		public static byte[] Hash(byte[] data, int size)
 		{
 			var hasher = Blake2B.Create(new Blake2BConfig
@@ -93,25 +80,26 @@ namespace SLD.Tezos.Cryptography
 			return bytes;
 		}
 
-		public static string CreateSignature(PrivateKey privateKey, byte[] data)
+		public static string CreateSignature(byte[] privateKey, byte[] data)
 		{
 			var signature = new byte[Ed25519.SignatureSizeInBytes];
 
 			var signatureSegment = new ArraySegment<byte>(signature);
 			var dataSegment = new ArraySegment<byte>(data);
-			var keySegment = new ArraySegment<byte>(privateKey.AccessData());
+			var keySegment = new ArraySegment<byte>(privateKey);
 
 			Ed25519.Sign(signatureSegment, dataSegment, keySegment);
 
 			return EncodePrefixed(HashType.Signature, signature);
 		}
-		public static byte[] AppendSignature(PrivateKey privateKey, byte[] data)
+
+		public static byte[] AppendSignature(byte[] privateKey, byte[] data)
 		{
 			using (var buffer = new MemoryStream())
 			{
 				buffer.Write(data, 0, data.Length);
 
-				var signature = Ed25519.Sign(data, privateKey.AccessData());
+				var signature = Ed25519.Sign(data, privateKey);
 				buffer.Write(signature, 0, signature.Length);
 
 				return buffer.ToArray();

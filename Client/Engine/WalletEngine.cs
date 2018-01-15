@@ -106,15 +106,20 @@ namespace SLD.Tezos.Client
 
 		#region Identities
 
-		private ObservableCollection<Identity> myIdentities;
+		private ObservableCollection<Identity> identities;
 
 		public Identity DefaultIdentity => Identities?.FirstOrDefault();
 
-		public IEnumerable<Identity> Identities => myIdentities;
+		public IEnumerable<Identity> Identities => identities;
 
-		public async Task AddIdentity(string identityName, string identityPassphrase)
+		public async Task AddIdentity(string identityName, string passphrase)
 		{
-			var identity = new Identity
+			if (passphrase == null)
+			{
+				throw new ArgumentNullException("passphrase", "Identities must have a passphrase");
+			}
+
+			var identity = new Identity(passphrase)
 			{
 				Name = identityName,
 			};
@@ -134,10 +139,9 @@ namespace SLD.Tezos.Client
 
 			identity.State = TokenStoreState.Online;
 
-			//await myIdentities.AddSynchronized(identity);
-			myIdentities.Add(identity);
+			identities.Add(identity);
 
-			if (myIdentities.Count == 1)
+			if (identities.Count == 1)
 			{
 				FirePropertyChanged("DefaultIdentity");
 			}
@@ -145,14 +149,14 @@ namespace SLD.Tezos.Client
 
 		private async Task InitializeIdentities()
 		{
-			myIdentities = new ObservableCollection<Identity>(await store.LoadIdentities());
+			identities = new ObservableCollection<Identity>(await store.LoadIdentities());
 
 			FirePropertyChanged("Identities");
 
-			if (myIdentities.Any())
+			if (identities.Any())
 			{
 				// Check Balance of identities
-				foreach (var identity in myIdentities)
+				foreach (var identity in identities)
 				{
 					Cache(identity);
 
@@ -295,24 +299,6 @@ namespace SLD.Tezos.Client
 		}
 
 		#endregion Storage
-
-		//#region Network
-
-		//public IEnumerable<Node> Peers { get; private set; }
-		//public IEnumerable<Node> Nodes { get; private set; }
-
-		//public async Task RefreshNodes()
-		//{
-		//	var networkInfo = await Connection.GetNetworkInfo();
-
-		//	Nodes = networkInfo.OurNodes.Select(sn => new Node(sn));
-		//	Peers = networkInfo.PeerNodes.Select(sn => new Node(sn));
-
-		//	FirePropertyChanged("Nodes");
-		//	FirePropertyChanged("Peers");
-		//}
-
-		//#endregion Network
 
 		#region ConnectionState
 

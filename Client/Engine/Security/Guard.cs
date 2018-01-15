@@ -5,9 +5,9 @@ namespace SLD.Tezos.Client.Security
 {
 	using Cryptography;
 
-	public static class Guard
+	static class Guard
 	{
-		internal static KeyPair CreateKeyPair()
+		internal static KeyPair CreateKeyPair(string passphrase)
 		{
 			byte[] publicKey, privateKey;
 
@@ -16,7 +16,7 @@ namespace SLD.Tezos.Client.Security
 			return new KeyPair
 			{
 				PublicKey = new PublicKey(publicKey),
-				PrivateKey = new PrivateKey(privateKey),
+				PrivateKey = new PrivateKey(privateKey, passphrase),
 			};
 		}
 
@@ -26,13 +26,6 @@ namespace SLD.Tezos.Client.Security
 		}
 
 		#region Import keys
-
-		public static PrivateKey ImportPrivateKey(string privateKey)
-		{
-			var data = GetKeyData(privateKey);
-
-			return new PrivateKey(data);
-		}
 
 		public static PublicKey ImportPublicKey(string publicKey)
 		{
