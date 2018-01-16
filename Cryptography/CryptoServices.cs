@@ -106,14 +106,48 @@ namespace SLD.Tezos.Cryptography
 			}
 		}
 
-		internal static byte[] DecryptUser(byte[] encryptedData)
+		#region Memory Protection
+
+		static AesManaged aesMemory = new AesManaged();
+
+		internal static byte[] Unscramble(byte[] encryptedData)
 		{
-			return encryptedData;
+			// Create a decryptor to perform the stream transform.
+			ICryptoTransform decryptor = aesMemory.CreateDecryptor();
+
+			// Create the streams used for decryption.
+			using (MemoryStream msDecrypt = new MemoryStream(encryptedData))
+			{
+				using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+				{
+					using (var decrypted = new MemoryStream())
+					{
+						csDecrypt.CopyTo(decrypted);
+
+						return decrypted.ToArray();
+					}
+				}
+			}
 		}
 
-		internal static byte[] EncryptUser(byte[] data)
+		internal static byte[] Scramble(byte[] data)
 		{
-			return data;
+			// Create an encryptor to perform the stream transform.
+			ICryptoTransform encryptor = aesMemory.CreateEncryptor();
+
+			// Create the streams used for encryption.
+			using (MemoryStream encrypted = new MemoryStream())
+			{
+				using (CryptoStream csEncrypt = new CryptoStream(encrypted, encryptor, CryptoStreamMode.Write))
+				{
+					csEncrypt.Write(data, 0, data.Length);
+					csEncrypt.FlushFinalBlock();
+
+					return encrypted.ToArray();
+				}
+			}
 		}
+
+		#endregion Memory Protection
 	}
 }

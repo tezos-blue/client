@@ -1,12 +1,10 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SLD.Tezos.Client
 {
-	using Simulation;
-	using Connections;
-	using OS;
+	using Cryptography;
 
 	[TestClass]
 	public class SecurityTest : ClientTest
@@ -26,6 +24,33 @@ namespace SLD.Tezos.Client
 		public async Task Security_MustSetPassword()
 		{
 			await Engine.AddIdentity("Identity", null);
+		}
+
+		// SECURITY
+		// Secrets are scrambled while in memory and must be 
+		// But: An empty passphrase is accepted as the user's own choice and responsibility
+
+		[TestMethod]
+		public void Security_SecretCanBeRetrieved()
+		{
+			var secretData = new byte[] { 1, 2, 3, 4, 5 };
+
+			var secret = new TestSecret
+			{
+				OpenData = secretData
+			};
+
+			CollectionAssert.AreEqual(secretData, secret.OpenData);
+		}
+	}
+
+	internal class TestSecret : Secret
+	{
+		public byte[] OpenData
+		{
+			get => Data;
+
+			set => Data = value;
 		}
 	}
 }
