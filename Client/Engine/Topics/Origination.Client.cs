@@ -5,7 +5,7 @@ namespace SLD.Tezos.Client
 	using Model;
 	using Protocol;
 
-	partial class WalletEngine
+	partial class Engine
 	{
 		public async Task<CreateContractTask> CreateAccount(string name, Identity managerIdentity, TokenStore source, decimal transferAmount)
 		{

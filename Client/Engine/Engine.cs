@@ -13,16 +13,18 @@ namespace SLD.Tezos.Client
 	using Security;
 	using Protocol;
 
-	public class WalletEngineConfiguration
+	public class EngineConfiguration
 	{
-		public Connection Connection { get; set; }
+		public IConnection Connection { get; set; }
 
-		public IStoreLocal OSLocalStorage { get; set; }
+		public IStoreLocal LocalStorage { get; set; }
 
 		public TargetPlatform Platform { get; set; }
+
+		public string ApplicationVersion { get; set; }
 	}
 
-	public partial class WalletEngine : ClientObject
+	public partial class Engine : ClientObject
 	{
 		#region TokenStore cache
 
@@ -50,7 +52,7 @@ namespace SLD.Tezos.Client
 
 		#endregion TokenStore cache
 
-		public Connection Connection => configuration.Connection;
+		public IConnection Connection => configuration.Connection;
 
 		internal async Task<decimal> GetBalance(string accountID)
 		{
@@ -59,11 +61,11 @@ namespace SLD.Tezos.Client
 
 		#region Initialization
 
-		private WalletEngineConfiguration configuration;
+		private EngineConfiguration configuration;
 
 		private Task initializationTask;
 
-		public WalletEngine(WalletEngineConfiguration configuration)
+		public Engine(EngineConfiguration configuration)
 		{
 			this.configuration = configuration;
 
@@ -295,7 +297,7 @@ namespace SLD.Tezos.Client
 
 		private async Task InitializeStorage()
 		{
-			store = await LocalStore.Open(configuration.OSLocalStorage);
+			store = await LocalStore.Open(configuration.LocalStorage);
 		}
 
 		#endregion Storage
@@ -362,6 +364,7 @@ namespace SLD.Tezos.Client
 				MonitoredAccounts = accountIDs.ToArray(),
 				InstanceID = store.InstanceID,
 				Platform = configuration.Platform,
+				ApplicationVersion = configuration.ApplicationVersion,
 			};
 
 			while (ConnectionState != ConnectionState.Connected)

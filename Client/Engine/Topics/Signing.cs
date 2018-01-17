@@ -31,7 +31,7 @@ namespace SLD.Tezos.Client
 		{
 			return await System.Threading.Tasks.Task.Run(async () =>
 			{
-				if (signalComplete.WaitOne(WalletEngine.ApprovalTimeout))
+				if (signalComplete.WaitOne(Engine.ApprovalTimeout))
 				{
 					return IsApproved;
 				}
@@ -47,7 +47,7 @@ namespace SLD.Tezos.Client
 		}
 	}
 
-	partial class WalletEngine
+	partial class Engine
 	{
 		public event Action<Approval> ApprovalRequired;
 

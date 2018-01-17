@@ -9,7 +9,7 @@ namespace SLD.Tezos.Client
 
 	public class ClientTest
 	{
-		protected WalletEngine Engine;
+		protected Engine Engine;
 		protected SimulatedConnection Connection;
 
 		protected async Task ConnectToSimulation()
@@ -22,11 +22,11 @@ namespace SLD.Tezos.Client
 
 			Connection = new SimulatedConnection(parameters);
 
-			Engine = new WalletEngine(
-				new WalletEngineConfiguration
+			Engine = new Engine(
+				new EngineConfiguration
 				{
 					Connection = Connection,
-					OSLocalStorage = new LocalStorageSimulation(parameters),
+					LocalStorage = new LocalStorageSimulation(parameters),
 				});
 
 			await Engine.Start();

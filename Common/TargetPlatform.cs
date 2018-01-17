@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace SLD.Tezos
+﻿namespace SLD.Tezos
 {
-    public enum TargetPlatform
-    {
+	public enum TargetPlatform
+	{
 		Unsupported,
 		Android,
 		iOS,
-		UWP
-    }
+		UWP,
+		Core,
+	}
 }

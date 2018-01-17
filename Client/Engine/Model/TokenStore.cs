@@ -91,7 +91,7 @@ namespace SLD.Tezos.Client.Model
 			return AccountID;
 		}
 
-		internal virtual Task Initialize(Connection connection)
+		internal virtual Task Initialize(IConnection connection)
 		{
 			State = TokenStoreState.Initializing;
 
@@ -261,7 +261,7 @@ namespace SLD.Tezos.Client.Model
 
 		public bool IsEntriesComplete { get; private set; }
 
-		public async void CompleteEntries(Connection connection)
+		public async void CompleteEntries(IConnection connection)
 		{
 			if (IsEntriesComplete)
 			{

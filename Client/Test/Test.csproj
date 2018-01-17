@@ -73,9 +73,9 @@
       <Project>{b81d4ece-0196-4481-a390-81bbf4d3c810}</Project>
       <Name>Simulation</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Engine\Client.Engine.csproj">
-      <Project>{ff3ba5d2-2c20-4c0e-b817-f244f201880c}</Project>
-      <Name>Client.Engine</Name>
+    <ProjectReference Include="..\Engine\Engine.csproj">
+      <Project>{3CB467B5-6ABB-4A0F-8FB0-A61F5EBFFE46}</Project>
+      <Name>Engine</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Client\Engine\Client.Engine.csproj" />
+    <ProjectReference Include="..\Client\Engine\Engine.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Cryptography\Cryptography.csproj" />
   </ItemGroup>

@@ -5,7 +5,7 @@ namespace SLD.Tezos.Client
 	using Protocol;
 	using Model;
 
-	partial class WalletEngine
+	partial class Engine
 	{
 		public async Task<CreateFaucetTask> AlphaCreateFaucetAccount(string name, Identity managerIdentity)
 		{

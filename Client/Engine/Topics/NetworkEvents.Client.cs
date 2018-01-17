@@ -7,7 +7,7 @@ namespace SLD.Tezos.Client
 	using Model;
 	using Protocol;
 
-	partial class WalletEngine
+	partial class Engine
 	{
 		private async void OnNetworkEvent(NetworkEvent networkEvent)
 		{

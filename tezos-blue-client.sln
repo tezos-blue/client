@@ -7,11 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cryptography", "Cryptography\Cryptography.csproj", "{ED301CEA-F723-40A7-B249-4312429F5665}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client.Engine", "Client\Engine\Client.Engine.csproj", "{3CB467B5-6ABB-4A0F-8FB0-A61F5EBFFE46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Engine", "Client\Engine\Engine.csproj", "{3CB467B5-6ABB-4A0F-8FB0-A61F5EBFFE46}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Simulation", "Simulation\Simulation.csproj", "{115FB1EE-39AA-40F4-BBD4-D86C444EEFCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client.Test", "Client\Test\Client.Test.csproj", "{302487CF-B749-4082-B351-6CE9FAD00F93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Client\Test\Test.csproj", "{302487CF-B749-4082-B351-6CE9FAD00F93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

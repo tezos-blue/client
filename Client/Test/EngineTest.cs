@@ -97,7 +97,7 @@ namespace SLD.Tezos.Client
 			var source = Engine.DefaultIdentity;
 
 			decimal transferAmount = 1;
-			decimal networkFee = WalletEngine.DefaultOperationFee;
+			decimal networkFee = Engine.DefaultOperationFee;
 			decimal expectedSourceBalance = source.Balance - transferAmount - networkFee;
 
 			await Engine.CreateAccount("Account", source, source, transferAmount);
@@ -184,7 +184,7 @@ namespace SLD.Tezos.Client
 		public async Task Engine_Transfer()
 		{
 			decimal transferAmount = 1;
-			decimal networkFee = WalletEngine.DefaultOperationFee;
+			decimal networkFee = Engine.DefaultOperationFee;
 
 			var source = Engine.DefaultIdentity;
 
