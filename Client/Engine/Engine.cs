@@ -114,7 +114,7 @@ namespace SLD.Tezos.Client
 
 		public IEnumerable<Identity> Identities => identities;
 
-		public async Task AddIdentity(string identityName, string passphrase)
+		public async Task<Identity> AddIdentity(string identityName, string passphrase, bool unlock = false)
 		{
 			if (passphrase == null)
 			{
@@ -147,6 +147,13 @@ namespace SLD.Tezos.Client
 			{
 				FirePropertyChanged("DefaultIdentity");
 			}
+
+			if (unlock)
+			{
+				identity.Unlock(passphrase);
+			}
+
+			return identity;
 		}
 
 		private async Task InitializeIdentities()
@@ -333,7 +340,7 @@ namespace SLD.Tezos.Client
 
 		public async Task Start()
 		{
-			await Task.Run(DoConnect);
+			await DoConnect();
 		}
 
 		public async Task Resume()

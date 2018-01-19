@@ -108,7 +108,9 @@ namespace SLD.Tezos.Cryptography
 
 		#region Memory Protection
 
-		static AesManaged aesMemory = new AesManaged();
+		// SECURITY
+		// in memory encryption with per-process key
+		private static AesManaged aesMemory = new AesManaged();
 
 		internal static byte[] Unscramble(byte[] encryptedData)
 		{
@@ -142,12 +144,60 @@ namespace SLD.Tezos.Cryptography
 				{
 					csEncrypt.Write(data, 0, data.Length);
 					csEncrypt.FlushFinalBlock();
+				}
+
+				return encrypted.ToArray();
+			}
+		}
+
+		#endregion Memory Protection
+
+		#region Symmetric Encryption
+
+		private static readonly byte[] SymmetricSalt = { 1, 2, 3, 4 };
+
+		public static byte[] Encrypt(byte[] data, string openPhrase)
+		{
+			using (var rgb = new PasswordDeriveBytes(openPhrase, SymmetricSalt))
+			{
+				var algorithm = new AesManaged();
+
+				byte[] rgbKey = rgb.GetBytes(algorithm.KeySize >> 3);
+				byte[] rgbIV = rgb.GetBytes(algorithm.BlockSize >> 3);
+
+				using (ICryptoTransform transform = algorithm.CreateEncryptor(rgbKey, rgbIV))
+				using (MemoryStream encrypted = new MemoryStream())
+				using (CryptoStream crypto = new CryptoStream(encrypted, transform, CryptoStreamMode.Write))
+				{
+					crypto.Write(data, 0, data.Length);
+					crypto.FlushFinalBlock();
 
 					return encrypted.ToArray();
 				}
 			}
 		}
 
-		#endregion Memory Protection
+		public static byte[] Decrypt(byte[] data, string openPhrase)
+		{
+			using (var rgb = new PasswordDeriveBytes(openPhrase, SymmetricSalt))
+			{
+				var algorithm = new AesManaged();
+
+				byte[] rgbKey = rgb.GetBytes(algorithm.KeySize >> 3);
+				byte[] rgbIV = rgb.GetBytes(algorithm.BlockSize >> 3);
+
+				using (ICryptoTransform transform = algorithm.CreateDecryptor(rgbKey, rgbIV))
+				using (MemoryStream encrypted = new MemoryStream(data))
+				using (CryptoStream crypto = new CryptoStream(encrypted, transform, CryptoStreamMode.Read))
+				using (MemoryStream decrypted = new MemoryStream())
+				{
+					crypto.CopyTo(decrypted);
+
+					return decrypted.ToArray();
+				}
+			}
+		}
+
+		#endregion Symmetric Encryption
 	}
 }

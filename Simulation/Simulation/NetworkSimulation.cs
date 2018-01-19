@@ -587,5 +587,17 @@ namespace SLD.Tezos.Simulation
 		}
 
 		#endregion Blockchain
+
+		#region Helpers
+
+		private static int NextSimulationNo = 1;
+		private int SimulationNo = NextSimulationNo++;
+
+		public override string ToString()
+		{
+			return $"Simulation {SimulationNo}";
+		}
+
+		#endregion Helpers
 	}
 }

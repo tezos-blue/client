@@ -15,6 +15,8 @@ namespace SLD.Tezos.Client
 		{
 			await ConnectToSimulation();
 
+			Assert.IsNull(Engine.DefaultIdentity);
+
 			await Engine.AddIdentity("Identity", "");
 		}
 

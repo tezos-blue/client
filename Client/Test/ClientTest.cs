@@ -6,6 +6,7 @@ namespace SLD.Tezos.Client
 	using Connections;
 	using OS;
 	using Simulation;
+	using System.Diagnostics;
 
 	public class ClientTest
 	{
@@ -14,6 +15,11 @@ namespace SLD.Tezos.Client
 
 		protected async Task ConnectToSimulation()
 		{
+			Engine = null;
+			Connection = null;
+
+			Trace.WriteLine("-- connect to simulation");
+
 			var parameters = new SimulationParameters
 			{
 				AutoBlocks = false,
@@ -30,6 +36,8 @@ namespace SLD.Tezos.Client
 				});
 
 			await Engine.Start();
+
+			Trace.WriteLine("--");
 		}
 	}
 }

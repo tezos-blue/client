@@ -16,8 +16,6 @@ namespace SLD.Tezos.Client.Security
 
 		#region Initialization
 
-		private static LocalStore instance;
-
         private IStoreLocal osLocalStorage;
 
         private LocalStore(IStoreLocal osLocalStorage)
@@ -29,15 +27,10 @@ namespace SLD.Tezos.Client.Security
         {
 			Debug.Assert(osLocalStorage != null);
 
-			if (instance == null)
-            {
-                instance = new LocalStore(osLocalStorage)
-				{
-					InstanceID = await osLocalStorage.GetInstanceID(),
-				};
-            }
-
-            return instance;
+            return new LocalStore(osLocalStorage)
+			{
+				InstanceID = await osLocalStorage.GetInstanceID(),
+			};
         }
 
         #endregion Initialization

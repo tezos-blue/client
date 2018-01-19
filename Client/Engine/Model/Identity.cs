@@ -124,9 +124,12 @@ namespace SLD.Tezos.Client.Model
 				{
 					_IsUnlocked = value;
 					FirePropertyChanged();
+					FirePropertyChanged("IsLocked");
 				}
 			}
 		}
+
+		public bool IsLocked => !IsUnlocked;
 
 		public bool Unlock(string passphrase)
 		{

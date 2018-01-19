@@ -1,76 +1,82 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 
 namespace SLD.Tezos.Client.Security
 {
-    using Cryptography;
+	using Cryptography;
 
-    [Serializable]
-    public class PublicKey : ISerializable
-    {
-        private byte[] data;
+	[Serializable]
+	public class PublicKey : ISerializable
+	{
+		private byte[] data;
 
-        public PublicKey(byte[] data)
-        {
-            this.data = data;
-        }
+		public PublicKey(byte[] data)
+		{
+			this.data = data;
+		}
 
-        public string Hash => CryptoServices.CreatePrefixedHash(HashType.PublicKeyHash, data);
+		public string Hash => CryptoServices.CreatePrefixedHash(HashType.PublicKeyHash, data);
 
-        #region Serialization
+		#region Serialization
 
-        public PublicKey(SerializationInfo info, StreamingContext context)
-        {
-            this.data = (byte[])info.GetValue("Data", typeof(byte[]));
-        }
+		public PublicKey(SerializationInfo info, StreamingContext context)
+		{
+			this.data = (byte[])info.GetValue("Data", typeof(byte[]));
+		}
 
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Data", data, typeof(byte[]));
-        }
+		public void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			info.AddValue("Data", data, typeof(byte[]));
+		}
 
-        #endregion Serialization
+		#endregion Serialization
 
-        public override string ToString()
-        {
-            return CryptoServices.EncodePrefixed(HashType.Public, data);
-        }
-    }
+		public override string ToString()
+		{
+			return CryptoServices.EncodePrefixed(HashType.Public, data);
+		}
+	}
 
-    [Serializable]
-    public class PrivateKey : Secret, ISerializable
-    {
+	[Serializable]
+	public sealed class PrivateKey : PhraseProtectedSecret, ISerializable
+	{
+		private string tempPhrase;
+
 		// SECURITY
-        public PrivateKey(byte[] data, string passphrase)
-        {
-            this.Data = data;
-        }
+		public PrivateKey(byte[] data, string openPhrase) : base(data, openPhrase)
+		{
+			Debug.Assert(data != null);
+			Debug.Assert(openPhrase != null);
 
-        internal byte[] AccessData()
-        {
-            return this.Data;
-        }
+			// Temporary...
+			tempPhrase = openPhrase;
+		}
 
-        #region Serialization
+		internal byte[] AccessData()
+		{
+			return GetData(tempPhrase);
+		}
 
-        public PrivateKey(SerializationInfo info, StreamingContext context)
-        {
-            this.Data = (byte[])info.GetValue("Data", typeof(byte[]));
-        }
+		#region Serialization
 
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            info.AddValue("Data", Data, typeof(byte[]));
-        }
+		public PrivateKey(SerializationInfo info, StreamingContext context)
+		{
+			//this.Data = (byte[])info.GetValue("Data", typeof(byte[]));
+		}
 
-        #endregion Serialization
-    }
+		public void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			//info.AddValue("Data", Data, typeof(byte[]));
+		}
 
-    [Serializable]
-    public class KeyPair
-    {
-        public PublicKey PublicKey { get; set; }
-        public PrivateKey PrivateKey { get; set; }
-    }
+		#endregion Serialization
+	}
 
+	[Serializable]
+	public class KeyPair
+	{
+		public PublicKey PublicKey { get; set; }
+		public PrivateKey PrivateKey { get; set; }
+	}
 }
