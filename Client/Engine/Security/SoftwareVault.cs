@@ -90,7 +90,7 @@ namespace SLD.Tezos.Client.Security
 
 		public IEnumerable<string> IdentityIDs => identities.Select(i => i.IdentityID);
 
-		public Task<bool> Sign(byte[] data, string identityID, out byte[] signature)
+		public Task<bool> Sign(string identityID, byte[] data, out byte[] signature)
 		{
 			signature = null;
 

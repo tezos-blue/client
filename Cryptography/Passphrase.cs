@@ -3,7 +3,11 @@ using System.Text;
 
 namespace SLD.Tezos.Cryptography
 {
-	public class Passphrase : Secret
+	/// <summary>
+	/// Text-based key to a PhraseProtectedSecret
+	/// </summary>
+	/// <seealso cref="PhraseProtectedSecret" />
+	public sealed class Passphrase : Secret
 	{
 		private static readonly byte[] Salt = { 1, 2, 3, 4 };
 
@@ -19,6 +23,9 @@ namespace SLD.Tezos.Cryptography
 		// Conveniently convert string to Passphrase where required
 		public static implicit operator Passphrase(string passphrase) => new Passphrase(passphrase);
 
+		// SECURITY
+		// Access to the data is restricted to the Cryptography assembly
+		// Passphrase has no public properties, the clear text can not be recovered in code
 		internal byte[] Encrypt(byte[] data)
 		{
 			using (var bytes = new PasswordDeriveBytes(Data, Salt))

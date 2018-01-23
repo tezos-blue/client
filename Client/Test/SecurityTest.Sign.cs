@@ -8,9 +8,16 @@ namespace SLD.Tezos.Client
 	using Cryptography;
 	using Protocol;
 
+	/*
+
+		This is the minimum implementation for a signing provider.
+
+		It mimics the behaviour of a hardware wallet with only one identity.
+
+ 	 */
 	internal class HardwareWallet : IProvideSigning
 	{
-		// the only identity on this wallet
+		// the only identity in this wallet
 		private byte[] publicKey;
 
 		private byte[] privateKey;
@@ -31,7 +38,7 @@ namespace SLD.Tezos.Client
 			return Task.CompletedTask;
 		}
 
-		public Task<bool> Sign(byte[] data, string identityID, out byte[] signature)
+		public Task<bool> Sign(string identityID, byte[] data, out byte[] signature)
 		{
 			Assert.AreEqual(this.identityID, identityID);
 
@@ -50,6 +57,13 @@ namespace SLD.Tezos.Client
 		}
 	}
 
+	/*
+		
+		Generic Signing Test
+
+		Register a generic signing provider with the Engine and originate a contract
+
+ 	 */
 	partial class SecurityTest
 	{
 		[TestMethod]

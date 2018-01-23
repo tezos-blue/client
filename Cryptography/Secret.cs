@@ -2,8 +2,10 @@
 
 namespace SLD.Tezos.Cryptography
 {
-	// SECURITY
-	// All secrets are scrambled while in memory
+	/// <summary>
+	/// Base class for all secrets in memory
+	/// Hides data and removes traces
+	/// </summary>
 	public abstract class Secret : IDisposable
 	{
 		private byte[] inMemory;
@@ -18,6 +20,8 @@ namespace SLD.Tezos.Cryptography
 			inMemory = (byte[])other.inMemory.Clone();
 		}
 
+		// SECURITY
+		// All secrets are scrambled while in memory
 		protected byte[] Data
 		{
 			get => CryptoServices.Unscramble(inMemory);
@@ -37,6 +41,10 @@ namespace SLD.Tezos.Cryptography
 		}
 	}
 
+	/// <summary>
+	/// Protects a secret by dependency on an additional secret stored in the user's memory
+	/// </summary>
+	/// <seealso cref="Secret" />
 	public abstract class PhraseProtectedSecret : Secret
 	{
 		protected PhraseProtectedSecret(byte[] encryptedData)
