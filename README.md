@@ -23,6 +23,10 @@ While in the Engine, all possible measures are taken to protect the secret from 
 
 2. All applications are bound by the license to make their code open-source, so that users can review the path of their secrets down to the Engine and make sure, the developer has not accidentally forgotten not to store them on the way.
 
+If you volunteer to review the security, please take a look at
+
+[Security Reviewer's Guide](https://github.com/tezos-blue/client/blob/master/SecurityReview.md)
+
 ## tezos.blue
 The tezos.blue wallet is an example of an application built on this Engine. 
 
@@ -36,4 +40,7 @@ This is also how the tests in the Engine.Test project are executed.
 You will find a good entry point into the general idea there.
 
 Version 0.3 will focus on security entirely. Your critical view and input during the coming weeks is highly welcome.
+
+http://tezos.blue
+
 
