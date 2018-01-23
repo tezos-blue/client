@@ -10,8 +10,8 @@ namespace SLD.Tezos.Client
 	using Connections;
 	using Model;
 	using OS;
-	using Security;
 	using Protocol;
+	using Security;
 
 	public class EngineConfiguration
 	{
@@ -20,6 +20,8 @@ namespace SLD.Tezos.Client
 		public IStoreLocal LocalStorage { get; set; }
 
 		public TargetPlatform Platform { get; set; }
+
+		public string InstanceID { get; set; }
 
 		public string ApplicationVersion { get; set; }
 	}
@@ -71,6 +73,11 @@ namespace SLD.Tezos.Client
 
 			Connection.EventReceived += OnNetworkEvent;
 
+			if (configuration.LocalStorage != null)
+			{
+				signProviders.Add(new SoftwareVault(configuration.LocalStorage));
+			}
+
 			initializationTask = Task.Run(InitializeEngine);
 		}
 
@@ -79,23 +86,47 @@ namespace SLD.Tezos.Client
 			ClientObject.SetSynchronizationContext();
 		}
 
+		public void AddProviderIdentities(IProvideSigning provider)
+		{
+			foreach (var identityID in provider.IdentityIDs)
+			{
+				identities.Add(new Identity(
+					new PublicKey(provider.GetPublicKey(identityID)),
+					provider as IManageIdentities));
+			}
+		}
+
 		private async Task InitializeEngine()
 		{
 			try
 			{
-				await InitializeStorage();
-				await InitializeIdentities();
+				// Wait for all providers to be initialized
+				await Task.WhenAll(signProviders.Select(async p => await p.Initialize()));
 
-				Trace("Identities initialized");
+				// Get identities from providers
+				identities = new ObservableCollection<Identity>();
 
-				await InitializeAccounts();
-
-				Trace("Accounts initialized");
-
-				foreach (var identity in Identities)
+				foreach (var provider in signProviders)
 				{
-					identity.FirePropertyChanged("TotalBalance");
+					AddProviderIdentities(provider);
 				}
+
+				FirePropertyChanged("Identities");
+
+				if (identities.Any())
+				{
+					FirePropertyChanged("DefaultIdentity");
+				}
+
+				// Initialize each identity
+				await Task.WhenAll(identities.Select(async i =>
+				{
+					Cache(i);
+					await i.Initialize(this);
+				}));
+
+				IsIdentitiesInitialized = true;
+				Trace("Identities initialized");
 			}
 			catch (Exception e)
 			{
@@ -105,6 +136,34 @@ namespace SLD.Tezos.Client
 		}
 
 		#endregion Initialization
+
+		#region Signing Providers
+
+		private List<IProvideSigning> signProviders = new List<IProvideSigning>();
+
+		public IManageIdentities DefaultIdentityProvider => signProviders.OfType<IManageIdentities>().FirstOrDefault();
+
+		public async Task Register(IProvideSigning provider, int priority = 0)
+		{
+			if (provider == null) throw new ArgumentNullException(nameof(provider));
+
+			// Initialize provider
+			await provider.Initialize();
+
+			// Insert provider according to priority
+			priority = Math.Min(priority, signProviders.Count);
+			signProviders.Insert(priority, provider);
+
+			FirePropertyChanged(nameof(DefaultIdentityProvider));
+
+			// Add identities on hot plugin
+			if (IsIdentitiesInitialized)
+			{
+				AddProviderIdentities(provider);
+			}
+		}
+
+		#endregion Signing Providers
 
 		#region Identities
 
@@ -116,17 +175,15 @@ namespace SLD.Tezos.Client
 
 		public async Task<Identity> AddIdentity(string identityName, string passphrase, bool unlock = false)
 		{
-			if (passphrase == null)
+			// Get identity provider
+			var provider = DefaultIdentityProvider;
+
+			if (provider == null)
 			{
-				throw new ArgumentNullException("passphrase", "Identities must have a passphrase");
+				throw new ApplicationException("No identity provider configured");
 			}
 
-			var identity = new Identity(passphrase)
-			{
-				Name = identityName,
-			};
-
-			await store.StoreIdentity(identity);
+			var identity = await provider.CreateIdentity(identityName, passphrase);
 
 			Cache(identity);
 
@@ -156,27 +213,35 @@ namespace SLD.Tezos.Client
 			return identity;
 		}
 
-		private async Task InitializeIdentities()
+		private void LockAll()
 		{
-			identities = new ObservableCollection<Identity>(await store.LoadIdentities());
-
-			FirePropertyChanged("Identities");
-
-			if (identities.Any())
+			foreach (var identity in identities)
 			{
-				// Check Balance of identities
-				foreach (var identity in identities)
-				{
-					Cache(identity);
-
-					await identity.Initialize(Connection);
-				}
-
-				FirePropertyChanged("DefaultIdentity");
+				identity.Lock();
 			}
-
-			IsIdentitiesInitialized = true;
 		}
+
+		//private async Task InitializeIdentities()
+		//{
+		//	identities = new ObservableCollection<Identity>(await store.LoadIdentities());
+
+		//	FirePropertyChanged("Identities");
+
+		//	if (identities.Any())
+		//	{
+		//		// Check Balance of identities
+		//		foreach (var identity in identities)
+		//		{
+		//			Cache(identity);
+
+		//			await identity.Initialize(Connection);
+		//		}
+
+		//		FirePropertyChanged("DefaultIdentity");
+		//	}
+
+		//	IsIdentitiesInitialized = true;
+		//}
 
 		#region IsIdentitiesInitialized
 
@@ -243,55 +308,55 @@ namespace SLD.Tezos.Client
 			}
 		}
 
-		private async Task InitializeAccounts()
-		{
-			var accounts = await store.LoadAccounts();
+		//private async Task InitializeAccounts()
+		//{
+		//	var accounts = await store.LoadAccounts();
 
-			var tasks = accounts.Select(a => InitializeAccount(a));
+		//	var tasks = accounts.Select(a => InitializeAccount(a));
 
-			await Task.WhenAll(tasks);
-		}
+		//	await Task.WhenAll(tasks);
+		//}
 
-		private async Task InitializeAccount(Account account)
-		{
-			try
-			{
-				var manager = Identities.FirstOrDefault(i => i.AccountID == account.ManagerID);
+		//private async Task InitializeAccount(Account account)
+		//{
+		//	try
+		//	{
+		//		var manager = Identities.FirstOrDefault(i => i.AccountID == account.ManagerID);
 
-				if (manager != null)
-				{
-					await manager.AddAccount(account);
-					account.SetManager(manager);
-				}
-				else
-				{
-					//watchedAccounts.AddSynchronized(account);
-				}
+		//		if (manager != null)
+		//		{
+		//			await manager.AddAccount(account);
+		//			account.SetManager(manager);
+		//		}
+		//		else
+		//		{
+		//			//watchedAccounts.AddSynchronized(account);
+		//		}
 
-				Cache(account);
+		//		Cache(account);
 
-				await account.Initialize(Connection);
-			}
-			catch (ServerException e)
-			{
-				Trace(e);
+		//		await account.Initialize(Connection);
+		//	}
+		//	catch (ServerException e)
+		//	{
+		//		Trace(e);
 
-				return;
-			}
-			catch (Exception e)
-			{
-				Trace(e);
+		//		return;
+		//	}
+		//	catch (Exception e)
+		//	{
+		//		Trace(e);
 
-				await store.DeleteAccount(account);
-				return;
-			}
-		}
+		//		await store.DeleteAccount(account);
+		//		return;
+		//	}
+		//}
 
 		private async Task RefreshAccounts()
 		{
 			var accounts = Identities.SelectMany(i => i.Accounts.Where(a => a.IsLive));
 
-			var tasks = accounts.Select(async a => await a.Initialize(Connection));
+			var tasks = accounts.Select(async a => await a.Initialize(this));
 
 			await Task.WhenAll(tasks);
 		}
@@ -345,12 +410,16 @@ namespace SLD.Tezos.Client
 
 		public async Task Resume()
 		{
+			LockAll();
+
 			await RefreshAccounts();
 			//await Task.Run(DoConnect);
 		}
 
 		public void Suspend()
 		{
+			LockAll();
+
 			//Connection.Disconnect();
 
 			//ConnectionState = ConnectionState.Diconnected;
@@ -369,7 +438,7 @@ namespace SLD.Tezos.Client
 			var registration = new InstanceInfo
 			{
 				MonitoredAccounts = accountIDs.ToArray(),
-				InstanceID = store.InstanceID,
+				InstanceID = configuration.InstanceID,
 				Platform = configuration.Platform,
 				ApplicationVersion = configuration.ApplicationVersion,
 			};

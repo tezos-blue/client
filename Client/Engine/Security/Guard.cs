@@ -4,10 +4,11 @@ using System.IO;
 namespace SLD.Tezos.Client.Security
 {
 	using Cryptography;
+	using SLD.Tezos.Protocol;
 
-	static class Guard
+	internal static class Guard
 	{
-		internal static KeyPair CreateKeyPair(string passphrase)
+		internal static KeyPair CreateKeyPair(Passphrase passphrase)
 		{
 			byte[] publicKey, privateKey;
 
@@ -18,11 +19,6 @@ namespace SLD.Tezos.Client.Security
 				PublicKey = new PublicKey(publicKey),
 				PrivateKey = new PrivateKey(privateKey, passphrase),
 			};
-		}
-
-		internal static byte[] DecryptUser(byte[] encryptedData)
-		{
-			return encryptedData;
 		}
 
 		#region Import keys
@@ -63,6 +59,19 @@ namespace SLD.Tezos.Client.Security
 		}
 
 		#endregion Import keys
+
+		internal static void ApplySignature(ProtectedTask task, byte[] data, byte[] signature)
+		{
+			task.Signature = CryptoServices.EncodePrefixed(HashType.Signature, signature);
+
+			using (var buffer = new MemoryStream())
+			{
+				buffer.Write(data, 0, data.Length);
+				buffer.Write(signature, 0, signature.Length);
+
+				task.SignedOperation = buffer.ToArray().ToHexString();
+			}
+		}
 
 		private static void Trace(string text)
 		{

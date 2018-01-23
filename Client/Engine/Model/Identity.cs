@@ -2,35 +2,46 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client.Model
 {
+	using Cryptography;
 	using Security;
 
-	[Serializable]
-	public partial class Identity : TokenStore, ISerializable
+	public partial class Identity : TokenStore
 	{
+		private IManageIdentities provider;
+
 		public Identity()
 		{
 			Stereotype = "Identity";
 			accounts.Add(this);
 		}
 
-		public Identity(string passphrase) : this()
+		public Identity(PublicKey publicKey, IManageIdentities provider) : this()
 		{
-			Keys = Guard.CreateKeyPair(passphrase);
+			PublicKey = publicKey;
+			this.provider = provider;
 		}
 
 		// SECURITY
-		public KeyPair Keys { get; protected set; }
+		public PublicKey PublicKey { get; protected set; }
 
-		public override string AccountID => Keys.PublicKey.Hash;
+		public override string AccountID => PublicKey.Hash;
 
 		public override Identity Manager => this;
 
 		public override bool IsLive => true;
+
+		internal override async Task Initialize(Engine engine)
+		{
+			var info = engine.Connection.GetIdentityInfo(AccountID);
+
+			//await base.Initialize(engine);
+
+			FirePropertyChanged("TotalBalance");
+		}
 
 		#region Balance
 
@@ -51,6 +62,14 @@ namespace SLD.Tezos.Client.Model
 
 		public IReadOnlyList<TokenStore> Accounts => accounts;
 
+		public async Task AddAccount(Account account)
+		{
+			account.Changed += OnAccountChanged;
+			account.SetManager(this);
+
+			await accounts.AddSynchronized(account);
+		}
+
 		internal async void ExpectOrigination(Account account, string operationID, string contraAccountID, decimal amount)
 		{
 			Trace($"Account originating | {account}");
@@ -65,14 +84,6 @@ namespace SLD.Tezos.Client.Model
 				Amount = amount,
 				ContraAccountID = contraAccountID,
 			});
-		}
-
-		public async Task AddAccount(Account account)
-		{
-			account.Changed += OnAccountChanged;
-			account.SetManager(this);
-
-			await accounts.AddSynchronized(account);
 		}
 
 		internal async Task DeleteAccount(Account account)
@@ -105,62 +116,42 @@ namespace SLD.Tezos.Client.Model
 
 		#endregion Accounts
 
-		#region Credentials
-
-		#region IsUnlocked
-
-		private bool _IsUnlocked;
+		#region Lock
 
 		public bool IsUnlocked
 		{
 			get
 			{
-				return _IsUnlocked;
-			}
-
-			private set
-			{
-				if (_IsUnlocked != value)
+				if (provider != null)
 				{
-					_IsUnlocked = value;
-					FirePropertyChanged();
-					FirePropertyChanged("IsLocked");
+					return provider.IsUnlocked(AccountID);
 				}
+
+				return false;
 			}
 		}
 
 		public bool IsLocked => !IsUnlocked;
 
-		public bool Unlock(string passphrase)
+		public bool Unlock(Passphrase passphrase)
 		{
-			IsUnlocked = true;
-			return true;
+			if (provider == null) throw new InvalidOperationException("No identity provider configured.");
+
+			var result = provider.Unlock(AccountID, passphrase);
+
+			FirePropertyChanged(nameof(IsLocked));
+			FirePropertyChanged(nameof(IsUnlocked));
+
+			return result;
 		}
 
-		#endregion IsUnlocked
-
-		#endregion Credentials
-
-		#region Serialization
-
-		public Identity(SerializationInfo info, StreamingContext context) : this()
+		public void Lock()
 		{
-			Name = info.GetString("Name");
+			if (provider == null) throw new InvalidOperationException("No identity provider configured.");
 
-			Keys = new KeyPair
-			{
-				PublicKey = (PublicKey)info.GetValue("PublicKey", typeof(PublicKey)),
-				PrivateKey = (PrivateKey)info.GetValue("SecretKey", typeof(PrivateKey)),
-			};
+			provider.Lock(AccountID);
 		}
 
-		public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
-		{
-			info.AddValue("Name", Name);
-			info.AddValue("PublicKey", Keys.PublicKey, typeof(PublicKey));
-			info.AddValue("SecretKey", Keys.PrivateKey, typeof(PrivateKey));
-		}
-
-		#endregion Serialization
+		#endregion Lock
 	}
 }

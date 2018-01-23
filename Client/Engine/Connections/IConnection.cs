@@ -12,6 +12,8 @@ namespace SLD.Tezos.Client.Connections
 
 		#region Accounts
 
+		Task<IdentityInfo> GetIdentityInfo(string identityID);
+
 		Task<AccountInfo> GetAccountInfo(string accountID);
 
 		Task<decimal> GetBalance(string accountID);

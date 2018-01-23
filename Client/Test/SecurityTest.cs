@@ -7,7 +7,7 @@ namespace SLD.Tezos.Client
 	using Cryptography;
 
 	[TestClass]
-	public class SecurityTest : ClientTest
+	public partial class SecurityTest : ClientTest
 	{
 		[TestInitialize]
 		public async Task BeforeEach()
@@ -93,7 +93,6 @@ namespace SLD.Tezos.Client
 
 			Assert.IsTrue(identity.IsLocked);
 		}
-
 	}
 
 	internal class TestSecret : Secret

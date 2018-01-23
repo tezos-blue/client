@@ -13,6 +13,8 @@ namespace SLD.Tezos.Blockchain
 		private Stack<Block> blocks = new Stack<Block>();
 		private List<BaseTask> pendingTasks = new List<BaseTask>();
 
+		private int NextIndex = 0;
+
 		public SimulatedBlockchain(SimulationParameters parameters)
 		{
 			Parameters = parameters;
@@ -34,8 +36,6 @@ namespace SLD.Tezos.Blockchain
 
 			pulse.Change(pulseSpan, pulseSpan);
 		}
-
-		int NextIndex = 0;
 
 		internal Block CreateBlock()
 		{
@@ -59,6 +59,7 @@ namespace SLD.Tezos.Blockchain
 		{
 			lock (pendingTasks)
 			{
+				task.Progress = TaskProgress.Submitted;
 				pendingTasks.Add(task);
 			}
 		}

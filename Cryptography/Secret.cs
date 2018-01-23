@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace SLD.Tezos.Cryptography
 {
@@ -11,6 +10,12 @@ namespace SLD.Tezos.Cryptography
 
 		protected Secret()
 		{
+		}
+
+		// Copy constructor
+		protected Secret(Secret other)
+		{
+			inMemory = (byte[])other.inMemory.Clone();
 		}
 
 		protected byte[] Data
@@ -25,53 +30,38 @@ namespace SLD.Tezos.Cryptography
 		{
 			if (inMemory != null)
 			{
-				Array.Copy(
-					CryptoServices.CreateRandomBytes(inMemory.Length),
-					inMemory,
-					inMemory.Length);
+				CryptoServices.FillRandom(inMemory);
 
 				inMemory = null;
 			}
 		}
 	}
 
-	public abstract class PhraseProtectedSecret : IDisposable
+	public abstract class PhraseProtectedSecret : Secret
 	{
-		private byte[] inMemory;
-
-		protected PhraseProtectedSecret() { }
-		protected PhraseProtectedSecret(byte[] data, string openPhrase)
+		protected PhraseProtectedSecret(byte[] encryptedData)
 		{
-			SetData(data, openPhrase);
+			Data = encryptedData;
 		}
 
-		protected void SetData(byte[] data, string openPhrase)
+		protected PhraseProtectedSecret(byte[] data, Passphrase passphrase)
 		{
-			inMemory = CryptoServices.Encrypt(data, openPhrase);
-
-			Debug.Assert(inMemory != null);
+			SetData(data, passphrase);
 		}
 
-		protected byte[] GetData(string openPhrase)
+		// Encrypt data with passphrase
+		protected void SetData(byte[] data, Passphrase passphrase)
 		{
-			return CryptoServices.Decrypt(inMemory, openPhrase);
+			if (data == null) throw new ArgumentNullException(nameof(data));
+			if (passphrase == null) throw new ArgumentNullException(nameof(passphrase));
+
+			Data = passphrase.Encrypt(data);
 		}
 
-
-		// SECURITY
-		// on dispose, data gets overwritten and released to garbage collection
-		public void Dispose()
+		// Decrypt data with passphrase
+		protected byte[] GetData(Passphrase passphrase)
 		{
-			if (inMemory != null)
-			{
-				Array.Copy(
-					CryptoServices.CreateRandomBytes(inMemory.Length),
-					inMemory,
-					inMemory.Length);
-
-				inMemory = null;
-			}
+			return passphrase.Decrypt(Data);
 		}
 	}
-
 }

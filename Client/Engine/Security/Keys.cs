@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.Serialization;
 
 namespace SLD.Tezos.Client.Security
@@ -9,68 +8,57 @@ namespace SLD.Tezos.Client.Security
 	[Serializable]
 	public class PublicKey : ISerializable
 	{
-		private byte[] data;
-
 		public PublicKey(byte[] data)
 		{
-			this.data = data;
+			this.Data = data ?? throw new ArgumentNullException(nameof(data));
+
+			Hash = CryptoServices.CreatePrefixedHash(HashType.PublicKeyHash, Data);
 		}
 
-		public string Hash => CryptoServices.CreatePrefixedHash(HashType.PublicKeyHash, data);
+		public byte[] Data { get; private set; }
+		public string Hash { get; private set; }
 
 		#region Serialization
 
 		public PublicKey(SerializationInfo info, StreamingContext context)
 		{
-			this.data = (byte[])info.GetValue("Data", typeof(byte[]));
+			this.Data = (byte[])info.GetValue("Data", typeof(byte[]));
 		}
 
 		public void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
-			info.AddValue("Data", data, typeof(byte[]));
+			info.AddValue("Data", Data, typeof(byte[]));
 		}
 
 		#endregion Serialization
 
 		public override string ToString()
 		{
-			return CryptoServices.EncodePrefixed(HashType.Public, data);
+			return CryptoServices.EncodePrefixed(HashType.Public, Data);
 		}
 	}
 
-	[Serializable]
-	public sealed class PrivateKey : PhraseProtectedSecret, ISerializable
+	public sealed class PrivateKey : PhraseProtectedSecret
 	{
-		private string tempPhrase;
-
-		// SECURITY
-		public PrivateKey(byte[] data, string openPhrase) : base(data, openPhrase)
+		public PrivateKey(byte[] data, Passphrase passphrase) : base(data, passphrase)
 		{
-			Debug.Assert(data != null);
-			Debug.Assert(openPhrase != null);
-
-			// Temporary...
-			tempPhrase = openPhrase;
 		}
 
-		internal byte[] AccessData()
+		private PrivateKey(byte[] encryptedData) : base(encryptedData)
 		{
-			return GetData(tempPhrase);
 		}
 
-		#region Serialization
+		public byte[] EncryptedData => Data;
 
-		public PrivateKey(SerializationInfo info, StreamingContext context)
+		internal static PrivateKey Restore(byte[] encryptedData)
 		{
-			//this.Data = (byte[])info.GetValue("Data", typeof(byte[]));
+			return new PrivateKey(encryptedData);
 		}
 
-		public void GetObjectData(SerializationInfo info, StreamingContext context)
+		internal byte[] AccessData(Passphrase passphrase)
 		{
-			//info.AddValue("Data", Data, typeof(byte[]));
+			return GetData(passphrase);
 		}
-
-		#endregion Serialization
 	}
 
 	[Serializable]
@@ -78,5 +66,21 @@ namespace SLD.Tezos.Client.Security
 	{
 		public PublicKey PublicKey { get; set; }
 		public PrivateKey PrivateKey { get; set; }
+
+		public string PublicID => PublicKey.Hash;
+
+		internal bool CanUnlockWith(Passphrase passphrase)
+		{
+			try
+			{
+				var privateData = PrivateKey.AccessData(passphrase);
+
+				return CryptoServices.IsKeyMatch(PublicKey.Data, privateData);
+			}
+			catch
+			{
+				return false;
+			}
+		}
 	}
 }

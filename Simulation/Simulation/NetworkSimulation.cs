@@ -120,6 +120,35 @@ namespace SLD.Tezos.Simulation
 			};
 		}
 
+		internal Task<IdentityInfo> GetIdentityInfo(string identityID)
+		{
+			var info = new IdentityInfo
+			{
+				AccountID = identityID,
+			};
+
+			var identity = Identities.FirstOrDefault(i => i.AccountID == identityID);
+
+			if (identity != null)
+			{
+				info.Balance = identity.Balance;
+				info.Name = identity.Name;
+				info.Stereotype = identity.Stereotype;
+
+				info.Accounts = identity.Accounts.Select(
+					a => new IdentityAccountInfo
+					{
+						AccountID = a.AccountID,
+						Name = a.Name,
+						Stereotype = a.Stereotype,
+						Balance = a.Balance,
+					})
+					.ToArray();
+			}
+
+			return Task.FromResult(info);
+		}
+
 		internal async Task<decimal> GetBalance(string accountID)
 		{
 			TokenStore account = await GetAccount(accountID);
@@ -198,6 +227,7 @@ namespace SLD.Tezos.Simulation
 			await Task.Delay(50);
 
 			task.Operation = "CCCCCC";
+			task.Progress = TaskProgress.Prepared;
 
 			return task;
 		}
@@ -267,6 +297,7 @@ namespace SLD.Tezos.Simulation
 			await Task.Delay(50);
 
 			task.Operation = "FFFFFF";
+			task.Progress = TaskProgress.Prepared;
 
 			return task;
 		}

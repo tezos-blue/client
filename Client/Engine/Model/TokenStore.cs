@@ -91,43 +91,39 @@ namespace SLD.Tezos.Client.Model
 			return AccountID;
 		}
 
-		internal virtual Task Initialize(IConnection connection)
+		internal async virtual Task Initialize(Engine engine)
 		{
 			State = TokenStoreState.Initializing;
 
-			return Task.Run(async () =>
+			try
 			{
-				try
+				var info = await engine.Connection.GetAccountInfo(AccountID);
+
+				UpdateBalance(info.Balance);
+
+				State = TokenStoreState.Online;
+			}
+			catch (ServerException e)
+			{
+				Trace(e);
+
+				switch (e.ServerError)
 				{
-					var info = await connection.GetAccountInfo(AccountID);
+					case ServerError.AccountNotFound:
+						State = TokenStoreState.Unknown;
+						break;
 
-					UpdateBalance(info.Balance);
-
-					State = TokenStoreState.Online;
+					default:
+						State = TokenStoreState.Offline;
+						break;
 				}
-				catch (ServerException e)
-				{
-					Trace(e);
 
-					switch (e.ServerError)
-					{
-						case ServerError.AccountNotFound:
-							State = TokenStoreState.Unknown;
-							break;
-
-						default:
-							State = TokenStoreState.Offline;
-							break;
-					}
-
-					return;
-				}
-				catch (Exception e)
-				{
-					Trace(e);
-					return;
-				}
-			});
+				return;
+			}
+			catch (Exception e)
+			{
+				Trace(e);
+			}
 		}
 
 		#region Balance

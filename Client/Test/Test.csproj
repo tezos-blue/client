@@ -56,9 +56,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EngineTest.cs" />
     <Compile Include="SecurityTest.cs" />
+    <Compile Include="VaultTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <Compile Include="SecurityTest.Sign.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Common\Common.csproj">

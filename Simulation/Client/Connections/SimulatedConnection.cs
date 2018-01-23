@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-
-using System;
 
 namespace SLD.Tezos.Client.Connections
 {
@@ -113,6 +112,13 @@ namespace SLD.Tezos.Client.Connections
 
 		#region Accounts
 
+		public async Task<IdentityInfo> GetIdentityInfo(string identityID)
+		{
+			await Latency();
+
+			return await simulation.GetIdentityInfo(identityID);
+		}
+
 		public async Task<decimal> GetBalance(string accountID)
 		{
 			await Latency();
@@ -122,7 +128,7 @@ namespace SLD.Tezos.Client.Connections
 
 		public async Task<AccountInfo> GetAccountInfo(string accountID)
 		{
-			await Task.Delay(simulation.Parameters.CallLatency);
+			await Latency();
 
 			return await simulation.GetAccountInfo(accountID);
 		}

@@ -14,8 +14,11 @@ namespace SLD.Tezos.Client.Model
 	{
 		private string simAccountID;
 
-		public SimulatedIdentity() : base("")
+		public SimulatedIdentity()
 		{
+			CryptoServices.CreateKeyPair(out byte[] publicKey, out byte[] privateKey);
+
+			PublicKey = new PublicKey(publicKey);
 		}
 
 		public SimulatedIdentity(string accountID, IEnumerable<Account> accounts = null) : this()
@@ -26,7 +29,7 @@ namespace SLD.Tezos.Client.Model
 			{
 				foreach (var account in accounts)
 				{
-					AddAccount(account);
+					var task = AddAccount(account);
 				}
 			}
 		}
@@ -41,21 +44,5 @@ namespace SLD.Tezos.Client.Model
 				listener.Notify(netEvent);
 			}
 		}
-
-		#region Serialization
-
-		public SimulatedIdentity(SerializationInfo info, StreamingContext context) : base(info, context)
-		{
-			simAccountID = info.GetString("SimAccountID");
-		}
-
-		public override void GetObjectData(SerializationInfo info, StreamingContext context)
-		{
-			base.GetObjectData(info, context);
-
-			info.AddValue("SimAccountID", simAccountID);
-		}
-
-		#endregion Serialization
 	}
 }

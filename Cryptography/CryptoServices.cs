@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace SLD.Tezos.Cryptography
@@ -9,12 +10,26 @@ namespace SLD.Tezos.Cryptography
 
 	public static class CryptoServices
 	{
-		public static string CreatePrefixedHash(HashType hashType, byte[] data)
-		{
-			var hash = Hash(data, hashType.Size);
+		#region Random
 
-			return EncodePrefixed(hashType, hash);
+		public static byte[] CreateRandomBytes(int length)
+		{
+			var bytes = new byte[length];
+
+			FillRandom(bytes);
+
+			return bytes;
 		}
+
+		public static void FillRandom(byte[] bytes)
+		{
+			var random = new RNGCryptoServiceProvider();
+			random.GetBytes(bytes);
+		}
+
+		#endregion Random
+
+		#region Encoding
 
 		public static string EncodePrefixed(HashType hashType, byte[] hash)
 		{
@@ -37,6 +52,30 @@ namespace SLD.Tezos.Cryptography
 			return data;
 		}
 
+		#endregion Encoding
+
+		#region Keys
+
+		public static void CreateKeyPair(out byte[] publicKey, out byte[] privateKey)
+		{
+			var seed = CreateRandomBytes(Ed25519.PrivateKeySeedSizeInBytes);
+
+			Ed25519.KeyPairFromSeed(out publicKey, out privateKey, seed);
+		}
+
+		public static bool IsKeyMatch(byte[] publicKey, byte[] privateKey)
+		{
+			var halfSize = Ed25519.ExpandedPrivateKeySizeInBytes / 2;
+
+			var lowerHalf = new ArraySegment<byte>(privateKey, halfSize, halfSize);
+
+			return Enumerable.SequenceEqual(lowerHalf, publicKey);
+		}
+
+		#endregion Keys
+
+		#region Hashes
+
 		public static string CreateAccountHash(string operationHash, uint originateIndex)
 		{
 			var buffer = new byte[36];
@@ -52,11 +91,11 @@ namespace SLD.Tezos.Cryptography
 			return EncodePrefixed(HashType.Account, hash);
 		}
 
-		public static void CreateKeyPair(out byte[] publicKey, out byte[] privateKey)
+		public static string CreatePrefixedHash(HashType hashType, byte[] data)
 		{
-			var seed = CreateRandomBytes(Ed25519.PrivateKeySeedSizeInBytes);
+			var hash = Hash(data, hashType.Size);
 
-			Ed25519.KeyPairFromSeed(out publicKey, out privateKey, seed);
+			return EncodePrefixed(hashType, hash);
 		}
 
 		public static byte[] Hash(byte[] data, int size)
@@ -71,40 +110,17 @@ namespace SLD.Tezos.Cryptography
 			return hasher.Finish();
 		}
 
-		public static byte[] CreateRandomBytes(int length)
-		{
-			var random = new RNGCryptoServiceProvider();
-			var bytes = new byte[length];
-			random.GetBytes(bytes);
+		#endregion Hashes
 
-			return bytes;
-		}
+		#region Signatures
 
-		public static string CreateSignature(byte[] privateKey, byte[] data)
-		{
-			var signature = new byte[Ed25519.SignatureSizeInBytes];
+		public static string CreateEncodeSignature(byte[] privateKey, byte[] data)
+			=> EncodePrefixed(HashType.Signature, CreateSignature(privateKey, data));
 
-			var signatureSegment = new ArraySegment<byte>(signature);
-			var dataSegment = new ArraySegment<byte>(data);
-			var keySegment = new ArraySegment<byte>(privateKey);
+		public static byte[] CreateSignature(byte[] privateKey, byte[] data)
+			=> Ed25519.Sign(data, privateKey);
 
-			Ed25519.Sign(signatureSegment, dataSegment, keySegment);
-
-			return EncodePrefixed(HashType.Signature, signature);
-		}
-
-		public static byte[] AppendSignature(byte[] privateKey, byte[] data)
-		{
-			using (var buffer = new MemoryStream())
-			{
-				buffer.Write(data, 0, data.Length);
-
-				var signature = Ed25519.Sign(data, privateKey);
-				buffer.Write(signature, 0, signature.Length);
-
-				return buffer.ToArray();
-			}
-		}
+		#endregion Signatures
 
 		#region Memory Protection
 
@@ -160,20 +176,25 @@ namespace SLD.Tezos.Cryptography
 		{
 			using (var rgb = new PasswordDeriveBytes(openPhrase, SymmetricSalt))
 			{
-				var algorithm = new AesManaged();
+				return Encrypt(data, rgb);
+			}
+		}
 
-				byte[] rgbKey = rgb.GetBytes(algorithm.KeySize >> 3);
-				byte[] rgbIV = rgb.GetBytes(algorithm.BlockSize >> 3);
+		public static byte[] Encrypt(byte[] data, PasswordDeriveBytes rgb)
+		{
+			var algorithm = new AesManaged();
 
-				using (ICryptoTransform transform = algorithm.CreateEncryptor(rgbKey, rgbIV))
-				using (MemoryStream encrypted = new MemoryStream())
-				using (CryptoStream crypto = new CryptoStream(encrypted, transform, CryptoStreamMode.Write))
-				{
-					crypto.Write(data, 0, data.Length);
-					crypto.FlushFinalBlock();
+			byte[] rgbKey = rgb.GetBytes(algorithm.KeySize >> 3);
+			byte[] rgbIV = rgb.GetBytes(algorithm.BlockSize >> 3);
 
-					return encrypted.ToArray();
-				}
+			using (ICryptoTransform transform = algorithm.CreateEncryptor(rgbKey, rgbIV))
+			using (MemoryStream encrypted = new MemoryStream())
+			using (CryptoStream crypto = new CryptoStream(encrypted, transform, CryptoStreamMode.Write))
+			{
+				crypto.Write(data, 0, data.Length);
+				crypto.FlushFinalBlock();
+
+				return encrypted.ToArray();
 			}
 		}
 
@@ -181,20 +202,25 @@ namespace SLD.Tezos.Cryptography
 		{
 			using (var rgb = new PasswordDeriveBytes(openPhrase, SymmetricSalt))
 			{
-				var algorithm = new AesManaged();
+				return Decrypt(data, rgb);
+			}
+		}
 
-				byte[] rgbKey = rgb.GetBytes(algorithm.KeySize >> 3);
-				byte[] rgbIV = rgb.GetBytes(algorithm.BlockSize >> 3);
+		public static byte[] Decrypt(byte[] data, PasswordDeriveBytes rgb)
+		{
+			var algorithm = new AesManaged();
 
-				using (ICryptoTransform transform = algorithm.CreateDecryptor(rgbKey, rgbIV))
-				using (MemoryStream encrypted = new MemoryStream(data))
-				using (CryptoStream crypto = new CryptoStream(encrypted, transform, CryptoStreamMode.Read))
-				using (MemoryStream decrypted = new MemoryStream())
-				{
-					crypto.CopyTo(decrypted);
+			byte[] rgbKey = rgb.GetBytes(algorithm.KeySize >> 3);
+			byte[] rgbIV = rgb.GetBytes(algorithm.BlockSize >> 3);
 
-					return decrypted.ToArray();
-				}
+			using (ICryptoTransform transform = algorithm.CreateDecryptor(rgbKey, rgbIV))
+			using (MemoryStream encrypted = new MemoryStream(data))
+			using (CryptoStream crypto = new CryptoStream(encrypted, transform, CryptoStreamMode.Read))
+			using (MemoryStream decrypted = new MemoryStream())
+			{
+				crypto.CopyTo(decrypted);
+
+				return decrypted.ToArray();
 			}
 		}
 

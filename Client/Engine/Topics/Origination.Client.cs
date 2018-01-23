@@ -18,7 +18,7 @@ namespace SLD.Tezos.Client
 				ManagerID = managerIdentity.AccountID,
 
 				SourceID = source.AccountID,
-				SourceManagerPublicKey = managerIdentity.Keys.PublicKey.ToString(),
+				SourceManagerPublicKey = managerIdentity.PublicKey.ToString(),
 				NetworkFee = DefaultOperationFee,
 				TransferAmount = transferAmount,
 			};
