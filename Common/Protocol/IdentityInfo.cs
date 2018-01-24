@@ -13,5 +13,8 @@
 	public class IdentityInfo : IdentityAccountInfo
 	{
 		public IdentityAccountInfo[] Accounts;
+
+		// By convention, a null array means the identity has not been seen on the chain before
+		public bool IsUnknown => Accounts == null;
 	}
 }

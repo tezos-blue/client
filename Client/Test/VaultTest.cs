@@ -37,6 +37,10 @@ namespace SLD.Tezos.Client
 			// Assert equality
 			Assert.AreEqual(original.Name, restored.Name);
 
+			Assert.AreEqual(
+				original.Keys.PublicID,
+				restored.Keys.PublicID);
+
 			CollectionAssert.AreEqual(
 				original.Keys.PublicKey.Data,
 				restored.Keys.PublicKey.Data);

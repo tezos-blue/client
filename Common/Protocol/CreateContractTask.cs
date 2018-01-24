@@ -7,5 +7,6 @@
 		public string AccountID;
 
 		public string Name;
+		public string Stereotype;
 	}
 }

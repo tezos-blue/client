@@ -23,6 +23,8 @@ namespace SLD.Tezos.Client.Security
 		public PublicKey(SerializationInfo info, StreamingContext context)
 		{
 			this.Data = (byte[])info.GetValue("Data", typeof(byte[]));
+
+			Hash = CryptoServices.CreatePrefixedHash(HashType.PublicKeyHash, Data);
 		}
 
 		public void GetObjectData(SerializationInfo info, StreamingContext context)

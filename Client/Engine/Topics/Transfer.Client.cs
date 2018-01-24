@@ -7,7 +7,7 @@ namespace SLD.Tezos.Client
 
 	partial class Engine
 	{
-		public async Task<TransferTask> CommitTransfer(TokenStore source, TokenStore destination, decimal transferAmount)
+		public async Task<TransferTask> CommitTransfer(TokenStore source, TokenStore destination, decimal transferAmount, string reference = null)
 		{
 			Trace($"Transfer {transferAmount} from {source} to {destination}");
 
@@ -19,6 +19,8 @@ namespace SLD.Tezos.Client
 				SourceManagerPublicKey = source.Manager.PublicKey.ToString(),
 				NetworkFee = DefaultOperationFee,
 				TransferAmount = transferAmount,
+
+				Reference = reference,
 			};
 
 			Trace("Prepare Transfer");

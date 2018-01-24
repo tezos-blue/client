@@ -12,11 +12,13 @@ namespace SLD.Tezos.Client.Model
 
 	public partial class Identity : TokenStore
 	{
+		public const string DefaultStereotype = "Identity";
+
 		private IManageIdentities provider;
 
 		public Identity()
 		{
-			Stereotype = "Identity";
+			Stereotype = DefaultStereotype;
 			accounts.Add(this);
 		}
 

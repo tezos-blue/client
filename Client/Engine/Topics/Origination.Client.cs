@@ -7,7 +7,7 @@ namespace SLD.Tezos.Client
 
 	partial class Engine
 	{
-		public async Task<CreateContractTask> CreateAccount(string name, Identity managerIdentity, TokenStore source, decimal transferAmount)
+		public async Task<CreateContractTask> CreateAccount(string name, Identity managerIdentity, TokenStore source, decimal transferAmount, string stereotype = null)
 		{
 			Trace("Create Account");
 
@@ -15,6 +15,8 @@ namespace SLD.Tezos.Client
 			var task = new CreateContractTask
 			{
 				Name = name,
+				Stereotype = stereotype ?? Account.DefaultStereotype,
+
 				ManagerID = managerIdentity.AccountID,
 
 				SourceID = source.AccountID,

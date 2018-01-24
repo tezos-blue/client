@@ -15,6 +15,7 @@ namespace SLD.Tezos.Client
 			{
 				ManagerID = managerIdentity.AccountID,
 				Name = name,
+				Stereotype = Account.DefaultStereotype,
 			});
 
 			Trace($"{result.AccountID} | Waiting for creation");

@@ -6,9 +6,11 @@ namespace SLD.Tezos.Client.Model
 	[Serializable]
 	public class Account : TokenStore, ISerializable
 	{
+		public const string DefaultStereotype = "Account";
+
 		private Account()
 		{
-			Stereotype = "Account";
+			Stereotype = DefaultStereotype;
 		}
 
 		public Account(string name, string accountID = null) : this()
