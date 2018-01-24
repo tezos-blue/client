@@ -1,6 +1,12 @@
 # tezos.blue | Client.Engine
 cross-platform client library for remote access to the Tezos network
 
+The wallet built upon this engine can be downloaded via
+
+http://tezos.blue
+
+for Android, iOS and Windows
+
 ## About
 This libraries purpose is to provide comfort and security for .NET Developers building client applications for the Tezos network.
 
