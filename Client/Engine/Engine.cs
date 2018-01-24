@@ -221,28 +221,6 @@ namespace SLD.Tezos.Client
 			}
 		}
 
-		//private async Task InitializeIdentities()
-		//{
-		//	identities = new ObservableCollection<Identity>(await store.LoadIdentities());
-
-		//	FirePropertyChanged("Identities");
-
-		//	if (identities.Any())
-		//	{
-		//		// Check Balance of identities
-		//		foreach (var identity in identities)
-		//		{
-		//			Cache(identity);
-
-		//			await identity.Initialize(Connection);
-		//		}
-
-		//		FirePropertyChanged("DefaultIdentity");
-		//	}
-
-		//	IsIdentitiesInitialized = true;
-		//}
-
 		#region IsIdentitiesInitialized
 
 		private bool _IsIdentitiesInitialized;
@@ -280,6 +258,8 @@ namespace SLD.Tezos.Client
 			return Identities.SelectMany(i => i.Accounts);
 		}
 
+		// SECURITY
+		// TODO validate public key hash
 		public bool IsValidAccountID(string accountID)
 		{
 			return true;
@@ -287,70 +267,15 @@ namespace SLD.Tezos.Client
 
 		public async void DeleteAccount(Account account)
 		{
-			try
-			{
 				var manager = Identities.FirstOrDefault(i => i.AccountID == account.ManagerID);
 
 				if (manager != null)
 				{
-					await manager.DeleteAccount(account);
-				}
-				else
-				{
-					//watchedAccounts.Remove(account);
+					await manager.DeleteAccount(account, Connection);
 				}
 
 				Uncache(account);
-			}
-			finally
-			{
-				await store.DeleteAccount(account);
-			}
 		}
-
-		//private async Task InitializeAccounts()
-		//{
-		//	var accounts = await store.LoadAccounts();
-
-		//	var tasks = accounts.Select(a => InitializeAccount(a));
-
-		//	await Task.WhenAll(tasks);
-		//}
-
-		//private async Task InitializeAccount(Account account)
-		//{
-		//	try
-		//	{
-		//		var manager = Identities.FirstOrDefault(i => i.AccountID == account.ManagerID);
-
-		//		if (manager != null)
-		//		{
-		//			await manager.AddAccount(account);
-		//			account.SetManager(manager);
-		//		}
-		//		else
-		//		{
-		//			//watchedAccounts.AddSynchronized(account);
-		//		}
-
-		//		Cache(account);
-
-		//		await account.Initialize(Connection);
-		//	}
-		//	catch (ServerException e)
-		//	{
-		//		Trace(e);
-
-		//		return;
-		//	}
-		//	catch (Exception e)
-		//	{
-		//		Trace(e);
-
-		//		await store.DeleteAccount(account);
-		//		return;
-		//	}
-		//}
 
 		private async Task RefreshAccounts()
 		{
@@ -362,17 +287,6 @@ namespace SLD.Tezos.Client
 		}
 
 		#endregion Accounts
-
-		#region Storage
-
-		private LocalStore store;
-
-		private async Task InitializeStorage()
-		{
-			store = await LocalStore.Open(configuration.LocalStorage);
-		}
-
-		#endregion Storage
 
 		#region ConnectionState
 
@@ -413,16 +327,11 @@ namespace SLD.Tezos.Client
 			LockAll();
 
 			await RefreshAccounts();
-			//await Task.Run(DoConnect);
 		}
 
 		public void Suspend()
 		{
 			LockAll();
-
-			//Connection.Disconnect();
-
-			//ConnectionState = ConnectionState.Diconnected;
 		}
 
 		private async Task DoConnect()

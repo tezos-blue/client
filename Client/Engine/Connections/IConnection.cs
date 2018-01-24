@@ -20,6 +20,8 @@ namespace SLD.Tezos.Client.Connections
 
 		Task<AccountEntry[]> GetAccountEntries(string accountID);
 
+		Task RemoveStaleAccount(string accountID);
+
 		#endregion Accounts
 
 		#region Origination

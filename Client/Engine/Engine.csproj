@@ -15,6 +15,12 @@
     <AssemblyName>Tezos.Client.Engine</AssemblyName>
     <RootNamespace>SLD.Tezos.Client</RootNamespace>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="Topics\Transfer.Client.cs" />
   </ItemGroup>

@@ -133,6 +133,11 @@ namespace SLD.Tezos.Client.Connections
 			return await simulation.GetAccountInfo(accountID);
 		}
 
+		public Task RemoveStaleAccount(string accountID)
+		{
+			throw new NotImplementedException();
+		}
+
 		#endregion Accounts
 
 		private async Task Latency()

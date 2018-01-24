@@ -20,34 +20,11 @@ namespace SLD.Tezos.Client.OS
 
 		public SimulationParameters Parameters { get; private set; }
 
-		public Task<Stream> CreateAccountFileAsync(string accountID)
-		{
-			return Task.FromResult(new MemoryStream() as Stream);
-		}
-
 		public Task<Stream> CreateIdentityFileAsync(string accountID)
 		{
 			return Task.FromResult(new MemoryStream() as Stream);
 		}
 
-		public Task DeleteAccountFileAsync(string accountID)
-		{
-			return Task.CompletedTask;
-		}
-
-		public Task<IEnumerable<Stream>> OpenAccountFilesAsync()
-		{
-			var files = new List<Stream>();
-
-			if (Parameters.Simulation != null)
-			{
-				return Task.FromResult(Parameters.Simulation.Accounts.Select(i => MakeOutput(i)));
-			}
-			else
-			{
-				return Task.FromResult(new Stream[0] as IEnumerable<Stream>);
-			}
-		}
 
 		public Task<IEnumerable<Stream>> OpenIdentityFilesAsync()
 		{

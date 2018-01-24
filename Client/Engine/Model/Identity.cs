@@ -8,6 +8,7 @@ namespace SLD.Tezos.Client.Model
 {
 	using Cryptography;
 	using Security;
+	using Connections;
 
 	public partial class Identity : TokenStore
 	{
@@ -86,8 +87,10 @@ namespace SLD.Tezos.Client.Model
 			});
 		}
 
-		internal async Task DeleteAccount(Account account)
+		internal async Task DeleteAccount(Account account, IConnection connection)
 		{
+			await connection.RemoveStaleAccount(account.AccountID);
+
 			account.Changed -= OnAccountChanged;
 			await accounts.RemoveSynchronized(account);
 		}

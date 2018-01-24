@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>SLD.Tezos.Cryptography</AssemblyName>
+    <AssemblyName>Tezos.Cryptography</AssemblyName>
     <RootNamespace>SLD.Tezos.Cryptography</RootNamespace>
   </PropertyGroup>
 

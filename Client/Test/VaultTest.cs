@@ -5,6 +5,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace SLD.Tezos.Client
 {
 	using Security;
+	using OS;
 
 	[TestClass]
 	public class VaultTest

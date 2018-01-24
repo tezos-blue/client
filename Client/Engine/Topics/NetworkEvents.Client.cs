@@ -68,9 +68,6 @@ namespace SLD.Tezos.Client
 							account.State = TokenStoreState.Online;
 
 							Cache(account);
-
-							// Store
-							await store.StoreAccount(account);
 						}
 					}
 					break;
