@@ -71,7 +71,7 @@ namespace SLD.Tezos.Simulation
 			connections.Remove(connectionID);
 		}
 
-		internal async Task MonitorAccounts(string connectionID, IEnumerable<string> accountIDs)
+		internal async Task MonitorAccounts(string connectionID, params string[] accountIDs)
 		{
 			if (accountIDs != null && accountIDs.Any())
 			{
@@ -102,11 +102,61 @@ namespace SLD.Tezos.Simulation
 		public List<SimulatedIdentity> Identities = new List<SimulatedIdentity>();
 		public SimulatedIdentity MyIdentity;
 
+		private SimulatedIdentity FindIdentity(string identityID)
+			=> Identities.FirstOrDefault(i => i.AccountID == identityID);
+
 		#endregion Identities
 
 		#region Accounts
 
 		public List<SimulatedAccount> Accounts = new List<SimulatedAccount>();
+
+		public async Task<RegisterIdentityTask> RegisterIdentity(RegisterIdentityTask task)
+		{
+			var identityID = task.IdentityID;
+
+			// Return info in any case, even if the identity has not been seen before
+			var info = new IdentityInfo
+			{
+				AccountID = identityID,
+			};
+
+			// Register for identity notifications
+			await MonitorAccounts(task.Client.InstanceID, identityID);
+
+			// Find identity in database
+			var identity = FindIdentity(identityID);
+
+			if (identity != null)
+			{
+				info.Balance = await GetBalance(identityID);
+				info.Name = identity.Name;
+				info.Stereotype = identity.Stereotype;
+
+				// Add managed accounts to info
+				var accountTasks = identity.Accounts.Select(
+					async account => new IdentityAccountInfo
+					{
+						AccountID = account.AccountID,
+						Name = account.Name,
+						Stereotype = account.Stereotype,
+						Balance = await GetBalance(account.AccountID),
+					});
+
+				await Task.WhenAll(accountTasks);
+
+				info.Accounts = accountTasks.Select(t => t.Result).ToArray();
+
+				// Register for account notifications
+				await MonitorAccounts(task.Client.InstanceID, info.Accounts.Select(a => a.AccountID).ToArray());
+			}
+
+			// All the info we have
+			task.Info = info;
+			task.Progress = TaskProgress.Confirmed;
+
+			return task;
+		}
 
 		internal async Task<AccountInfo> GetAccountInfo(string accountID)
 		{

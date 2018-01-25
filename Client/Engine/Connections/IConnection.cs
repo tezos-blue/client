@@ -10,9 +10,13 @@ namespace SLD.Tezos.Client.Connections
 	{
 		event Action<NetworkEvent> EventReceived;
 
-		#region Accounts
+		#region Identities
 
-		Task<IdentityInfo> GetIdentityInfo(string identityID);
+		Task<RegisterIdentityTask> RegisterIdentity(RegisterIdentityTask task);
+
+		#endregion
+
+		#region Accounts
 
 		Task<AccountInfo> GetAccountInfo(string accountID);
 

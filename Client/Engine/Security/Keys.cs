@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace SLD.Tezos.Client.Security
@@ -34,10 +35,13 @@ namespace SLD.Tezos.Client.Security
 
 		#endregion Serialization
 
+		public override bool Equals(object obj)
+			=> obj is PublicKey other ?
+				Enumerable.SequenceEqual(other.Data, this.Data) :
+				false;
+
 		public override string ToString()
-		{
-			return CryptoServices.EncodePrefixed(HashType.Public, Data);
-		}
+			=> CryptoServices.EncodePrefixed(HashType.Public, Data);
 	}
 
 	public sealed class PrivateKey : PhraseProtectedSecret

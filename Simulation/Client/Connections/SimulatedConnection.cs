@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client.Connections
@@ -10,6 +11,11 @@ namespace SLD.Tezos.Client.Connections
 
 	public class SimulatedConnection : TezosObject, IConnection
 	{
+		private ClientInfo clientInfo = new ClientInfo
+		{
+			InstanceID = LocalStorageSimulation.instanceID,
+		};
+
 		private NetworkSimulation simulation;
 
 		private ConnectionEndpoint endpoint;
@@ -34,7 +40,7 @@ namespace SLD.Tezos.Client.Connections
 
 		public async Task Monitor(IEnumerable<string> accountIDs)
 		{
-			await simulation.MonitorAccounts(InstanceID, accountIDs);
+			await simulation.MonitorAccounts(InstanceID, accountIDs.ToArray());
 		}
 
 		public void Disconnect()
@@ -77,46 +83,46 @@ namespace SLD.Tezos.Client.Connections
 		{
 			await Task.Delay(simulation.Parameters.CallLatency);
 
-			return await simulation.AlphaCreateFaucet(task, InstanceID);
+			return await simulation.AlphaCreateFaucet(PrepareTask(task), InstanceID);
 		}
 
 		public async Task<CreateContractTask> PrepareCreateContract(CreateContractTask task)
 		{
 			await Task.Delay(simulation.Parameters.CallLatency);
 
-			return await simulation.PrepareCreateContract(task);
+			return await simulation.PrepareCreateContract(PrepareTask(task));
 		}
 
 		public async Task<CreateContractTask> CreateContract(CreateContractTask task)
 		{
 			await Task.Delay(simulation.Parameters.CallLatency);
 
-			return await simulation.CreateContract(task, InstanceID);
+			return await simulation.CreateContract(PrepareTask(task), InstanceID);
 		}
 
 		public async Task<TransferTask> PrepareTransfer(TransferTask task)
 		{
 			await Task.Delay(simulation.Parameters.CallLatency);
 
-			return await simulation.PrepareTransfer(task);
+			return await simulation.PrepareTransfer(PrepareTask(task));
 		}
 
 		public async Task<TransferTask> Transfer(TransferTask task)
 		{
 			await Task.Delay(simulation.Parameters.CallLatency);
 
-			return await simulation.CommitTransfer(task);
+			return await simulation.CommitTransfer(PrepareTask(task));
 		}
 
 		#endregion Operations
 
 		#region Accounts
 
-		public async Task<IdentityInfo> GetIdentityInfo(string identityID)
+		public async Task<RegisterIdentityTask> RegisterIdentity(RegisterIdentityTask task)
 		{
 			await Latency();
 
-			return await simulation.GetIdentityInfo(identityID);
+			return await simulation.RegisterIdentity(PrepareTask(task));
 		}
 
 		public async Task<decimal> GetBalance(string accountID)
@@ -139,6 +145,13 @@ namespace SLD.Tezos.Client.Connections
 		}
 
 		#endregion Accounts
+
+		private T PrepareTask<T>(T task) where T : BaseTask
+		{
+			task.Client = clientInfo;
+
+			return task;
+		}
 
 		private async Task Latency()
 		{

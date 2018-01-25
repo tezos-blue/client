@@ -13,8 +13,13 @@ namespace SLD.Tezos.Client.Security
 
 	public interface IManageIdentities
 	{
-		Task<Identity> CreateIdentity(string name, Passphrase passphrase);
+		// Create valid identities
+		Task<Identity> CreateIdentity(string name, Passphrase passphrase, string stereotype = Identity.DefaultStereotype);
 
+		// Fill Metadata
+		void RestoreIdentity(Identity identity);
+
+		// Keep access to private key open
 		bool Unlock(string identityID, Passphrase passphrase);
 
 		void Lock(string identityID);
@@ -36,7 +41,7 @@ namespace SLD.Tezos.Client.Security
 
 		#region IManageIdentities
 
-		public async Task<Identity> CreateIdentity(string name, Passphrase passphrase)
+		public async Task<Identity> CreateIdentity(string name, Passphrase passphrase, string stereotype = Identity.DefaultStereotype)
 		{
 			if (passphrase == null) throw new ArgumentNullException("passphrase", "Identities must have a passphrase");
 
@@ -47,6 +52,7 @@ namespace SLD.Tezos.Client.Security
 			var slot = new Slot
 			{
 				Name = name,
+				Stereotype = stereotype,
 				Keys = keyPair,
 			};
 
@@ -58,9 +64,23 @@ namespace SLD.Tezos.Client.Security
 			var identity = new Identity(keyPair.PublicKey, this)
 			{
 				Name = name,
+				Stereotype = stereotype,
 			};
 
 			return identity;
+		}
+
+		public void RestoreIdentity(Identity identity)
+		{
+			// Find slot
+			var slot = Find(identity.AccountID);
+
+			if (slot != null)
+			{
+				identity.Name = slot.Name;
+				identity.Stereotype = slot.Stereotype;
+				identity.PublicKey = slot.Keys.PublicKey;
+			}
 		}
 
 		public bool Unlock(string identityID, Passphrase passphrase)
@@ -164,6 +184,8 @@ namespace SLD.Tezos.Client.Security
 		public class Slot : TezosObject, ISerializable
 		{
 			public string Name;
+			public string Stereotype;
+
 			public KeyPair Keys;
 
 			private Passphrase passphrase;
@@ -223,6 +245,7 @@ namespace SLD.Tezos.Client.Security
 			public Slot(SerializationInfo info, StreamingContext context) : this()
 			{
 				Name = info.GetString("Name");
+				Stereotype = info.GetString("Stereotype");
 
 				Keys = new KeyPair();
 
@@ -239,6 +262,7 @@ namespace SLD.Tezos.Client.Security
 			public void GetObjectData(SerializationInfo info, StreamingContext context)
 			{
 				info.AddValue("Name", Name);
+				info.AddValue("Stereotype", Stereotype);
 				info.AddValue("PublicKey", Keys.PublicKey, typeof(PublicKey));
 
 				if (Keys.PrivateKey != null)

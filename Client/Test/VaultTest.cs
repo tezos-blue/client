@@ -6,6 +6,10 @@ namespace SLD.Tezos.Client
 {
 	using Security;
 	using OS;
+	using System.Collections.Generic;
+	using System.Threading.Tasks;
+	using System.Linq;
+	using SLD.Tezos.Client.Model;
 
 	[TestClass]
 	public class VaultTest
@@ -17,6 +21,7 @@ namespace SLD.Tezos.Client
 			var original = new SoftwareVault.Slot
 			{
 				Name = "Name",
+				Stereotype = "Stereotype",
 				Keys = new KeyPair
 				{
 					PublicKey = new PublicKey(new byte[] { 1, 2, 3 }),
@@ -36,6 +41,7 @@ namespace SLD.Tezos.Client
 
 			// Assert equality
 			Assert.AreEqual(original.Name, restored.Name);
+			Assert.AreEqual(original.Stereotype, restored.Stereotype);
 
 			Assert.AreEqual(
 				original.Keys.PublicID,
@@ -49,6 +55,64 @@ namespace SLD.Tezos.Client
 				original.Keys.PrivateKey.EncryptedData,
 				restored.Keys.PrivateKey.EncryptedData
 				);
+		}
+
+		[TestMethod]
+		public async Task Vault_StoreIdentity()
+		{
+			var storage = new InMemoryStore();
+
+			var vault = new SoftwareVault(storage);
+			await vault.Initialize();
+
+			// Create and store identity
+			var identity = await vault.CreateIdentity("Identity", "Passphrase", "Stereotype");
+
+			// Reopen Vault
+			vault = new SoftwareVault(storage);
+			await vault.Initialize();
+
+			var storedIdentities = vault.IdentityIDs;
+
+			Assert.IsNotNull(storedIdentities);
+			Assert.AreEqual(1, storedIdentities.Count());
+
+			var storedID = storedIdentities.First();
+
+			Assert.AreEqual(identity.AccountID, storedID);
+
+			// Identities will be created via IProvideSigning
+			var restored = new Identity(
+				new PublicKey(vault.GetPublicKey(storedID)), 
+				vault);
+
+			Assert.IsNotNull(restored);
+
+			Assert.AreEqual(identity.Name, restored.Name);
+			Assert.AreEqual(identity.Stereotype, restored.Stereotype);
+			Assert.AreEqual(identity.PublicKey, restored.PublicKey);
+		}
+	}
+
+	class InMemoryStore : IStoreLocal
+	{
+		Dictionary<string, MemoryStream> files = new Dictionary<string, MemoryStream>();
+
+		public Task<IEnumerable<Stream>> OpenIdentityFilesAsync()
+		{
+			var streams = files
+				.Select(file => new MemoryStream(file.Value.ToArray()));
+
+			return Task.FromResult(streams.Cast<Stream>());
+		}
+
+		public Task<Stream> CreateIdentityFileAsync(string accountID)
+		{
+			var stream = new MemoryStream();
+
+			files.Add(accountID, stream);
+
+			return Task.FromResult(stream as Stream);
 		}
 	}
 }

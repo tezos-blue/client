@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client.Model
 {
-	using Cryptography;
-	using Security;
 	using Connections;
+	using Cryptography;
+	using Protocol;
+	using Security;
 
 	public partial class Identity : TokenStore
 	{
@@ -26,10 +27,15 @@ namespace SLD.Tezos.Client.Model
 		{
 			PublicKey = publicKey;
 			this.provider = provider;
+
+			if (provider != null)
+			{
+				provider.RestoreIdentity(this);
+			}
 		}
 
 		// SECURITY
-		public PublicKey PublicKey { get; protected set; }
+		public PublicKey PublicKey { get; set; }
 
 		public override string AccountID => PublicKey.Hash;
 
@@ -39,9 +45,38 @@ namespace SLD.Tezos.Client.Model
 
 		internal override async Task Initialize(Engine engine)
 		{
-			var info = engine.Connection.GetIdentityInfo(AccountID);
+			// Register and get info
+			var register = new RegisterIdentityTask
+			{
+				IdentityID = AccountID,
+				Name = Name,
+				Stereotype = Stereotype,
+				PublicKey = PublicKey.ToString(),
+			};
 
-			//await base.Initialize(engine);
+			register = await engine.Connection.RegisterIdentity(register);
+
+			// Initialize
+			if (register.Info != null && !register.Info.IsUnknown)
+			{
+				// Managed Accounts
+				var accounts = register.Info.Accounts.Select(info =>
+				{
+					var account = new Account(info.Name, info.AccountID)
+					{
+						Stereotype = info.Stereotype,
+					};
+
+					account.UpdateBalance(info.Balance);
+
+					return account;
+				});
+
+				foreach (var account in accounts)
+				{
+					var task = AddAccount(account);
+				}
+			}
 
 			FirePropertyChanged("TotalBalance");
 		}

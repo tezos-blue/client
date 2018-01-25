@@ -64,19 +64,19 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Common\Common.csproj">
-      <Project>{fda6e752-ecd2-4ed5-9a5e-b7f318771f8e}</Project>
+      <Project>{1c750848-25c9-447b-a84d-9b837b1a25ce}</Project>
       <Name>Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Cryptography\Cryptography.csproj">
-      <Project>{56965c1d-3408-4013-a7e3-a46ee89dab66}</Project>
+      <Project>{ed301cea-f723-40a7-b249-4312429f5665}</Project>
       <Name>Cryptography</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Simulation\Simulation.csproj">
-      <Project>{b81d4ece-0196-4481-a390-81bbf4d3c810}</Project>
+      <Project>{115fb1ee-39aa-40f4-bbd4-d86c444eefcc}</Project>
       <Name>Simulation</Name>
     </ProjectReference>
     <ProjectReference Include="..\Engine\Engine.csproj">
-      <Project>{3CB467B5-6ABB-4A0F-8FB0-A61F5EBFFE46}</Project>
+      <Project>{3cb467b5-6abb-4a0f-8fb0-a61f5ebffe46}</Project>
       <Name>Engine</Name>
     </ProjectReference>
   </ItemGroup>
