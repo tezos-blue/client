@@ -117,16 +117,6 @@ namespace SLD.Tezos.Client
 				{
 					FirePropertyChanged("DefaultIdentity");
 				}
-
-				// Initialize each identity
-				await Task.WhenAll(identities.Select(async i =>
-				{
-					Cache(i);
-					await i.Initialize(this);
-				}));
-
-				IsIdentitiesInitialized = true;
-				Trace("Identities initialized");
 			}
 			catch (Exception e)
 			{
@@ -189,14 +179,12 @@ namespace SLD.Tezos.Client
 
 			try
 			{
-				await Connection.Monitor(new[] { identity.AccountID });
+				await identity.Initialize(this);
 			}
 			catch (Exception e)
 			{
 				Trace(e);
 			}
-
-			identity.State = TokenStoreState.Online;
 
 			identities.Add(identity);
 
@@ -211,6 +199,19 @@ namespace SLD.Tezos.Client
 			}
 
 			return identity;
+		}
+
+		private async Task InitializeIdentities()
+		{
+			// Initialize each identity
+			await Task.WhenAll(identities.Select(async i =>
+			{
+				Cache(i);
+				await i.Initialize(this);
+			}));
+
+			IsIdentitiesInitialized = true;
+			Trace("Identities initialized");
 		}
 
 		private void LockAll()
@@ -320,6 +321,8 @@ namespace SLD.Tezos.Client
 		public async Task Start()
 		{
 			await DoConnect();
+
+			await InitializeIdentities();
 		}
 
 		public async Task Resume()
@@ -340,13 +343,8 @@ namespace SLD.Tezos.Client
 
 			Trace("Start Connection Process");
 
-			var accountIDs = Identities
-				.SelectMany(i => i.Accounts)
-				.Select(a => a.AccountID);
-
 			var registration = new InstanceInfo
 			{
-				MonitoredAccounts = accountIDs.ToArray(),
 				InstanceID = configuration.InstanceID,
 				Platform = configuration.Platform,
 				ApplicationVersion = configuration.ApplicationVersion,

@@ -134,7 +134,7 @@ namespace SLD.Tezos.Simulation
 				info.Stereotype = identity.Stereotype;
 
 				// Add managed accounts to info
-				var accountTasks = identity.Accounts.Select(
+				var accountTasks = identity.ManagedAccounts.Select(
 					async account => new IdentityAccountInfo
 					{
 						AccountID = account.AccountID,
@@ -168,35 +168,6 @@ namespace SLD.Tezos.Simulation
 				ManagerID = account.Manager.AccountID,
 				Balance = account.Balance,
 			};
-		}
-
-		internal Task<IdentityInfo> GetIdentityInfo(string identityID)
-		{
-			var info = new IdentityInfo
-			{
-				AccountID = identityID,
-			};
-
-			var identity = Identities.FirstOrDefault(i => i.AccountID == identityID);
-
-			if (identity != null)
-			{
-				info.Balance = identity.Balance;
-				info.Name = identity.Name;
-				info.Stereotype = identity.Stereotype;
-
-				info.Accounts = identity.Accounts.Select(
-					a => new IdentityAccountInfo
-					{
-						AccountID = a.AccountID,
-						Name = a.Name,
-						Stereotype = a.Stereotype,
-						Balance = a.Balance,
-					})
-					.ToArray();
-			}
-
-			return Task.FromResult(info);
 		}
 
 		internal async Task<decimal> GetBalance(string accountID)

@@ -85,6 +85,8 @@ namespace SLD.Tezos.Client.Security
 
 		public bool Unlock(string identityID, Passphrase passphrase)
 		{
+			if (passphrase == null) throw new ArgumentNullException(nameof(passphrase));
+
 			var identity = Get(identityID);
 
 			return identity.Unlock(passphrase);

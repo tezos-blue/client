@@ -40,7 +40,10 @@ namespace SLD.Tezos.Client.Connections
 
 		public async Task Monitor(IEnumerable<string> accountIDs)
 		{
-			await simulation.MonitorAccounts(InstanceID, accountIDs.ToArray());
+			if (accountIDs != null)
+			{
+				await simulation.MonitorAccounts(InstanceID, accountIDs.ToArray());
+			}
 		}
 
 		public void Disconnect()
@@ -116,7 +119,7 @@ namespace SLD.Tezos.Client.Connections
 
 		#endregion Operations
 
-		#region Accounts
+		#region Identities
 
 		public async Task<RegisterIdentityTask> RegisterIdentity(RegisterIdentityTask task)
 		{
@@ -124,6 +127,10 @@ namespace SLD.Tezos.Client.Connections
 
 			return await simulation.RegisterIdentity(PrepareTask(task));
 		}
+
+		#endregion Identities
+
+		#region Accounts
 
 		public async Task<decimal> GetBalance(string accountID)
 		{

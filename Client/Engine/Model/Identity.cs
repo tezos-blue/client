@@ -56,11 +56,13 @@ namespace SLD.Tezos.Client.Model
 
 			register = await engine.Connection.RegisterIdentity(register);
 
+			var identity = register.Info;
+
 			// Initialize
-			if (register.Info != null && !register.Info.IsUnknown)
+			if (identity != null && !identity.IsUnknown)
 			{
 				// Managed Accounts
-				var accounts = register.Info.Accounts.Select(info =>
+				var accounts = identity.Accounts.Select(info =>
 				{
 					var account = new Account(info.Name, info.AccountID)
 					{
@@ -76,6 +78,8 @@ namespace SLD.Tezos.Client.Model
 				{
 					var task = AddAccount(account);
 				}
+
+				State = TokenStoreState.Online;
 			}
 
 			FirePropertyChanged("TotalBalance");

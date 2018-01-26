@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
+using System.Linq;
 
 namespace SLD.Tezos.Client.Model
 {
@@ -36,6 +36,11 @@ namespace SLD.Tezos.Client.Model
 
 		public override string AccountID => simAccountID;
 		public List<ConnectionEndpoint> Listeners { get; private set; } = new List<ConnectionEndpoint>();
+
+		internal IEnumerable<SimulatedAccount> ManagedAccounts 
+			=> Accounts
+			.Where(a => a.AccountID != AccountID)
+			.Cast<SimulatedAccount>();
 
 		public void Notify(NetworkEvent netEvent)
 		{
