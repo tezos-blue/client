@@ -61,6 +61,8 @@ namespace SLD.Tezos.Client.Model
 			// Initialize
 			if (identity != null && !identity.IsUnknown)
 			{
+				UpdateBalance(identity.Balance);
+
 				// Managed Accounts
 				var accounts = identity.Accounts.Select(info =>
 				{

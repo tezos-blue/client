@@ -91,12 +91,11 @@ namespace SLD.Tezos.Client
 						if (IsTooOld(changeBalance.BlockIndex))
 							return;
 
-						TokenStore account = accounts[changeBalance.AccountID];
-
-						account.UpdateBalance(changeBalance.Balance);
-						await account.CloseOperation(changeBalance.OperationID, changeBalance.Entry);
-
-						account.State = TokenStoreState.Online;
+						if (accounts.TryGetValue(changeBalance.AccountID, out TokenStore account))
+						{
+							account.UpdateBalance(changeBalance.Balance);
+							await account.CloseOperation(changeBalance.OperationID, changeBalance.Entry);
+						}
 					}
 					break;
 
@@ -121,9 +120,10 @@ namespace SLD.Tezos.Client
 					{
 						Debug.Assert(opTimeout.AccountID != null);
 
-						TokenStore account = accounts[opTimeout.AccountID];
-
-						await account.CloseOperation(opTimeout.OperationID);
+						if (accounts.TryGetValue(opTimeout.AccountID, out TokenStore account))
+						{
+							await account.CloseOperation(opTimeout.OperationID);
+						}
 					}
 					break;
 
@@ -134,7 +134,7 @@ namespace SLD.Tezos.Client
 
 		#region Filter old messages
 
-		int CurrentBlockIndex = 0;
+		private int CurrentBlockIndex = 0;
 
 		private bool IsTooOld(int blockIndex)
 		{
@@ -145,8 +145,8 @@ namespace SLD.Tezos.Client
 			}
 
 			return blockIndex < CurrentBlockIndex;
-		} 
+		}
 
-		#endregion
+		#endregion Filter old messages
 	}
 }

@@ -161,11 +161,19 @@ namespace SLD.Tezos.Client.Security
 
 			var tasks = identityStreams.Select(stream =>
 			{
-				using (stream)
+				try
 				{
-					var slot = (Slot)formatter.Deserialize(stream);
+					using (stream)
+					{
+						var slot = (Slot)formatter.Deserialize(stream);
 
-					identities.Add(slot);
+						identities.Add(slot);
+					}
+				}
+				catch
+				{
+					// TODO Deprecated format!
+					// remove file from device
 				}
 
 				return Task.CompletedTask;
