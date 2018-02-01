@@ -45,6 +45,8 @@ namespace SLD.Tezos.Client.Model
 
 		internal override async Task Initialize(Engine engine)
 		{
+			Trace($"Initialize");
+
 			// Register and get info
 			var register = new RegisterIdentityTask
 			{
@@ -78,6 +80,8 @@ namespace SLD.Tezos.Client.Model
 
 				foreach (var account in accounts)
 				{
+					engine.Cache(account);
+
 					var task = AddAccount(account);
 				}
 
@@ -108,6 +112,8 @@ namespace SLD.Tezos.Client.Model
 
 		public async Task AddAccount(Account account)
 		{
+			Trace($"Add {account}");
+
 			account.Changed += OnAccountChanged;
 			account.SetManager(this);
 
@@ -132,6 +138,8 @@ namespace SLD.Tezos.Client.Model
 
 		internal async Task DeleteAccount(Account account, IConnection connection)
 		{
+			Trace($"Delete {account}");
+
 			await connection.RemoveStaleAccount(account.AccountID);
 
 			account.Changed -= OnAccountChanged;
@@ -181,6 +189,8 @@ namespace SLD.Tezos.Client.Model
 
 		public bool Unlock(Passphrase passphrase)
 		{
+			Trace($"Unlock");
+
 			if (provider == null) throw new InvalidOperationException("No identity provider configured.");
 
 			var result = provider.Unlock(AccountID, passphrase);
@@ -193,6 +203,8 @@ namespace SLD.Tezos.Client.Model
 
 		public void Lock()
 		{
+			Trace($"Lock");
+
 			if (provider == null) throw new InvalidOperationException("No identity provider configured.");
 
 			provider.Lock(AccountID);

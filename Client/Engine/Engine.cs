@@ -42,13 +42,17 @@ namespace SLD.Tezos.Client
 			}
 		}
 
-		private void Cache(TokenStore tokenStore)
+		internal void Cache(TokenStore tokenStore)
 		{
+			Trace($"Cache {tokenStore}");
+
 			accounts.Add(tokenStore.AccountID, tokenStore);
 		}
 
 		private void Uncache(TokenStore tokenStore)
 		{
+			Trace($"Uncache {tokenStore}");
+
 			accounts.Remove(tokenStore.AccountID);
 		}
 
@@ -58,6 +62,8 @@ namespace SLD.Tezos.Client
 
 		internal async Task<decimal> GetBalance(string accountID)
 		{
+			Trace($"Query Balance for {accountID}");
+
 			return await Connection.GetBalance(accountID);
 		}
 
@@ -79,6 +85,8 @@ namespace SLD.Tezos.Client
 			}
 
 			initializationTask = Task.Run(InitializeEngine);
+
+			Trace($"Created");
 		}
 
 		public static void SynchronizeContext(SynchronizationContext current)
@@ -90,6 +98,8 @@ namespace SLD.Tezos.Client
 		{
 			foreach (var identityID in provider.IdentityIDs)
 			{
+				Trace($"Add provider identity: {identityID}");
+
 				identities.Add(new Identity(
 					new PublicKey(provider.GetPublicKey(identityID)),
 					provider as IManageIdentities));
@@ -100,6 +110,8 @@ namespace SLD.Tezos.Client
 		{
 			try
 			{
+				Trace($"Initialize");
+
 				// Wait for all providers to be initialized
 				await Task.WhenAll(signProviders.Select(async p => await p.Initialize()));
 
@@ -137,6 +149,8 @@ namespace SLD.Tezos.Client
 		{
 			if (provider == null) throw new ArgumentNullException(nameof(provider));
 
+			Trace($"Register with priority {priority}: {provider}");
+
 			// Initialize provider
 			await provider.Initialize();
 
@@ -165,6 +179,8 @@ namespace SLD.Tezos.Client
 
 		public async Task<Identity> AddIdentity(string identityName, string passphrase, bool unlock = false)
 		{
+			Trace($"Add Identity {identityName}");
+
 			// Get identity provider
 			var provider = DefaultIdentityProvider;
 
@@ -203,6 +219,8 @@ namespace SLD.Tezos.Client
 
 		private async Task InitializeIdentities()
 		{
+			Trace($"Initialize Identities");
+
 			// Initialize each identity
 			await Task.WhenAll(identities.Select(async i =>
 			{
@@ -211,11 +229,14 @@ namespace SLD.Tezos.Client
 			}));
 
 			IsIdentitiesInitialized = true;
+
 			Trace("Identities initialized");
 		}
 
 		private void LockAll()
 		{
+			Trace($"Lock all identities");
+
 			foreach (var identity in identities)
 			{
 				identity.Lock();
@@ -268,21 +289,25 @@ namespace SLD.Tezos.Client
 
 		public async void DeleteAccount(Account account)
 		{
-				var manager = Identities.FirstOrDefault(i => i.AccountID == account.ManagerID);
+			Trace($"Delete {account}");
 
-				if (manager != null)
-				{
-					await manager.DeleteAccount(account, Connection);
-				}
+			var manager = Identities.FirstOrDefault(i => i.AccountID == account.ManagerID);
 
-				Uncache(account);
+			if (manager != null)
+			{
+				await manager.DeleteAccount(account, Connection);
+			}
+
+			Uncache(account);
 		}
 
 		private async Task RefreshAccounts()
 		{
+			Trace($"Refresh accounts");
+
 			var accounts = Identities.SelectMany(i => i.Accounts.Where(a => a.IsLive));
 
-			var tasks = accounts.Select(async a => await a.Initialize(this));
+			var tasks = accounts.Select(async a => await a.RefreshInfo(this));
 
 			await Task.WhenAll(tasks);
 		}
@@ -304,6 +329,8 @@ namespace SLD.Tezos.Client
 				{
 					_ConnectionState = value;
 
+					Trace($"ConnectionState: {value}");
+
 					FirePropertyChanged();
 					FirePropertyChanged("IsConnected");
 
@@ -320,6 +347,8 @@ namespace SLD.Tezos.Client
 
 		public async Task Start()
 		{
+			Trace($"Start");
+
 			await DoConnect();
 
 			await InitializeIdentities();
@@ -327,6 +356,8 @@ namespace SLD.Tezos.Client
 
 		public async Task Resume()
 		{
+			Trace($"Resume");
+
 			LockAll();
 
 			await RefreshAccounts();
@@ -334,6 +365,8 @@ namespace SLD.Tezos.Client
 
 		public void Suspend()
 		{
+			Trace($"Suspend");
+
 			LockAll();
 		}
 

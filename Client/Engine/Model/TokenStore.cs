@@ -93,6 +93,15 @@ namespace SLD.Tezos.Client.Model
 
 		internal async virtual Task Initialize(Engine engine)
 		{
+			Trace($"Initialize");
+
+			await RefreshInfo(engine);
+		}
+
+		internal async Task RefreshInfo(Engine engine)
+		{
+			Trace($"Refresh info");
+
 			State = TokenStoreState.Initializing;
 
 			try
@@ -212,6 +221,8 @@ namespace SLD.Tezos.Client.Model
 
 		internal async Task AddPending(Change change)
 		{
+			Trace($"Add pending: {change}");
+
 			await PendingChanges.AddSynchronized(change);
 
 			if (PendingChanges.Count == 1)
@@ -224,6 +235,8 @@ namespace SLD.Tezos.Client.Model
 
 		internal async Task CloseOperation(string operationID, AccountEntry entry = null)
 		{
+			Trace($"Close pending: {operationID}");
+
 			var cancelled = PendingChanges
 				.FirstOrDefault(c => c.OperationID == operationID);
 
@@ -266,6 +279,8 @@ namespace SLD.Tezos.Client.Model
 
 			try
 			{
+				Trace($"Complete entries");
+
 				var entries = await connection.GetAccountEntries(AccountID);
 
 				Entries = new ObservableCollection<AccountEntry>(entries);
