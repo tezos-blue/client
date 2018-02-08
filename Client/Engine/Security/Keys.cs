@@ -40,6 +40,9 @@ namespace SLD.Tezos.Client.Security
 				Enumerable.SequenceEqual(other.Data, this.Data) :
 				false;
 
+		public override int GetHashCode()
+			=> Hash.GetHashCode();
+
 		public override string ToString()
 			=> CryptoServices.EncodePrefixed(HashType.Public, Data);
 	}

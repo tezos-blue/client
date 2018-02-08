@@ -6,6 +6,7 @@
 		Prepared,
 		Submitted,
 		Confirmed,
+		Timeout,
 		Failed,
 	}
 

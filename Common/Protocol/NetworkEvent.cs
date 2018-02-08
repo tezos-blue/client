@@ -2,10 +2,14 @@
 {
 	public class NetworkEvent : ProtocolObject
 	{
+	}
+
+	public class OperationEvent : NetworkEvent
+	{
 		public string OperationID;
 	}
 
-	public class BalanceChangedEvent : NetworkEvent
+	public class BalanceChangedEvent : OperationEvent
 	{
 		public int BlockIndex;
 
@@ -31,7 +35,7 @@
 		}
 	}
 
-	public class TransactionPendingEvent : NetworkEvent
+	public class TransactionPendingEvent : OperationEvent
 	{
 		public string AccountID;
 		public string ContraAccountID;
@@ -56,7 +60,7 @@
 		}
 	}
 
-	public class TransactionTimeoutEvent : NetworkEvent
+	public class TransactionTimeoutEvent : OperationEvent
 	{
 		public string AccountID;
 	}

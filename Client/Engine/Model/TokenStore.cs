@@ -88,7 +88,7 @@ namespace SLD.Tezos.Client.Model
 
 		public override string ToString()
 		{
-			return AccountID;
+			return $"{AccountID.Substring(0, Math.Min(10, AccountID.Length))}...";
 		}
 
 		internal async virtual Task Initialize(Engine engine)

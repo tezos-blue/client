@@ -39,7 +39,8 @@ namespace SLD.Tezos.Simulation
 				};
 
 				Accounts.Add(account);
-				MyIdentity.AddAccount(account);
+
+				var addTask = MyIdentity.AddAccount(account);
 			}
 
 			InitializeBlockchain();

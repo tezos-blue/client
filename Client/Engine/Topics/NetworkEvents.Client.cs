@@ -44,11 +44,8 @@ namespace SLD.Tezos.Client
 
 						if (identity != null)
 						{
-							var account = identity.Accounts
-								.FirstOrDefault(a => a.AccountID == originate.AccountID)
-								as Account;
-
-							if (account != null)
+							if (identity.Accounts
+								.FirstOrDefault(a => a.AccountID == originate.AccountID) is Account account)
 							{
 								// OriginatePendingEvent received before
 								await account.CloseOperation(originate.OperationID, originate.Entry);
@@ -127,8 +124,14 @@ namespace SLD.Tezos.Client
 					}
 					break;
 
+				case ServiceEvent svc:
+					{
+						OnServiceEvent(svc);
+					}
+					break;
+
 				default:
-					throw new NotImplementedException();
+					break;
 			}
 		}
 
@@ -148,5 +151,51 @@ namespace SLD.Tezos.Client
 		}
 
 		#endregion Filter old messages
+
+		#region Service messages
+
+		public ServiceEvent lastServiceEvent;
+
+		#region ServiceState
+
+		private ServiceState _ServiceState;
+
+		public event Action<Engine> ServiceStateChanged;
+
+		public ServiceState ServiceState
+		{
+			get => _ServiceState;
+
+			private set
+			{
+				if (_ServiceState != value)
+				{
+					_ServiceState = value;
+					FirePropertyChanged();
+
+					ServiceStateChanged?.Invoke(this);
+				}
+			}
+		}
+
+		#endregion ServiceState
+
+		public string LastServiceEventID 
+			=> lastServiceEvent?.EventID;
+
+		public ProtocolObject LastServiceEventData 
+			=> lastServiceEvent?.Data?.ToModelObject<ProtocolObject>();
+
+		private void OnServiceEvent(ServiceEvent serviceEvent)
+		{
+			lastServiceEvent = serviceEvent;
+
+			ServiceState = serviceEvent.ServiceState;
+
+			FirePropertyChanged(nameof(LastServiceEventID));
+			FirePropertyChanged(nameof(LastServiceEventData));
+		}
+
+		#endregion Service messages
 	}
 }
