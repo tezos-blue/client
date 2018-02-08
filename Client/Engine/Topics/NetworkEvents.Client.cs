@@ -9,6 +9,8 @@ namespace SLD.Tezos.Client
 
 	partial class Engine
 	{
+		public event Action<Engine, ServiceEvent> ServiceEventReceived;
+
 		private async void OnNetworkEvent(NetworkEvent networkEvent)
 		{
 			switch (networkEvent)
@@ -127,6 +129,8 @@ namespace SLD.Tezos.Client
 				case ServiceEvent svc:
 					{
 						OnServiceEvent(svc);
+
+						ServiceEventReceived?.Invoke(this, svc);
 					}
 					break;
 
@@ -154,11 +158,7 @@ namespace SLD.Tezos.Client
 
 		#region Service messages
 
-		public ServiceEvent lastServiceEvent;
-
-		#region ServiceState
-
-		private ServiceState _ServiceState;
+		private ServiceState _ServiceState = ServiceState.Operational;
 
 		public event Action<Engine> ServiceStateChanged;
 
@@ -178,22 +178,9 @@ namespace SLD.Tezos.Client
 			}
 		}
 
-		#endregion ServiceState
-
-		public string LastServiceEventID 
-			=> lastServiceEvent?.EventID;
-
-		public ProtocolObject LastServiceEventData 
-			=> lastServiceEvent?.Data?.ToModelObject<ProtocolObject>();
-
 		private void OnServiceEvent(ServiceEvent serviceEvent)
 		{
-			lastServiceEvent = serviceEvent;
-
 			ServiceState = serviceEvent.ServiceState;
-
-			FirePropertyChanged(nameof(LastServiceEventID));
-			FirePropertyChanged(nameof(LastServiceEventData));
 		}
 
 		#endregion Service messages
