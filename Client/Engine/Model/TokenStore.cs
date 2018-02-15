@@ -15,8 +15,9 @@ namespace SLD.Tezos.Client.Model
 		Initializing,
 		Online,
 		Offline,
-		Unknown,
-		Changing
+		UnheardOf,
+		Changing,
+		Retired,
 	}
 
 	public abstract class TokenStore : ClientObject
@@ -119,7 +120,7 @@ namespace SLD.Tezos.Client.Model
 				switch (e.ServerError)
 				{
 					case ServerError.AccountNotFound:
-						State = TokenStoreState.Unknown;
+						State = TokenStoreState.UnheardOf;
 						break;
 
 					default:

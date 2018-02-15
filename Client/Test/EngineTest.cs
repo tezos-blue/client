@@ -293,7 +293,7 @@ namespace SLD.Tezos.Client
 
 			Assert.IsNotNull(account);
 
-			Assert.AreEqual(TokenStoreState.Unknown, account.State);
+			Assert.AreEqual(TokenStoreState.UnheardOf, account.State);
 
 			Assert.IsFalse(account.HasPendingChanges);
 		}
@@ -352,7 +352,7 @@ namespace SLD.Tezos.Client
 
 			var destination = source.Accounts[1];
 
-			Assert.AreEqual(TokenStoreState.Unknown, destination.State);
+			Assert.AreEqual(TokenStoreState.UnheardOf, destination.State);
 
 			Assert.IsFalse(destination.HasPendingChanges);
 			Assert.IsFalse(source.HasPendingChanges);

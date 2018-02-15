@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace SLD.Tezos.Client
 {
 	using Connections;
 	using OS;
 	using Simulation;
-	using System.Diagnostics;
 
 	public class ClientTest
 	{
@@ -26,6 +26,15 @@ namespace SLD.Tezos.Client
 				CallLatency = TimeSpan.FromSeconds(0),
 			};
 
+			PrepareSimulation(parameters);
+
+			await Engine.Start();
+
+			Trace.WriteLine("--");
+		}
+
+		protected void PrepareSimulation(SimulationParameters parameters)
+		{
 			Connection = new SimulatedConnection(parameters);
 
 			Engine = new Engine(
@@ -34,10 +43,6 @@ namespace SLD.Tezos.Client
 					Connection = Connection,
 					LocalStorage = new LocalStorageSimulation(parameters),
 				});
-
-			await Engine.Start();
-
-			Trace.WriteLine("--");
 		}
 	}
 }

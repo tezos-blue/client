@@ -235,11 +235,14 @@ namespace SLD.Tezos.Client
 
 		private void LockAll()
 		{
-			Trace($"Lock all identities");
-
-			foreach (var identity in identities)
+			if (identities != null)
 			{
-				identity.Lock();
+				Trace($"Lock all identities");
+
+				foreach (var identity in identities)
+				{
+					identity.Lock();
+				} 
 			}
 		}
 
@@ -316,7 +319,7 @@ namespace SLD.Tezos.Client
 
 		#region ConnectionState
 
-		private ConnectionState _ConnectionState;
+		private ConnectionState _ConnectionState = ConnectionState.Disconnected;
 
 		public event Action<ConnectionState> ConnectionStateChanged;
 
@@ -339,7 +342,8 @@ namespace SLD.Tezos.Client
 			}
 		}
 
-		public bool IsConnected => ConnectionState == ConnectionState.Connected;
+		public bool IsConnected 
+			=> ConnectionState >= ConnectionState.Connected;
 
 		#endregion ConnectionState
 

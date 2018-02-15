@@ -10,5 +10,6 @@ namespace SLD.Tezos.Client.Connections
         Disconnected,
         Connecting,
         Connected,
+		Online
     }
 }

@@ -109,7 +109,7 @@ namespace SLD.Tezos.Client
 								.FirstOrDefault(a => a.AccountID == opTimeout.AccountID) is Account account)
 							{
 								await account.CloseOperation(opTimeout.OperationID);
-								account.State = TokenStoreState.Unknown;
+								account.State = TokenStoreState.UnheardOf;
 							}
 						}
 					}
