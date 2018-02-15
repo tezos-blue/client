@@ -48,7 +48,7 @@ namespace SLD.Tezos.Client.Connections
 
 		#region Connect / Disconnect
 
-		Task Connect(InstanceInfo registration);
+		Task<ConnectionState> Connect(InstanceInfo registration);
 
 		void Disconnect();
 

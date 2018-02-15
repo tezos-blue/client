@@ -16,4 +16,10 @@
 
 		public string Data;
 	}
+
+	public static class ServiceEventID
+	{
+		public const string ServiceStateChanged = nameof(ServiceStateChanged);
+		public const string CycleCleanup = nameof(CycleCleanup);
+	}
 }

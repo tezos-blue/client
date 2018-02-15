@@ -71,8 +71,6 @@ namespace SLD.Tezos.Client
 
 		private EngineConfiguration configuration;
 
-		private Task initializationTask;
-
 		public Engine(EngineConfiguration configuration)
 		{
 			this.configuration = configuration;
@@ -83,8 +81,6 @@ namespace SLD.Tezos.Client
 			{
 				signProviders.Add(new SoftwareVault(configuration.LocalStorage));
 			}
-
-			initializationTask = Task.Run(InitializeEngine);
 
 			Trace($"Created");
 		}
@@ -106,7 +102,7 @@ namespace SLD.Tezos.Client
 			}
 		}
 
-		private async Task InitializeEngine()
+		private async Task InitializeProviders()
 		{
 			try
 			{
@@ -353,8 +349,12 @@ namespace SLD.Tezos.Client
 		{
 			Trace($"Start");
 
-			await DoConnect();
+			// Parallel: Load Identities and connect to Service
+			await Task.WhenAll(
+				InitializeProviders(),
+				ConnectToService());
 
+			// Connected now, get info about identities
 			await InitializeIdentities();
 		}
 
@@ -374,10 +374,8 @@ namespace SLD.Tezos.Client
 			LockAll();
 		}
 
-		private async Task DoConnect()
+		private async Task ConnectToService()
 		{
-			await initializationTask;
-
 			Trace("Start Connection Process");
 
 			var registration = new InstanceInfo
@@ -387,7 +385,8 @@ namespace SLD.Tezos.Client
 				ApplicationVersion = configuration.ApplicationVersion,
 			};
 
-			while (ConnectionState != ConnectionState.Connected)
+			// Repeat until connected
+			while (!IsConnected)
 			{
 				ConnectionState = ConnectionState.Connecting;
 
@@ -395,9 +394,7 @@ namespace SLD.Tezos.Client
 				{
 					Trace("Try to connect...");
 
-					await Connection.Connect(registration);
-
-					ConnectionState = ConnectionState.Connected;
+					ConnectionState = await Connection.Connect(registration);
 				}
 				catch
 				{

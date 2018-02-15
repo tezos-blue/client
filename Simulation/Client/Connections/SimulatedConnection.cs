@@ -23,19 +23,41 @@ namespace SLD.Tezos.Client.Connections
 		public SimulatedConnection(SimulationParameters parameters = null)
 		{
 			simulation = new NetworkSimulation(parameters);
+
+			if (parameters != null)
+			{
+				_ServiceState = parameters.ServiceState;
+			}
 		}
 
 		public event Action<NetworkEvent> EventReceived;
 
 		private string InstanceID => LocalStorageSimulation.instanceID;
 
-		public async Task Connect(InstanceInfo registration)
+		public async Task<ConnectionState> Connect(InstanceInfo registration)
 		{
 			await Task.Delay(50);
+
 			endpoint = simulation.RegisterConnection(InstanceID);
 			endpoint.EventFired += FireEventReceived;
 
-			await Monitor(registration.MonitoredAccounts);
+			// TODO remove MonitoredAccounts from registration
+			//await Monitor(registration.MonitoredAccounts);
+
+			switch (ServiceState)
+			{
+				case ServiceState.Operational:
+					return ConnectionState.Online;
+
+				case ServiceState.Limited:
+					return ConnectionState.Connected;
+
+				case ServiceState.Down:
+				default:
+					throw new ApplicationException();
+			}
+
+
 		}
 
 		public async Task Monitor(IEnumerable<string> accountIDs)
@@ -79,6 +101,38 @@ namespace SLD.Tezos.Client.Connections
 				Trace(e);
 			}
 		}
+
+
+		#region ServiceState
+
+		ServiceState _ServiceState = ServiceState.Operational;
+
+		public ServiceState ServiceState
+		{
+			get
+			{
+				return _ServiceState;
+			}
+
+
+			set
+			{
+				if (_ServiceState != value)
+				{
+					_ServiceState = value;
+
+					FireEventReceived(new ServiceEvent
+					{
+						ServiceState = value,
+						EventID = ServiceEventID.ServiceStateChanged,
+					});
+				}
+			}
+		}
+
+		#endregion ServiceState
+
+
 
 		#region Operations
 
