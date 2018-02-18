@@ -81,7 +81,7 @@ namespace SLD.Tezos.Client.Connections
 
 		public Task<AccountEntry[]> GetAccountEntries(string accountID)
 		{
-			throw new System.NotImplementedException();
+			return Task.FromResult(new AccountEntry[0]);
 		}
 
 		public async Task Timeout(ProtectedTask task)

@@ -170,10 +170,12 @@ namespace SLD.Tezos.Client.Security
 						identities.Add(slot);
 					}
 				}
+				catch (SerializationException e)
+				{
+					// TODO Deprecated format, remove file from device
+				}
 				catch
 				{
-					// TODO Deprecated format!
-					// remove file from device
 				}
 
 				return Task.CompletedTask;
