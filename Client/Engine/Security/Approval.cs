@@ -15,9 +15,21 @@ namespace SLD.Tezos.Client.Security
 
 		public ProtectedTask Task { get; internal set; }
 		public bool NeedPassphrase { get; internal set; }
-		public Passphrase Passphrase { get; set; }
 		public string LastError { get; internal set; }
 		public bool IsApproved { get; private set; }
+
+		public string PassphraseText
+		{
+			set
+			{
+				if (value != null)
+				{
+					Passphrase = new Passphrase(value); 
+				}
+			}
+		}
+
+		internal Passphrase Passphrase { get; private set; }
 
 		public void SetComplete(bool isApproved)
 		{
