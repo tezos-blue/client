@@ -6,6 +6,7 @@ namespace SLD.Tezos.Client.Security
 {
 	using Cryptography;
 	using Protocol;
+	using Model;
 
 	public class Approval : ClientObject
 	{
@@ -14,7 +15,7 @@ namespace SLD.Tezos.Client.Security
 		public event Action TimedOut;
 
 		public ProtectedTask Task { get; internal set; }
-		public bool NeedPassphrase { get; internal set; }
+		public Identity Signer { get; internal set; }
 		public string LastError { get; internal set; }
 		public bool IsApproved { get; private set; }
 

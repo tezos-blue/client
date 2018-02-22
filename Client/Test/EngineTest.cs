@@ -17,7 +17,7 @@ namespace SLD.Tezos.Client
 
 			Assert.IsNull(Engine.DefaultIdentity);
 
-			await Engine.AddIdentity("Identity", "", true);
+			await Engine.AddIdentity("Stereotype", "Identity", "", true);
 		}
 
 		[TestMethod]

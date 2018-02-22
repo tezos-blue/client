@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client
 {
+	using Cryptography;
 	using Connections;
 	using Model;
 	using OS;
@@ -173,7 +174,7 @@ namespace SLD.Tezos.Client
 
 		public IEnumerable<Identity> Identities => identities;
 
-		public async Task<Identity> AddIdentity(string identityName, string passphrase, bool unlock = false)
+		public async Task<Identity> AddIdentity(string stereotype, string identityName, Passphrase passphrase, bool unlock = false)
 		{
 			Trace($"Add Identity {identityName}");
 
@@ -185,7 +186,7 @@ namespace SLD.Tezos.Client
 				throw new ApplicationException("No identity provider configured");
 			}
 
-			var identity = await provider.CreateIdentity(identityName, passphrase);
+			var identity = await provider.CreateIdentity(identityName, passphrase, stereotype);
 
 			Cache(identity);
 

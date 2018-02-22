@@ -93,7 +93,7 @@ namespace SLD.Tezos.Client
 				var approval = new Approval
 				{
 					Task = task,
-					NeedPassphrase = !signingIdentity.IsUnlocked,
+					Signer = signingIdentity,
 				};
 
 				// Send approval to UI and wait for completion
@@ -109,7 +109,7 @@ namespace SLD.Tezos.Client
 				}
 
 				// Unlock identity if needed
-				if (approval.NeedPassphrase)
+				if (signingIdentity.IsLocked)
 				{
 					signingIdentity.Unlock(approval.Passphrase);
 				}

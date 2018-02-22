@@ -37,7 +37,7 @@ namespace SLD.Tezos.Client
 		[ExpectedException(typeof(ArgumentNullException))]
 		public async Task Security_MustSetPassword()
 		{
-			await Engine.AddIdentity("Identity", null);
+			await Engine.AddIdentity("Stereotype", "Identity", null);
 		}
 
 		// SECURITY
@@ -45,7 +45,7 @@ namespace SLD.Tezos.Client
 		[TestMethod]
 		public async Task Security_NewIdentityLocked()
 		{
-			var identity = await Engine.AddIdentity("Identity", "My passphrase");
+			var identity = await Engine.AddIdentity("Stereotype", "Identity", "My passphrase");
 
 			Assert.IsTrue(identity.IsLocked);
 
@@ -59,7 +59,7 @@ namespace SLD.Tezos.Client
 		[TestMethod]
 		public async Task Security_WrongPassphrase()
 		{
-			var identity = await Engine.AddIdentity("Identity", "My passphrase");
+			var identity = await Engine.AddIdentity("Stereotype", "Identity", "My passphrase");
 
 			var unlocked = identity.Unlock("Wrong passphrase");
 			Assert.IsFalse(unlocked);
@@ -71,7 +71,7 @@ namespace SLD.Tezos.Client
 		[TestMethod]
 		public async Task Security_NewIdentityKeepUnlocked()
 		{
-			var identity = await Engine.AddIdentity("Identity", "My passphrase", true);
+			var identity = await Engine.AddIdentity("Stereotype", "Identity", "My passphrase", true);
 
 			Assert.IsTrue(identity.IsUnlocked);
 		}
@@ -81,7 +81,7 @@ namespace SLD.Tezos.Client
 		[TestMethod]
 		public async Task Security_LockOnPauseResume()
 		{
-			var identity = await Engine.AddIdentity("Identity", "My passphrase", true);
+			var identity = await Engine.AddIdentity("Stereotype", "Identity", "My passphrase", true);
 
 			Engine.Suspend();
 
