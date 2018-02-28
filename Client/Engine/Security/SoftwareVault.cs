@@ -16,6 +16,8 @@ namespace SLD.Tezos.Client.Security
 		// Create valid identities
 		Task<Identity> CreateIdentity(string name, Passphrase passphrase, string stereotype = Identity.DefaultStereotype);
 
+		Task<Identity> ImportIdentity(string name, KeyPair keyPair, string stereotype = Identity.DefaultStereotype);
+
 		// Fill Metadata
 		void RestoreIdentity(Identity identity);
 
@@ -47,6 +49,13 @@ namespace SLD.Tezos.Client.Security
 
 			// Create keys
 			var keyPair = Guard.CreateKeyPair(passphrase);
+
+			return await ImportIdentity(name, keyPair, stereotype);
+		}
+
+		public async Task<Identity> ImportIdentity(string name, KeyPair keyPair, string stereotype = Identity.DefaultStereotype)
+		{
+			if (keyPair == null) throw new ArgumentNullException(nameof(keyPair), "Identities must have keys");
 
 			// Store in slot
 			var slot = new Slot

@@ -113,8 +113,6 @@ namespace SLD.Tezos.Client
 				await Task.WhenAll(signProviders.Select(async p => await p.Initialize()));
 
 				// Get identities from providers
-				identities = new ObservableCollection<Identity>();
-
 				foreach (var provider in signProviders)
 				{
 					AddProviderIdentities(provider);
@@ -168,7 +166,7 @@ namespace SLD.Tezos.Client
 
 		#region Identities
 
-		private ObservableCollection<Identity> identities;
+		private ObservableCollection<Identity> identities = new ObservableCollection<Identity>();
 
 		public Identity DefaultIdentity => Identities?.FirstOrDefault();
 
@@ -188,6 +186,19 @@ namespace SLD.Tezos.Client
 
 			var identity = await provider.CreateIdentity(identityName, passphrase, stereotype);
 
+			await AddIdentity(identity);
+
+			if (unlock)
+			{
+				identity.Unlock(passphrase);
+			}
+
+			return identity;
+		}
+
+		// Internal add
+		private async Task AddIdentity(Identity identity)
+		{
 			Cache(identity);
 
 			try
@@ -205,11 +216,23 @@ namespace SLD.Tezos.Client
 			{
 				FirePropertyChanged("DefaultIdentity");
 			}
+		}
 
-			if (unlock)
+		public async Task<Identity> ImportIdentity(string stereotype, string identityName, KeyPair keyPair)
+		{
+			Trace($"Import Identity {identityName}");
+
+			// Get identity provider
+			var provider = DefaultIdentityProvider;
+
+			if (provider == null)
 			{
-				identity.Unlock(passphrase);
+				throw new ApplicationException("No identity provider configured");
 			}
+
+			var identity = await provider.ImportIdentity(identityName, keyPair, stereotype);
+
+			await AddIdentity(identity);
 
 			return identity;
 		}

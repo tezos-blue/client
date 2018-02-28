@@ -65,11 +65,39 @@ namespace SLD.Tezos.Cryptography
 
 		public static bool IsKeyMatch(byte[] publicKey, byte[] privateKey)
 		{
+			ArraySegment<byte> lowerHalf = PublicFromPrivate(privateKey);
+
+			return Enumerable.SequenceEqual(lowerHalf, publicKey);
+		}
+
+		public static (byte[], byte[]) ImportEd25519(string edsk)
+		{
+			var privateKey = DecodePrefixed(HashType.Private, edsk);
+
+			return (PublicFromPrivate(privateKey).ToArray(), privateKey);
+		}
+
+		public static bool IsValidEd25519(string edsk)
+		{
+			try
+			{
+				ImportEd25519(edsk);
+
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
+
+		private static ArraySegment<byte> PublicFromPrivate(byte[] privateKey)
+		{
 			var halfSize = Ed25519.ExpandedPrivateKeySizeInBytes / 2;
 
 			var lowerHalf = new ArraySegment<byte>(privateKey, halfSize, halfSize);
 
-			return Enumerable.SequenceEqual(lowerHalf, publicKey);
+			return lowerHalf;
 		}
 
 		#endregion Keys
