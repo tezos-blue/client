@@ -9,6 +9,47 @@ namespace SLD.Tezos.Client
 	using Protocol;
 	using Security;
 
+	/// <summary>
+	/// Result of a signing process
+	/// </summary>
+	public enum SigningResult
+	{
+		/// <summary>
+		/// Process is underway
+		/// </summary>
+		Pending,
+
+		/// <summary>
+		/// Approved by user, not successfully signed yet
+		/// </summary>
+		Approved,
+
+		/// <summary>
+		/// Successfully signed
+		/// </summary>
+		Signed,
+
+		/// <summary>
+		/// Cancelled by user
+		/// </summary>
+		Cancelled,
+
+		/// <summary>
+		/// Not decided by user withing Approval.Timeout 
+		/// </summary>
+		Timeout,
+
+		/// <summary>
+		/// Could not unlock identity with given credentials
+		/// </summary>
+		InvalidCredentials,
+
+		/// <summary>
+		/// The provider failed to sign the transaction
+		/// </summary>
+		ProviderFailed,
+	}
+
 	/*
 		
 		IProvideSigning interface
@@ -77,6 +118,8 @@ namespace SLD.Tezos.Client
 
 		internal async Task<bool> Sign(ProtectedTask task, Identity signingIdentity)
 		{
+			Approval approval = null;
+
 			// Find signing provider
 			var provider = signProviders
 				.FirstOrDefault(p => p.Contains(signingIdentity.AccountID));
@@ -90,10 +133,11 @@ namespace SLD.Tezos.Client
 			// Approval mechanism registered?
 			if (ApprovalRequired != null)
 			{
-				var approval = new Approval
+				approval = new Approval
 				{
 					Task = task,
 					Signer = signingIdentity,
+					Timeout = ApprovalTimeout,
 				};
 
 				// Send approval to UI and wait for completion
@@ -102,17 +146,29 @@ namespace SLD.Tezos.Client
 					ApprovalRequired(approval);
 				});
 
-				if (!await approval.Complete())
+				WaitForUser:
+				Trace("Wait for user decision");
+
+				var userResult = await approval.GetUserResult();
+
+				if (userResult != SigningResult.Approved)
 				{
 					// Cancel or timeout
+					approval.Close(userResult);
 					return false;
 				}
 
 				// Unlock identity if needed
 				if (signingIdentity.IsLocked)
 				{
-					signingIdentity.Unlock(approval.Passphrase);
-				}
+					if(!signingIdentity.Unlock(approval.Passphrase))
+					{
+						// Wrong credentials
+						approval.Retry(SigningResult.InvalidCredentials);
+
+						goto WaitForUser;
+					}
+				} 
 			}
 
 			// Sign
@@ -120,12 +176,18 @@ namespace SLD.Tezos.Client
 
 			if (await provider.Sign(signingIdentity.AccountID, operationData, out byte[] signature))
 			{
+				// Success
 				Guard.ApplySignature(task, operationData, signature);
 
+				approval?.Close(SigningResult.Signed);
 				return true;
 			}
-
-			return false;
+			else
+			{
+				// Provider failure
+				approval?.Close(SigningResult.ProviderFailed);
+				return false;
+			}
 		}
 	}
 }
