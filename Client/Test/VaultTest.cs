@@ -1,15 +1,15 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client
 {
-	using Security;
+	using Model;
 	using OS;
-	using System.Collections.Generic;
-	using System.Threading.Tasks;
-	using System.Linq;
-	using SLD.Tezos.Client.Model;
+	using Security;
 
 	[TestClass]
 	public class VaultTest
@@ -83,7 +83,7 @@ namespace SLD.Tezos.Client
 
 			// Identities will be created via IProvideSigning
 			var restored = new Identity(
-				new PublicKey(vault.GetPublicKey(storedID)), 
+				new PublicKey(vault.GetPublicKey(storedID)),
 				vault);
 
 			Assert.IsNotNull(restored);
@@ -94,9 +94,9 @@ namespace SLD.Tezos.Client
 		}
 	}
 
-	class InMemoryStore : IStoreLocal
+	internal class InMemoryStore : IStoreLocal
 	{
-		Dictionary<string, MemoryStream> files = new Dictionary<string, MemoryStream>();
+		private Dictionary<string, MemoryStream> files = new Dictionary<string, MemoryStream>();
 
 		public Task<IEnumerable<Stream>> OpenIdentityFilesAsync()
 		{
@@ -113,6 +113,20 @@ namespace SLD.Tezos.Client
 			files.Add(accountID, stream);
 
 			return Task.FromResult(stream as Stream);
+		}
+
+		public Task DeleteIdentity(string identityID)
+		{
+			files.Remove(identityID);
+
+			return Task.CompletedTask;
+		}
+
+		public Task PurgeAll()
+		{
+			files.Clear();
+
+			return Task.CompletedTask;
 		}
 	}
 }

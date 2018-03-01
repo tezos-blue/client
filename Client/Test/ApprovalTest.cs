@@ -1,21 +1,19 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client
 {
-	using Security;
 	using Model;
-
-	using System.Threading.Tasks;
-	using SLD.Tezos.Protocol;
+	using Security;
 
 	[TestClass]
 	public class ApprovalTest : ClientTest
 	{
-		const string Right = "Right";
-		const string Wrong = "Wrong";
+		private const string Right = "Right";
+		private const string Wrong = "Wrong";
 
-		Identity manager;
+		private Identity manager;
 
 		[TestInitialize]
 		public async Task BeforeEach()
@@ -24,7 +22,6 @@ namespace SLD.Tezos.Client
 
 			manager = await Engine.AddIdentity("Stereotype", "Identity", Right);
 		}
-
 
 		[TestMethod]
 		public async Task Approval_Process()
@@ -114,6 +111,5 @@ namespace SLD.Tezos.Client
 
 			Assert.AreEqual(SigningResult.Cancelled, result);
 		}
-
 	}
 }

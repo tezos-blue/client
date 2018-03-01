@@ -9,5 +9,9 @@ namespace SLD.Tezos.Client.OS
 		Task<IEnumerable<Stream>> OpenIdentityFilesAsync();
 
 		Task<Stream> CreateIdentityFileAsync(string identityID);
+
+		Task DeleteIdentity(string identityID);
+
+		Task PurgeAll();
 	}
 }

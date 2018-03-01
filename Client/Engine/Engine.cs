@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client
 {
-	using Cryptography;
 	using Connections;
+	using Cryptography;
 	using Model;
 	using OS;
 	using Protocol;
@@ -196,6 +196,35 @@ namespace SLD.Tezos.Client
 			return identity;
 		}
 
+		public async Task<Identity> ImportIdentity(string stereotype, string identityName, KeyPair keyPair)
+		{
+			Trace($"Import Identity {identityName}");
+
+			// Get identity provider
+			var provider = DefaultIdentityProvider;
+
+			if (provider == null)
+			{
+				throw new ApplicationException("No identity provider configured");
+			}
+
+			var identity = await provider.ImportIdentity(identityName, keyPair, stereotype);
+
+			await AddIdentity(identity);
+
+			return identity;
+		}
+
+		public Task PurgeAll()
+		{
+			accounts.Clear();
+			identities.Clear();
+
+			FirePropertyChanged("DefaultIdentity");
+
+			return configuration?.LocalStorage?.PurgeAll();
+		}
+
 		// Internal add
 		private async Task AddIdentity(Identity identity)
 		{
@@ -216,25 +245,6 @@ namespace SLD.Tezos.Client
 			{
 				FirePropertyChanged("DefaultIdentity");
 			}
-		}
-
-		public async Task<Identity> ImportIdentity(string stereotype, string identityName, KeyPair keyPair)
-		{
-			Trace($"Import Identity {identityName}");
-
-			// Get identity provider
-			var provider = DefaultIdentityProvider;
-
-			if (provider == null)
-			{
-				throw new ApplicationException("No identity provider configured");
-			}
-
-			var identity = await provider.ImportIdentity(identityName, keyPair, stereotype);
-
-			await AddIdentity(identity);
-
-			return identity;
 		}
 
 		private async Task InitializeIdentities()
@@ -262,7 +272,7 @@ namespace SLD.Tezos.Client
 				foreach (var identity in identities)
 				{
 					identity.Lock();
-				} 
+				}
 			}
 		}
 
@@ -362,7 +372,7 @@ namespace SLD.Tezos.Client
 			}
 		}
 
-		public bool IsConnected 
+		public bool IsConnected
 			=> ConnectionState >= ConnectionState.Connected;
 
 		#endregion ConnectionState

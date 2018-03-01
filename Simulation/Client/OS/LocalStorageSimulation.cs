@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -7,7 +8,6 @@ using System.Threading.Tasks;
 namespace SLD.Tezos.Client.OS
 {
 	using Simulation;
-	using System;
 
 	public class LocalStorageSimulation : IStoreLocal
 	{
@@ -25,7 +25,6 @@ namespace SLD.Tezos.Client.OS
 			return Task.FromResult(new MemoryStream() as Stream);
 		}
 
-
 		public Task<IEnumerable<Stream>> OpenIdentityFilesAsync()
 		{
 			if (Parameters.Simulation != null)
@@ -41,6 +40,16 @@ namespace SLD.Tezos.Client.OS
 		public Task<string> GetInstanceID()
 		{
 			return Task.FromResult(instanceID);
+		}
+
+		public Task DeleteIdentity(string identityID)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task PurgeAll()
+		{
+			throw new NotImplementedException();
 		}
 
 		private Stream MakeOutput(ClientObject item)

@@ -35,7 +35,7 @@ namespace SLD.Tezos.Client
 		Cancelled,
 
 		/// <summary>
-		/// Not decided by user withing Approval.Timeout 
+		/// Not decided by user withing Approval.Timeout
 		/// </summary>
 		Timeout,
 
@@ -51,7 +51,7 @@ namespace SLD.Tezos.Client
 	}
 
 	/*
-		
+
 		IProvideSigning interface
 
 		To be implemented by keepers of private keys.
@@ -83,11 +83,10 @@ namespace SLD.Tezos.Client
 		Task<bool> Sign(string identityID, byte[] data, out byte[] signature);
 
 		/// <summary>
-		/// Determines whether an identity 
+		/// Determines whether an identity
 		/// </summary>
 		/// <returns><c>true</c> if can sign for the identity</returns>
 		bool Contains(string identityID);
-
 
 		/// <summary>
 		/// Gets the public key for an identity.
@@ -96,7 +95,7 @@ namespace SLD.Tezos.Client
 	}
 
 	/*
-		
+
 		Approval and Signing
 
 		Before finally signing an operation, applications can inject one or more approval mechanisms.
@@ -106,6 +105,7 @@ namespace SLD.Tezos.Client
 		All Signing in the Engine happens here.
 
 	*/
+
 	partial class Engine
 	{
 		/// <summary>
@@ -161,14 +161,14 @@ namespace SLD.Tezos.Client
 				// Unlock identity if needed
 				if (signingIdentity.IsLocked)
 				{
-					if(!signingIdentity.Unlock(approval.Passphrase))
+					if (!signingIdentity.Unlock(approval.Passphrase))
 					{
 						// Wrong credentials
 						approval.Retry(SigningResult.InvalidCredentials);
 
 						goto WaitForUser;
 					}
-				} 
+				}
 			}
 
 			// Sign
