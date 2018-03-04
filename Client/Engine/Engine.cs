@@ -186,7 +186,7 @@ namespace SLD.Tezos.Client
 
 			var identity = await provider.CreateIdentity(identityName, passphrase, stereotype);
 
-			await AddIdentity(identity);
+			var initTask = AddIdentity(identity);
 
 			if (unlock)
 			{
@@ -210,7 +210,7 @@ namespace SLD.Tezos.Client
 
 			var identity = await provider.ImportIdentity(identityName, keyPair, stereotype);
 
-			await AddIdentity(identity);
+			var initTask = AddIdentity(identity);
 
 			return identity;
 		}
@@ -228,8 +228,17 @@ namespace SLD.Tezos.Client
 		// Internal add
 		private async Task AddIdentity(Identity identity)
 		{
+			// Add to known
 			Cache(identity);
 
+			identities.Add(identity);
+
+			if (identities.Count == 1)
+			{
+				FirePropertyChanged("DefaultIdentity");
+			}
+
+			// Initialize
 			try
 			{
 				await identity.Initialize(this);
@@ -237,13 +246,6 @@ namespace SLD.Tezos.Client
 			catch (Exception e)
 			{
 				Trace(e);
-			}
-
-			identities.Add(identity);
-
-			if (identities.Count == 1)
-			{
-				FirePropertyChanged("DefaultIdentity");
 			}
 		}
 

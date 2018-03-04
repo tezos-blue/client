@@ -179,7 +179,7 @@ namespace SLD.Tezos.Client.Security
 						identities.Add(slot);
 					}
 				}
-				catch (SerializationException e)
+				catch (SerializationException)
 				{
 					// TODO Deprecated format, remove file from device
 				}
@@ -268,9 +268,10 @@ namespace SLD.Tezos.Client.Security
 				Name = info.GetString("Name");
 				Stereotype = info.GetString("Stereotype");
 
-				Keys = new KeyPair();
-
-				Keys.PublicKey = (PublicKey)info.GetValue("PublicKey", typeof(PublicKey));
+				Keys = new KeyPair
+				{
+					PublicKey = (PublicKey)info.GetValue("PublicKey", typeof(PublicKey))
+				};
 
 				var encryptedPrivate = (byte[])info.GetValue("PrivateKey", typeof(byte[]));
 

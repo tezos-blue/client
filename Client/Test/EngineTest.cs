@@ -21,17 +21,23 @@ namespace SLD.Tezos.Client
 		}
 
 		[TestMethod]
-		public void Engine_Initialized()
+		public async Task Engine_Initialized()
 		{
 			var identity = Engine.DefaultIdentity;
 
 			Assert.IsNotNull(identity);
+
+			Assert.AreEqual(TokenStoreState.Initializing, identity.State);
 
 			Assert.AreEqual(1, identity.Accounts.Count);
 
 			var identityAccount = identity.Accounts[0];
 
 			Assert.IsNotNull(identityAccount);
+
+			Assert.AreSame(identity, identityAccount);
+
+			await Task.Delay(200);
 
 			Assert.AreEqual(TokenStoreState.Online, identityAccount.State);
 
@@ -44,11 +50,14 @@ namespace SLD.Tezos.Client
 		[TestMethod]
 		public async Task Engine_CreateFaucet()
 		{
+			// Time to update
+			await Task.Delay(200);
+
 			var identity = Engine.DefaultIdentity;
 
 			await Engine.AlphaCreateFaucetAccount("Account", identity);
 
-			await Task.Delay(1000);
+			await Task.Delay(500);
 
 			Assert.AreEqual(2, identity.Accounts.Count);
 
@@ -277,6 +286,8 @@ namespace SLD.Tezos.Client
 		[TestMethod]
 		public async Task Engine_TimeoutFaucet()
 		{
+			// Time to update
+			await Task.Delay(200);
 			var identity = Engine.DefaultIdentity;
 
 			var task = await Engine.AlphaCreateFaucetAccount("Account", identity);

@@ -7,7 +7,7 @@ namespace SLD.Tezos.Blockchain
 	using Protocol;
 	using Simulation;
 
-	public class SimulatedBlockchain
+	public class SimulatedBlockchain : TezosObject
 	{
 		private Timer pulse;
 		private Stack<Block> blocks = new Stack<Block>();
@@ -40,6 +40,8 @@ namespace SLD.Tezos.Blockchain
 		internal Block CreateBlock()
 		{
 			var index = NextIndex++;
+
+			Trace($"Create Block {index}");
 
 			var block = new Block
 			{

@@ -47,6 +47,8 @@ namespace SLD.Tezos.Client.Model
 		{
 			Trace($"Initialize");
 
+			State = TokenStoreState.Initializing;
+
 			// Register and get info
 			var register = new RegisterIdentityTask
 			{
@@ -75,6 +77,8 @@ namespace SLD.Tezos.Client.Model
 
 					account.UpdateBalance(info.Balance);
 
+					account.State = TokenStoreState.Online;
+
 					return account;
 				});
 
@@ -84,9 +88,9 @@ namespace SLD.Tezos.Client.Model
 
 					var task = AddAccount(account);
 				}
-
-				State = TokenStoreState.Online;
 			}
+
+			State = TokenStoreState.Online;
 
 			FirePropertyChanged("TotalBalance");
 		}

@@ -10,7 +10,7 @@ namespace SLD.Tezos.Simulation
 	using Client.Model;
 	using Protocol;
 
-	public partial class NetworkSimulation
+	public partial class NetworkSimulation : TezosObject
 	{
 		private static int NextID = 1;
 
@@ -74,7 +74,9 @@ namespace SLD.Tezos.Simulation
 
 		internal async Task MonitorAccounts(string connectionID, params string[] accountIDs)
 		{
-			if (accountIDs != null && accountIDs.Any())
+			Debug.Assert(accountIDs != null);
+
+			if (accountIDs.Any())
 			{
 				var connection = connections[connectionID];
 
@@ -85,6 +87,7 @@ namespace SLD.Tezos.Simulation
 					var account = await GetAccount(accountID) as IEventSource;
 
 					account.Listeners.Add(connection);
+					Trace($"Monitor: {account}");
 				}
 			}
 		}
@@ -115,6 +118,8 @@ namespace SLD.Tezos.Simulation
 		public async Task<RegisterIdentityTask> RegisterIdentity(RegisterIdentityTask task)
 		{
 			var identityID = task.IdentityID;
+
+			Trace($"Register identity: {identityID}");
 
 			// Return info in any case, even if the identity has not been seen before
 			var info = new IdentityInfo

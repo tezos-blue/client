@@ -44,6 +44,8 @@ namespace SLD.Tezos.Client.Model
 
 		public void Notify(NetworkEvent netEvent)
 		{
+			Trace($"Notify {Listeners.Count} listeners");
+
 			foreach (var listener in Listeners)
 			{
 				listener.Notify(netEvent);
