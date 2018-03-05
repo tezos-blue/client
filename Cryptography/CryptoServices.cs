@@ -66,7 +66,7 @@ namespace SLD.Tezos.Cryptography
 
 		public static bool IsKeyMatch(byte[] publicKey, byte[] privateKey)
 		{
-			ArraySegment<byte> lowerHalf = PublicFromPrivate(privateKey);
+			var lowerHalf = PublicFromPrivate(privateKey);
 
 			return Enumerable.SequenceEqual(lowerHalf, publicKey);
 		}
@@ -75,16 +75,20 @@ namespace SLD.Tezos.Cryptography
 		{
 			var privateKey = DecodePrefixed(HashType.Private, edsk);
 
-			return (PublicFromPrivate(privateKey).ToArray(), privateKey);
+			return (PublicFromPrivate(privateKey), privateKey);
 		}
 
 		public static (byte[], byte[]) ImportBIP39(string words, string email, string passphrase)
 		{
 			var bip = new BIP39.BIP39(words, email + passphrase);
 
-			var privateKey = bip.SeedBytes;
+			var seed = new ArraySegment<byte>(bip.SeedBytes, 0, Ed25519.PrivateKeySeedSizeInBytes);
 
-			return (PublicFromPrivate(privateKey).ToArray(), privateKey);
+			byte[] publicKey, privateKey;
+
+			Ed25519.KeyPairFromSeed(out publicKey, out privateKey, seed.ToArray());
+
+			return (PublicFromPrivate(privateKey), privateKey);
 		}
 
 		public static bool IsValidEd25519(string edsk)
@@ -101,13 +105,13 @@ namespace SLD.Tezos.Cryptography
 			}
 		}
 
-		private static ArraySegment<byte> PublicFromPrivate(byte[] privateKey)
+		private static byte[] PublicFromPrivate(byte[] privateKey)
 		{
 			var halfSize = Ed25519.ExpandedPrivateKeySizeInBytes / 2;
 
 			var lowerHalf = new ArraySegment<byte>(privateKey, halfSize, halfSize);
 
-			return lowerHalf;
+			return lowerHalf.ToArray();
 		}
 
 		#endregion Keys
