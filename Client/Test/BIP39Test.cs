@@ -1,6 +1,5 @@
-﻿using Bitcoin.BIP39;
-using Bitcoin.BitcoinUtilities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SLD.Tezos.Cryptography.BIP39;
 
 namespace Tests
 {

@@ -6,8 +6,8 @@ using System.Security.Cryptography;
 namespace SLD.Tezos.Cryptography
 {
 	using Blake2;
-	using Chaos.NaCl;
-	using Bitcoin.BIP39;
+	using SLD.Tezos.Cryptography.NaCl;
+	using BIP39;
 
 	public static class CryptoServices
 	{
@@ -80,7 +80,7 @@ namespace SLD.Tezos.Cryptography
 
 		public static (byte[], byte[]) ImportBIP39(string words, string email, string passphrase)
 		{
-			var bip = new BIP39(words, email + passphrase);
+			var bip = new BIP39.BIP39(words, email + passphrase);
 
 			var privateKey = bip.SeedBytes;
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Bitcoin.BitcoinUtilities
+namespace SLD.Tezos.Cryptography.BIP39
 {
 	/// <summary>
 	/// Implementation of the Rfc2898 PBKDF2 specification located here http://www.ietf.org/rfc/rfc2898.txt using HMACSHA512 but modified as opposed to PWDTKto match the BIP39 test vectors
@@ -11,7 +11,7 @@ namespace Bitcoin.BitcoinUtilities
 	/// v1.1.0.0
 	/// Bitcoin:1ETQjMkR1NNh4jwLuN5LxY7bbip39HC9PUPSV
 	/// </summary>
-	public class Rfc2898_pbkdf2_hmacsha512
+	internal class Rfc2898_pbkdf2_hmacsha512
 	{
 		#region Private Attributes
 

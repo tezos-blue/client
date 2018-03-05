@@ -1,11 +1,9 @@
-﻿using Bitcoin.BitcoinUtilities;
-using SLD.Tezos.Cryptography;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bitcoin.BIP39
+namespace SLD.Tezos.Cryptography.BIP39
 {
 	/// <summary>
 	/// A .NET implementation of the Bitcoin Improvement Proposal - 39 (BIP39)
@@ -61,7 +59,7 @@ namespace Bitcoin.BIP39
 			}
 
 			_entropyBytes = CryptoServices.CreateRandomBytes(entropySize / cBitsInByte); //crypto random entropy of the specified size
-			pInit(passphrase, language);
+			Init(passphrase, language);
 		}
 
 		/// <summary>
@@ -79,7 +77,7 @@ namespace Bitcoin.BIP39
 			}
 
 			_entropyBytes = entropyBytes;
-			pInit(passphrase, language);
+			Init(passphrase, language);
 		}
 
 		/// <summary>
@@ -101,8 +99,8 @@ namespace Bitcoin.BIP39
 			}
 
 			_language = language;
-			_wordIndexList = pRebuildWordIndexes(words);
-			_entropyBytes = pProcessIntToBitsThenBytes(_wordIndexList);
+			_wordIndexList = RebuildWordIndexes(words);
+			_entropyBytes = ProcessIntToBitsThenBytes(_wordIndexList);
 		}
 
 		#endregion Constructors
@@ -238,7 +236,7 @@ namespace Bitcoin.BIP39
 		/// <summary>
 		/// Common initialisation code utilised by all the constructors. It gets all the bits and does a checksum etc. This is the main code to create a BIP39 object.
 		/// </summary>
-		private void pInit(String passphrase, Language language)
+		private void Init(String passphrase, Language language)
 		{
 			_passphraseBytes = UTF8Encoding.UTF8.GetBytes(Utilities.NormaliseStringNfkd(passphrase));
 			_language = language;
@@ -279,15 +277,15 @@ namespace Bitcoin.BIP39
 				index++;
 			}
 
-			_wordIndexList = pGetWordIndeces(entropyConcatChecksumBits);
-			_mnemonicSentence = pGetMnemonicSentence();
+			_wordIndexList = GetWordIndices(entropyConcatChecksumBits);
+			_mnemonicSentence = GetMnemonicSentence();
 		}
 
 		/// <summary>
 		/// Uses the Wordlist Index to create a scentence ow words provided by the wordlist of this objects language attribute
 		/// </summary>
 		/// <returns>A scentence of words</returns>
-		private string pGetMnemonicSentence()
+		private string GetMnemonicSentence()
 		{
 			//trap for words that were not in the word list when built. If custom words were used, we will not support the rebuild as we don't have the words
 			if (_wordIndexList.Contains(-1))
@@ -314,7 +312,7 @@ namespace Bitcoin.BIP39
 		/// Process entropy + CS into an index list of words to get from wordlist
 		/// </summary>
 		/// <returns>An index, each int is a line in the wiordlist for the language of choice</returns>
-		private List<int> pGetWordIndeces(BitArray entropyConcatChecksumBits)
+		private List<int> GetWordIndices(BitArray entropyConcatChecksumBits)
 		{
 			List<int> wordIndexList = new List<int>();
 
@@ -327,7 +325,7 @@ namespace Bitcoin.BIP39
 					toInt.Set(i2, entropyConcatChecksumBits.Get(i + i2));
 				}
 
-				wordIndexList.Add(pProcessBitsToInt(toInt)); //adding encoded int to word index
+				wordIndexList.Add(ProcessBitsToInt(toInt)); //adding encoded int to word index
 			}
 
 			return wordIndexList;
@@ -338,7 +336,7 @@ namespace Bitcoin.BIP39
 		/// </summary>
 		/// <param name="wordsInMnemonicSentence"> a string array containing each word in the mnemonic sentence</param>
 		/// <returns>The word index that can be used to build the mnemonic sentence</returns>
-		private List<int> pRebuildWordIndexes(string[] wordsInMnemonicSentence)
+		private List<int> RebuildWordIndexes(string[] wordsInMnemonicSentence)
 		{
 			List<int> wordIndexList = new List<int>();
 			string langName = "English";
@@ -365,7 +363,7 @@ namespace Bitcoin.BIP39
 		/// </summary>
 		/// <param name="bits">The bits to encode into an integer</param>
 		/// <returns>integer between 0 and 2047</returns>
-		private int pProcessBitsToInt(BitArray bits)
+		private int ProcessBitsToInt(BitArray bits)
 		{
 			if (bits.Length != cBitGroupSize)
 			{
@@ -394,7 +392,7 @@ namespace Bitcoin.BIP39
 		/// </summary>
 		/// <param name="wordIndex">The word index to convert back to bits then bytes</param>
 		/// <returns>entropy bytes excluding CS</returns>
-		private byte[] pProcessIntToBitsThenBytes(List<int> wordIndex)
+		private byte[] ProcessIntToBitsThenBytes(List<int> wordIndex)
 		{
 			//trap for words that were not in the word list when built. If custom words were used, we will not support the rebuild as we don't have the words
 			if (wordIndex.Contains(-1))
@@ -539,8 +537,7 @@ namespace Bitcoin.BIP39
 
 				if (_language.Equals(Language.Japanese))
 				{
-					char japSpace;
-					Char.TryParse(cJPSpaceString, out japSpace);
+					Char.TryParse(cJPSpaceString, out char japSpace);
 					outputMnemonic = outputMnemonic.Replace(' ', japSpace);
 				}
 
@@ -562,7 +559,7 @@ namespace Bitcoin.BIP39
 			{
 				_language = value;
 				//new language means we need a mnemonic sentence in that language
-				_mnemonicSentence = pGetMnemonicSentence();
+				_mnemonicSentence = GetMnemonicSentence();
 			}
 		}
 

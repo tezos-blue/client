@@ -1,7 +1,7 @@
 ﻿using System;
-using Chaos.NaCl.Internal.Ed25519Ref10;
+using SLD.Tezos.Cryptography.NaCl.Internal.Ed25519Ref10;
 
-namespace Chaos.NaCl
+namespace SLD.Tezos.Cryptography.NaCl
 {
     public static class Ed25519
     {

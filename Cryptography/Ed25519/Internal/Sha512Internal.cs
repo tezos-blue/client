@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Chaos.NaCl.Internal
+namespace SLD.Tezos.Cryptography.NaCl.Internal
 {
     internal static class Sha512Internal
     {

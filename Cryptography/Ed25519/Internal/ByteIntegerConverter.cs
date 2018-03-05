@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Chaos.NaCl.Internal
+namespace SLD.Tezos.Cryptography.NaCl.Internal
 {
     // Loops? Arrays? Never heard of that stuff
     // Library avoids unnecessary heap allocations and unsafe code

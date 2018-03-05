@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 
-namespace Bitcoin.BIP39.Wordlists
+namespace SLD.Tezos.Cryptography.BIP39.Wordlists
 {
-	public abstract class Wordlist
+	internal abstract class Wordlist
 	{
 		private String[] _words;
 

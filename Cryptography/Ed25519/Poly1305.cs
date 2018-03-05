@@ -2,9 +2,9 @@
 
 using System;
 using System.Collections.Generic;
-using Chaos.NaCl.Internal;
+using SLD.Tezos.Cryptography.NaCl.Internal;
 
-namespace Chaos.NaCl
+namespace SLD.Tezos.Cryptography.NaCl
 {
     internal sealed class Poly1305 : OneTimeAuth
     {

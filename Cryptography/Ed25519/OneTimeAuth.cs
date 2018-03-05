@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Chaos.NaCl
+namespace SLD.Tezos.Cryptography.NaCl
 {
     public abstract class OneTimeAuth
     {

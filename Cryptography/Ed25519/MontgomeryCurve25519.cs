@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Chaos.NaCl.Internal;
-using Chaos.NaCl.Internal.Ed25519Ref10;
-using Chaos.NaCl.Internal.Salsa;
+using SLD.Tezos.Cryptography.NaCl.Internal;
+using SLD.Tezos.Cryptography.NaCl.Internal.Ed25519Ref10;
+using SLD.Tezos.Cryptography.NaCl.Internal.Salsa;
 
-namespace Chaos.NaCl
+namespace SLD.Tezos.Cryptography.NaCl
 {
     // This class is mainly for compatibility with NaCl's Curve25519 implementation
     // If you don't need that compatibility, use Ed25519.KeyExchange

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Chaos.NaCl.Internal;
-using Chaos.NaCl.Internal.Salsa;
+using SLD.Tezos.Cryptography.NaCl.Internal;
+using SLD.Tezos.Cryptography.NaCl.Internal.Salsa;
 
-namespace Chaos.NaCl
+namespace SLD.Tezos.Cryptography.NaCl
 {
     public static class XSalsa20Poly1305
     {

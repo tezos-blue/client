@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Chaos.NaCl.Internal.Ed25519Ref10
+namespace SLD.Tezos.Cryptography.NaCl.Internal.Ed25519Ref10
 {
 	/*
 	ge means group element.

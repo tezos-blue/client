@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Chaos.NaCl.Internal.Salsa
+namespace SLD.Tezos.Cryptography.NaCl.Internal.Salsa
 {
     internal static class SalsaCore
     {

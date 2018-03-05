@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Chaos.NaCl.Internal
+namespace SLD.Tezos.Cryptography.NaCl.Internal
 {
     internal static class InternalAssert
     {
