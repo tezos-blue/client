@@ -7,6 +7,7 @@ namespace SLD.Tezos.Cryptography
 {
 	using Blake2;
 	using Chaos.NaCl;
+	using Bitcoin.BIP39;
 
 	public static class CryptoServices
 	{
@@ -73,6 +74,15 @@ namespace SLD.Tezos.Cryptography
 		public static (byte[], byte[]) ImportEd25519(string edsk)
 		{
 			var privateKey = DecodePrefixed(HashType.Private, edsk);
+
+			return (PublicFromPrivate(privateKey).ToArray(), privateKey);
+		}
+
+		public static (byte[], byte[]) ImportBIP39(string words, string email, string passphrase)
+		{
+			var bip = new BIP39(words, email + passphrase);
+
+			var privateKey = bip.SeedBytes;
 
 			return (PublicFromPrivate(privateKey).ToArray(), privateKey);
 		}

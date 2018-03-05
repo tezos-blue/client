@@ -58,6 +58,7 @@
     <Compile Include="SecurityTest.cs" />
     <Compile Include="ConnectionTest.cs" />
     <Compile Include="ApprovalTest.cs" />
+    <Compile Include="BIP39Test.cs" />
     <Compile Include="VaultTest.cs" />
   </ItemGroup>
   <ItemGroup>
