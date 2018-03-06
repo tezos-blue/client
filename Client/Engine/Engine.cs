@@ -315,11 +315,18 @@ namespace SLD.Tezos.Client
 			return Identities.SelectMany(i => i.Accounts);
 		}
 
-		// SECURITY
-		// TODO validate public key hash
 		public bool IsValidAccountID(string accountID)
 		{
-			return true;
+			try
+			{
+				CryptoServices.DecodePrefixed(HashType.PublicKeyHash, accountID);
+
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
 		}
 
 		public async void DeleteAccount(Account account)
