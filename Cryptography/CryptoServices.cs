@@ -91,6 +91,9 @@ namespace SLD.Tezos.Cryptography
 			return (PublicFromPrivate(privateKey), privateKey);
 		}
 
+		public static string[] BIP39EnglishWords
+			=> BIP39.Wordlists.English.englishWords;
+
 		public static bool IsValidEd25519(string edsk)
 		{
 			try
