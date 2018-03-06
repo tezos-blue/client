@@ -71,11 +71,39 @@ namespace SLD.Tezos.Cryptography
 			return Enumerable.SequenceEqual(lowerHalf, publicKey);
 		}
 
+		public static bool IsValidEd25519(string edsk)
+		{
+			try
+			{
+				ImportEd25519(edsk);
+
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
+
 		public static (byte[], byte[]) ImportEd25519(string edsk)
 		{
 			var privateKey = DecodePrefixed(HashType.Private, edsk);
 
 			return (PublicFromPrivate(privateKey), privateKey);
+		}
+
+		public static bool IsValidBIP39(string mnemonic)
+		{
+			try
+			{
+				ImportBIP39(mnemonic, string.Empty, string.Empty);
+
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
 		}
 
 		public static (byte[], byte[]) ImportBIP39(string words, string email, string passphrase)
@@ -93,21 +121,6 @@ namespace SLD.Tezos.Cryptography
 
 		public static string[] BIP39EnglishWords
 			=> BIP39.Wordlists.English.englishWords;
-
-		public static bool IsValidEd25519(string edsk)
-		{
-			try
-			{
-				ImportEd25519(edsk);
-
-				return true;
-			}
-			catch (Exception)
-			{
-				return false;
-			}
-		}
-
 		private static byte[] PublicFromPrivate(byte[] privateKey)
 		{
 			var halfSize = Ed25519.ExpandedPrivateKeySizeInBytes / 2;
