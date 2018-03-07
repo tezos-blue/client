@@ -7,7 +7,6 @@ namespace SLD.Tezos.Cryptography
 {
 	using Blake2;
 	using SLD.Tezos.Cryptography.NaCl;
-	using BIP39;
 
 	public static class CryptoServices
 	{
@@ -71,6 +70,17 @@ namespace SLD.Tezos.Cryptography
 			return Enumerable.SequenceEqual(lowerHalf, publicKey);
 		}
 
+		private static byte[] PublicFromPrivate(byte[] privateKey)
+		{
+			var halfSize = Ed25519.ExpandedPrivateKeySizeInBytes / 2;
+
+			var lowerHalf = new ArraySegment<byte>(privateKey, halfSize, halfSize);
+
+			return lowerHalf.ToArray();
+		}
+
+		#region Ed25519
+
 		public static bool IsValidEd25519(string edsk)
 		{
 			try
@@ -91,6 +101,13 @@ namespace SLD.Tezos.Cryptography
 
 			return (PublicFromPrivate(privateKey), privateKey);
 		}
+
+		#endregion Ed25519
+
+		#region BIP39
+
+		public static string[] BIP39EnglishWords
+			=> BIP39.Wordlists.English.englishWords;
 
 		public static bool IsValidBIP39(string mnemonic)
 		{
@@ -119,16 +136,30 @@ namespace SLD.Tezos.Cryptography
 			return (PublicFromPrivate(privateKey), privateKey);
 		}
 
-		public static string[] BIP39EnglishWords
-			=> BIP39.Wordlists.English.englishWords;
-		private static byte[] PublicFromPrivate(byte[] privateKey)
+		#endregion BIP39
+
+		#region Brain
+
+		private static readonly byte[] BrainSalt = { 0, 8, 15 };
+
+		public static bool IsValidBrain(string mnemonic)
+			=> !string.IsNullOrEmpty(mnemonic);
+
+		public static (byte[], byte[]) ImportBrain(string mnemonic)
 		{
-			var halfSize = Ed25519.ExpandedPrivateKeySizeInBytes / 2;
+			byte[] publicKey, privateKey;
 
-			var lowerHalf = new ArraySegment<byte>(privateKey, halfSize, halfSize);
+			using (var rgb = new PasswordDeriveBytes(mnemonic, BrainSalt))
+			{
+				var seed = rgb.GetBytes(Ed25519.PrivateKeySeedSizeInBytes);
 
-			return lowerHalf.ToArray();
+				Ed25519.KeyPairFromSeed(out publicKey, out privateKey, seed);
+			}
+
+			return (publicKey, privateKey);
 		}
+
+		#endregion Brain
 
 		#endregion Keys
 
