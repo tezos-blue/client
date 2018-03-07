@@ -17,6 +17,7 @@ namespace SLD.Tezos.Client.Security
 		}
 
 		public byte[] Data { get; private set; }
+
 		public string Hash { get; private set; }
 
 		#region Serialization
@@ -35,6 +36,14 @@ namespace SLD.Tezos.Client.Security
 
 		#endregion Serialization
 
+		#region Comparison
+
+		public static bool operator !=(PublicKey left, PublicKey right)
+			=> !left.Equals(right);
+
+		public static bool operator ==(PublicKey left, PublicKey right)
+			=> left.Equals(right);
+
 		public override bool Equals(object obj)
 			=> obj is PublicKey other ?
 				Enumerable.SequenceEqual(other.Data, this.Data) :
@@ -42,6 +51,8 @@ namespace SLD.Tezos.Client.Security
 
 		public override int GetHashCode()
 			=> Hash.GetHashCode();
+
+		#endregion Comparison
 
 		public override string ToString()
 			=> CryptoServices.EncodePrefixed(HashType.Public, Data);
