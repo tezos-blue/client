@@ -73,6 +73,28 @@ namespace SLD.Tezos.Client.Model
 
 		public bool IsChanging => State == TokenStoreState.Changing || State == TokenStoreState.Creating;
 
+		public virtual void UpdateState(AccountState accountState)
+		{
+			switch (accountState)
+			{
+				case AccountState.NotFound:
+					State = TokenStoreState.UnheardOf;
+					break;
+
+				case AccountState.Archived:
+					State = TokenStoreState.Retired;
+					break;
+
+				case AccountState.Cached:
+					State = TokenStoreState.Offline;
+					break;
+
+				case AccountState.Live:
+					State = TokenStoreState.Online;
+					break;
+			}
+		}
+
 		#endregion State
 
 		#region Manager

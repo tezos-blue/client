@@ -76,8 +76,7 @@ namespace SLD.Tezos.Client.Model
 					};
 
 					account.UpdateBalance(info.Balance);
-
-					account.State = TokenStoreState.Online;
+					account.UpdateState(info.State);
 
 					return account;
 				});
