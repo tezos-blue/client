@@ -14,7 +14,7 @@ namespace SLD.Tezos.Client.Connections
 
 		Task<RegisterIdentityTask> RegisterIdentity(RegisterIdentityTask task);
 
-		#endregion
+		#endregion Identities
 
 		#region Accounts
 
@@ -24,7 +24,7 @@ namespace SLD.Tezos.Client.Connections
 
 		Task<AccountEntry[]> GetAccountEntries(string accountID);
 
-		Task RemoveStaleAccount(string accountID);
+		Task RemoveStaleAccount(string accountID, string managerID);
 
 		#endregion Accounts
 

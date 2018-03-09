@@ -15,6 +15,7 @@
 
 		public string AccountID;
 		public decimal Balance;
+		public AccountState State;
 
 		public AccountEntry Entry;
 
@@ -47,7 +48,6 @@
 			return $"{AccountID} | Pending: {Amount}";
 		}
 	}
-
 
 	public class OriginatePendingEvent : TransactionPendingEvent
 	{

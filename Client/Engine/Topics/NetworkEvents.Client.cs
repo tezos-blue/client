@@ -93,6 +93,7 @@ namespace SLD.Tezos.Client
 						if (accounts.TryGetValue(changeBalance.AccountID, out TokenStore account))
 						{
 							account.UpdateBalance(changeBalance.Balance);
+							account.UpdateState(changeBalance.State);
 							await account.CloseOperation(changeBalance.OperationID, changeBalance.Entry);
 						}
 					}

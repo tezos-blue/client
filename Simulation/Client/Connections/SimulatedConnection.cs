@@ -56,8 +56,6 @@ namespace SLD.Tezos.Client.Connections
 				default:
 					throw new ApplicationException();
 			}
-
-
 		}
 
 		public async Task Monitor(IEnumerable<string> accountIDs)
@@ -102,10 +100,9 @@ namespace SLD.Tezos.Client.Connections
 			}
 		}
 
-
 		#region ServiceState
 
-		ServiceState _ServiceState = ServiceState.Operational;
+		private ServiceState _ServiceState = ServiceState.Operational;
 
 		public ServiceState ServiceState
 		{
@@ -113,7 +110,6 @@ namespace SLD.Tezos.Client.Connections
 			{
 				return _ServiceState;
 			}
-
 
 			set
 			{
@@ -131,8 +127,6 @@ namespace SLD.Tezos.Client.Connections
 		}
 
 		#endregion ServiceState
-
-
 
 		#region Operations
 
@@ -200,7 +194,7 @@ namespace SLD.Tezos.Client.Connections
 			return await simulation.GetAccountInfo(accountID);
 		}
 
-		public Task RemoveStaleAccount(string accountID)
+		public Task RemoveStaleAccount(string accountID, string managerID)
 		{
 			throw new NotImplementedException();
 		}

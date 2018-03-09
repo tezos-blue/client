@@ -6,6 +6,11 @@
 	public enum AccountState
 	{
 		/// <summary>
+		/// Value not set
+		/// </summary>
+		Undefined,
+
+		/// <summary>
 		/// Not known in the system
 		/// </summary>
 		NotFound,

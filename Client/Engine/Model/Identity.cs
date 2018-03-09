@@ -143,7 +143,7 @@ namespace SLD.Tezos.Client.Model
 		{
 			Trace($"Delete {account}");
 
-			await connection.RemoveStaleAccount(account.AccountID);
+			await connection.RemoveStaleAccount(account.AccountID, account.ManagerID);
 
 			account.Changed -= OnAccountChanged;
 			await accounts.RemoveSynchronized(account);
