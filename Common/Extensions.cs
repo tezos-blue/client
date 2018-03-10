@@ -65,5 +65,15 @@ namespace SLD.Tezos
 		}
 
 		#endregion Serialization
+
+		#region Safe strings
+
+		public static string ToSafeString(this DateTime time)
+			=> time.ToString("u");
+
+		public static string ToSafeString(this TimeSpan timespan)
+			=> timespan.ToString("c");
+
+		#endregion Safe strings
 	}
 }
