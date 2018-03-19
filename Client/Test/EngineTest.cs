@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client
 {
+	using Flow;
 	using Model;
 	using Protocol;
 	using Simulation;
@@ -10,7 +11,7 @@ namespace SLD.Tezos.Client
 	[TestClass]
 	public class EngineTest : ClientTest
 	{
-		Task<Result> WhenIdentityInitialized
+		private Task<Result> WhenIdentityInitialized
 			=> Engine.DefaultIdentity.WhenInitialized;
 
 		[TestInitialize]
@@ -58,9 +59,11 @@ namespace SLD.Tezos.Client
 
 			var identity = Engine.DefaultIdentity;
 
-			var faucetTask = await Engine.AlphaCreateFaucetAccount("Account", identity);
+			var faucetFlow = await Engine.AlphaCreateFaucetAccount("Account", identity);
 
-			await Task.Delay(500);
+			Assert.AreEqual(1, ProtectedTaskflow.NumPending);
+
+			await faucetFlow.WhenAcknowledged;
 
 			Assert.AreEqual(2, identity.Accounts.Count);
 
@@ -80,7 +83,9 @@ namespace SLD.Tezos.Client
 
 			await Connection.CreateBlock();
 
-			await Task.Delay(1000);
+			await faucetFlow.WhenCompleted;
+
+			Assert.AreEqual(0, ProtectedTaskflow.NumPending);
 
 			Assert.AreEqual(TokenStoreState.Online, account.State);
 
@@ -293,11 +298,11 @@ namespace SLD.Tezos.Client
 			await Task.Delay(200);
 			var identity = Engine.DefaultIdentity;
 
-			var task = await Engine.AlphaCreateFaucetAccount("Account", identity);
+			var flow = await Engine.AlphaCreateFaucetAccount("Account", identity);
 
 			await Task.Delay(500);
 
-			await Connection.Timeout(task);
+			await Connection.Timeout(flow.Task);
 
 			await Task.Delay(500);
 

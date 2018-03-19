@@ -6,6 +6,8 @@ using System.Text;
 
 namespace SLD.Tezos
 {
+	using Protocol;
+
 	public static class Extensions
 	{
 		#region Byte Arrays
@@ -75,5 +77,23 @@ namespace SLD.Tezos
 			=> timespan.ToString("c");
 
 		#endregion Safe strings
+
+		#region Flow
+
+		public static bool IsFinal(this TaskProgress progress)
+		{
+			switch (progress)
+			{
+				case TaskProgress.Confirmed:
+				case TaskProgress.Timeout:
+				case TaskProgress.Failed:
+					return true;
+
+				default:
+					return false;
+			}
+		}
+
+		#endregion Flow
 	}
 }

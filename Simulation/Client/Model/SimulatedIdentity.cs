@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client.Model
 {
@@ -37,13 +38,15 @@ namespace SLD.Tezos.Client.Model
 		public override string AccountID => simAccountID;
 		public List<ConnectionEndpoint> Listeners { get; private set; } = new List<ConnectionEndpoint>();
 
-		internal IEnumerable<SimulatedAccount> ManagedAccounts 
+		internal IEnumerable<SimulatedAccount> ManagedAccounts
 			=> Accounts
 			.Where(a => a.AccountID != AccountID)
 			.Cast<SimulatedAccount>();
 
-		public void Notify(NetworkEvent netEvent)
+		public async void Notify(NetworkEvent netEvent)
 		{
+			await Task.Delay(50);
+
 			Trace($"Notify {Listeners.Count} listeners");
 
 			foreach (var listener in Listeners)

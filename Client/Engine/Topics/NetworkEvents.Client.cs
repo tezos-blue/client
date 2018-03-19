@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace SLD.Tezos.Client
 {
+	using Flow;
 	using Model;
 	using Protocol;
 
@@ -29,6 +30,8 @@ namespace SLD.Tezos.Client
 								originate.OperationID,
 								originate.ContraAccountID,
 								originate.Amount);
+
+							ProtectedTaskflow.Update(originate.OperationID, TaskProgress.Acknowledged);
 						}
 					}
 					break;
@@ -67,6 +70,8 @@ namespace SLD.Tezos.Client
 							account.State = TokenStoreState.Online;
 
 							Cache(account);
+
+							ProtectedTaskflow.Update(originate.OperationID, TaskProgress.Confirmed);
 						}
 					}
 					break;

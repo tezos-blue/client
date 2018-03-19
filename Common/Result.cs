@@ -16,9 +16,14 @@
 
 		#region Creation
 
-		public static Result OK => new Result();
+		public static Result OK
+			=> new Result();
 
-		public static Result Error(string errorID = GenericError) => new Result { ErrorID = errorID };
+		public static Result Timeout
+			=> Error(nameof(Timeout));
+
+		public static Result Error(string errorID = GenericError)
+			=> new Result { ErrorID = errorID };
 
 		#endregion Creation
 

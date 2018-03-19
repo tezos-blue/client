@@ -2,25 +2,33 @@
 
 namespace SLD.Tezos.Client
 {
-	using Protocol;
+	using Flow;
 	using Model;
+	using Protocol;
 
 	partial class Engine
 	{
-		public async Task<CreateFaucetTask> AlphaCreateFaucetAccount(string name, Identity managerIdentity)
+		public async Task<FaucetFlow> AlphaCreateFaucetAccount(string name, Identity managerIdentity)
 		{
 			Trace("Create Faucet Account");
 
-			var result = await Connection.AlphaCreateFaucet(new CreateFaucetTask
+			var task = await Connection.AlphaCreateFaucet(new CreateFaucetTask
 			{
 				ManagerID = managerIdentity.AccountID,
 				Name = name,
 				Stereotype = Account.DefaultStereotype,
 			});
 
-			Trace($"{result.AccountID} | Waiting for creation");
+			Trace($"{task.AccountID} | Waiting for creation");
 
-			return result;
+			return new FaucetFlow(task);
+		}
+
+		public class FaucetFlow : ProtectedTaskflow
+		{
+			public FaucetFlow(CreateFaucetTask task) : base(task)
+			{
+			}
 		}
 	}
 }

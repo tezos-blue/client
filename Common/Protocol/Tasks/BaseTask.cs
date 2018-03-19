@@ -5,6 +5,7 @@
 		Created,
 		Prepared,
 		Submitted,
+		Acknowledged,
 		Confirmed,
 		Timeout,
 		Failed,
