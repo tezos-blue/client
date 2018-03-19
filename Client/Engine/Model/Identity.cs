@@ -43,12 +43,8 @@ namespace SLD.Tezos.Client.Model
 
 		public override bool IsLive => true;
 
-		internal override async Task Initialize(Engine engine)
+		protected override async Task<TokenStoreState> OnInitialize(Engine engine)
 		{
-			Trace($"Initialize");
-
-			State = TokenStoreState.Initializing;
-
 			// Register and get info
 			var register = new RegisterIdentityTask
 			{
@@ -89,9 +85,9 @@ namespace SLD.Tezos.Client.Model
 				}
 			}
 
-			State = TokenStoreState.Online;
-
 			FirePropertyChanged("TotalBalance");
+
+			return TokenStoreState.Online;
 		}
 
 		#region Balance

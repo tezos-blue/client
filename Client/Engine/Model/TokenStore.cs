@@ -114,18 +114,53 @@ namespace SLD.Tezos.Client.Model
 			return $"{AccountID.Substring(0, Math.Min(10, AccountID.Length))}...";
 		}
 
-		internal async virtual Task Initialize(Engine engine)
+		#region Initialization
+
+		private volatile TaskCompletionSource<Result> syncInitialized;
+
+		public Task<Result> WhenInitialized
+			=> syncInitialized.Task;
+
+		internal async Task Initialize(Engine engine)
 		{
 			Trace($"Initialize");
+			BeginInitialize();
 
-			await RefreshInfo(engine);
+			State = await OnInitialize(engine);
+
+			EndInitialize();
 		}
 
-		internal async Task RefreshInfo(Engine engine)
+		private void EndInitialize()
 		{
-			Trace($"Refresh info");
+			syncInitialized.TrySetResult(true);
+			syncInitialized = null;
+		}
 
+		private void BeginInitialize()
+		{
 			State = TokenStoreState.Initializing;
+			syncInitialized = new TaskCompletionSource<Result>();
+		}
+
+		internal async Task Refresh(Engine engine)
+		{
+			Trace($"Refresh");
+			BeginInitialize();
+
+			State = await RefreshInfo(engine);
+
+			EndInitialize();
+		}
+
+		protected abstract Task<TokenStoreState> OnInitialize(Engine engine);
+
+		#endregion
+
+
+		protected async Task<TokenStoreState> RefreshInfo(Engine engine)
+		{
+			Trace($"Refresh AccountInfo");
 
 			try
 			{
@@ -133,7 +168,7 @@ namespace SLD.Tezos.Client.Model
 
 				UpdateBalance(info.Balance);
 
-				State = TokenStoreState.Online;
+				return TokenStoreState.Online;
 			}
 			catch (ServerException e)
 			{
@@ -142,19 +177,16 @@ namespace SLD.Tezos.Client.Model
 				switch (e.ServerError)
 				{
 					case ServerError.AccountNotFound:
-						State = TokenStoreState.UnheardOf;
-						break;
+						return TokenStoreState.UnheardOf;
 
 					default:
-						State = TokenStoreState.Offline;
-						break;
+						return TokenStoreState.Offline;
 				}
-
-				return;
 			}
 			catch (Exception e)
 			{
 				Trace(e);
+				return TokenStoreState.Offline;
 			}
 		}
 
@@ -320,5 +352,6 @@ namespace SLD.Tezos.Client.Model
 		}
 
 		#endregion Entries
+
 	}
 }

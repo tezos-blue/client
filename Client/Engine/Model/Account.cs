@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client.Model
 {
@@ -20,6 +21,9 @@ namespace SLD.Tezos.Client.Model
 		}
 
 		public override bool IsLive => Balance > 0;
+
+		protected override Task<TokenStoreState> OnInitialize(Engine engine)
+			=> RefreshInfo(engine);
 
 		#region AccountID
 

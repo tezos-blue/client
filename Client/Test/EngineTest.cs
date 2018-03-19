@@ -10,6 +10,9 @@ namespace SLD.Tezos.Client
 	[TestClass]
 	public class EngineTest : ClientTest
 	{
+		Task<Result> WhenIdentityInitialized
+			=> Engine.DefaultIdentity.WhenInitialized;
+
 		[TestInitialize]
 		public async Task BeforeEach()
 		{
@@ -37,7 +40,8 @@ namespace SLD.Tezos.Client
 
 			Assert.AreSame(identity, identityAccount);
 
-			await Task.Delay(200);
+			var initResult = await identity.WhenInitialized;
+			Assert.IsTrue(initResult);
 
 			Assert.AreEqual(TokenStoreState.Online, identityAccount.State);
 
@@ -50,12 +54,11 @@ namespace SLD.Tezos.Client
 		[TestMethod]
 		public async Task Engine_CreateFaucet()
 		{
-			// Time to update
-			await Task.Delay(200);
+			await WhenIdentityInitialized;
 
 			var identity = Engine.DefaultIdentity;
 
-			await Engine.AlphaCreateFaucetAccount("Account", identity);
+			var faucetTask = await Engine.AlphaCreateFaucetAccount("Account", identity);
 
 			await Task.Delay(500);
 
