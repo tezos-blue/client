@@ -19,6 +19,7 @@
 
 	public class ProtectedTask : BaseTask
 	{
+		public string ChainID;
 		public string SourceID;
 		public string SourceManagerPublicKey;
 		public decimal TransferAmount;
@@ -40,5 +41,8 @@
 		public bool HasSource => !string.IsNullOrEmpty(SourceID);
 
 		public virtual decimal TotalAmount => TransferAmount + Fees;
+
+		public override string ToString()
+			=> OperationID;
 	}
 }

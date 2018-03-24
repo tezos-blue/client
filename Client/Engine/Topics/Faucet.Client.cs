@@ -8,7 +8,7 @@ namespace SLD.Tezos.Client
 
 	partial class Engine
 	{
-		public async Task<FaucetFlow> AlphaCreateFaucetAccount(string name, Identity managerIdentity)
+		public async Task<ProtectedTaskflow> AlphaCreateFaucetAccount(string name, Identity managerIdentity)
 		{
 			Trace("Create Faucet Account");
 
@@ -21,14 +21,7 @@ namespace SLD.Tezos.Client
 
 			Trace($"{task.AccountID} | Waiting for creation");
 
-			return new FaucetFlow(task);
-		}
-
-		public class FaucetFlow : ProtectedTaskflow
-		{
-			public FaucetFlow(CreateFaucetTask task) : base(task)
-			{
-			}
+			return new ProtectedTaskflow(task);
 		}
 	}
 }

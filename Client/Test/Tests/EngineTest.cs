@@ -14,6 +14,9 @@ namespace SLD.Tezos.Client
 		private Task<Result> WhenIdentityInitialized
 			=> Engine.DefaultIdentity.WhenInitialized;
 
+		private Task SmallDelay
+			=> Task.Delay(50);
+
 		[TestInitialize]
 		public async Task BeforeEach()
 		{
@@ -119,9 +122,10 @@ namespace SLD.Tezos.Client
 			decimal networkFee = Engine.DefaultOperationFee;
 			decimal expectedSourceBalance = source.Balance - transferAmount - networkFee;
 
-			await Engine.CreateAccount("Account", source, source, transferAmount);
+			var flow = await Engine.CreateAccount("Account", source, source, transferAmount);
 
-			await Task.Delay(500);
+			await flow.WhenAcknowledged;
+			await WhenMessagesDelivered;
 
 			Assert.AreEqual(2, source.Accounts.Count);
 
@@ -153,7 +157,9 @@ namespace SLD.Tezos.Client
 
 			await Connection.CreateBlock();
 
-			await Task.Delay(1500);
+			await flow.WhenCompleted;
+			await WhenMessagesDelivered;
+
 			Assert.AreEqual(TokenStoreState.Online, account.State);
 
 			// Account
@@ -202,19 +208,14 @@ namespace SLD.Tezos.Client
 		[TestMethod]
 		public async Task Engine_Transfer()
 		{
-			decimal transferAmount = 1;
+			await WhenIdentityInitialized;
+
+			decimal transferAmount = 2;
 			decimal networkFee = Engine.DefaultOperationFee;
 
 			var source = Engine.DefaultIdentity;
 
-			// Create destination account
-			await Engine.CreateAccount("Account", source, source, transferAmount);
-
-			await Task.Delay(500);
-
-			await Connection.CreateBlock();
-
-			await Task.Delay(500);
+			await CreateDestinationAccount(transferAmount, source);
 
 			var destination = source.Accounts[1];
 
@@ -222,9 +223,10 @@ namespace SLD.Tezos.Client
 			decimal expectedSourceBalance = source.Balance - transferAmount - networkFee;
 			decimal expectedDestinationBalance = destination.Balance + transferAmount;
 
-			await Engine.CommitTransfer(source, destination, transferAmount);
+			ProtectedTaskflow flow = await Engine.CommitTransfer(source, destination, transferAmount);
 
-			await Task.Delay(500);
+			await flow.WhenAcknowledged;
+			await WhenMessagesDelivered;
 
 			// Destination
 			Assert.AreEqual(1, destination.PendingChanges.Count);
@@ -246,7 +248,8 @@ namespace SLD.Tezos.Client
 
 			await Connection.CreateBlock();
 
-			await Task.Delay(1500);
+			await flow.WhenCompleted;
+			await WhenMessagesDelivered;
 
 			// Destination
 			Assert.AreEqual(expectedDestinationBalance, destination.Balance);
@@ -300,11 +303,11 @@ namespace SLD.Tezos.Client
 
 			var flow = await Engine.AlphaCreateFaucetAccount("Account", identity);
 
-			await Task.Delay(500);
+			await flow.WhenAcknowledged;
 
 			await Connection.Timeout(flow.Task);
 
-			await Task.Delay(500);
+			await flow.WhenCompleted;
 
 			Assert.AreEqual(2, identity.Accounts.Count);
 
@@ -320,29 +323,25 @@ namespace SLD.Tezos.Client
 		[TestMethod]
 		public async Task Engine_TimeoutTransfer()
 		{
+			await WhenIdentityInitialized;
+
 			decimal transferAmount = 1;
 
 			var source = Engine.DefaultIdentity;
 
-			// Create destination account
-			await Engine.CreateAccount("Account", source, source, transferAmount);
-
-			await Task.Delay(500);
-
-			await Connection.CreateBlock();
-
-			await Task.Delay(500);
+			await CreateDestinationAccount(transferAmount, source);
 
 			var destination = source.Accounts[1];
 
 			// Transfer
-			var task = await Engine.CommitTransfer(source, destination, transferAmount);
+			ProtectedTaskflow flow = await Engine.CommitTransfer(source, destination, transferAmount);
 
-			await Task.Delay(500);
+			await flow.WhenAcknowledged;
 
-			await Connection.Timeout(task);
+			await Connection.Timeout(flow.Task);
 
-			await Task.Delay(500);
+			await flow.WhenCompleted;
+			await WhenMessagesDelivered;
 
 			// Destination
 			Assert.IsFalse(destination.HasPendingChanges);
@@ -359,13 +358,14 @@ namespace SLD.Tezos.Client
 			var source = Engine.DefaultIdentity;
 
 			// Create destination account
-			var task = await Engine.CreateAccount("Account", source, source, transferAmount);
+			var flow = await Engine.CreateAccount("Account", source, source, transferAmount);
 
-			await Task.Delay(500);
+			await flow.WhenAcknowledged;
 
-			await Connection.Timeout(task);
+			await Connection.Timeout(flow.Task);
 
-			await Task.Delay(500);
+			await flow.WhenCompleted;
+			await WhenMessagesDelivered;
 
 			Assert.AreEqual(2, source.Accounts.Count);
 
@@ -375,6 +375,17 @@ namespace SLD.Tezos.Client
 
 			Assert.IsFalse(destination.HasPendingChanges);
 			Assert.IsFalse(source.HasPendingChanges);
+		}
+
+		private async Task CreateDestinationAccount(decimal transferAmount, Identity source)
+		{
+			// Create destination account
+			var flow = await Engine.CreateAccount("Destination", source, source, transferAmount);
+			await flow.WhenAcknowledged;
+			await WhenMessagesDelivered;
+			await Connection.CreateBlock();
+			await flow.WhenCompleted;
+			await WhenMessagesDelivered;
 		}
 	}
 }

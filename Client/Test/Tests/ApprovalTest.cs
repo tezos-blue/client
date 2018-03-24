@@ -42,7 +42,6 @@ namespace SLD.Tezos.Client
 			var task = await Engine.CreateAccount("Account", manager, manager, 100);
 
 			Assert.IsNotNull(approval);
-			Assert.AreSame(task, approval.Task);
 			Assert.AreSame(manager, approval.Signer);
 			Assert.IsNull(approval.LastError);
 			Assert.IsTrue(approval.IsApproved);

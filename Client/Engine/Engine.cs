@@ -349,7 +349,7 @@ namespace SLD.Tezos.Client
 
 			var accounts = Identities.SelectMany(i => i.Accounts.Where(a => a.IsLive));
 
-			var tasks = accounts.Select(async a => await a.Refresh(this));
+			var tasks = accounts.Select(a => a.Refresh(this));
 
 			await Task.WhenAll(tasks);
 		}

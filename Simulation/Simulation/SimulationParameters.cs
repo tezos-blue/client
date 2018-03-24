@@ -9,12 +9,11 @@ namespace SLD.Tezos.Simulation
 		public TimeSpan TimeBetweenBlocks = TimeSpan.FromSeconds(60);
 		public bool AutoBlocks { get; set; } = true;
 
-		public bool StartFresh { get; set; } = true;
 		public bool AddStaleAccount { get; set; } = false;
 
 		public ServiceState ServiceState { get; set; } = ServiceState.Operational;
 
-		public TimeSpan CallLatency { get; set; } = TimeSpan.FromSeconds(1);
+		public TimeSpan CallLatency { get; set; } = TimeSpan.FromSeconds(0.2);
 
 		// internal use
 		internal NetworkSimulation Simulation { get; set; }

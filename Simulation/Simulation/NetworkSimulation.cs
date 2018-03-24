@@ -8,95 +8,52 @@ namespace SLD.Tezos.Simulation
 {
 	using Blockchain;
 	using Client.Model;
+	using Notifications;
 	using Protocol;
 
-	public partial class NetworkSimulation : TezosObject
+	public partial class NetworkSimulation : SimulationObject
 	{
-		private static int NextID = 1;
-
-		public NetworkSimulation(SimulationParameters parameters = null)
+		public NetworkSimulation(SimulationParameters parameters = null) : base(parameters)
 		{
-			Parameters = parameters ?? new SimulationParameters();
 			Parameters.Simulation = this;
 
-			if (!Parameters.StartFresh)
-			{
-				MyIdentity = new SimulatedIdentity("FirstIdentity", Accounts)
-				{
-					Name = $"Identity {NextID++}",
-				};
-
-				Identities.AddRange(new[]
-				{
-					MyIdentity,
-				});
-
-				MyIdentity.UpdateBalance(1000);
-
-				var account = new SimulatedAccount(MyIdentity, FaucetAmount)
-				{
-					Name = "Faucet",
-				};
-
-				Accounts.Add(account);
-
-				var addTask = MyIdentity.AddAccount(account);
-			}
+			Hub = new NotificationHub(Parameters);
 
 			InitializeBlockchain();
 		}
 
-		public SimulationParameters Parameters { get; private set; }
-
 		#region Connections
 
-		private Dictionary<string, ConnectionEndpoint> connections = new Dictionary<string, ConnectionEndpoint>();
+		public NotificationHub Hub { get; private set; }
 
-		internal ConnectionEndpoint RegisterConnection(string connectionID)
+		public ConnectionEndpoint RegisterConnection(string instanceID)
 		{
-			Debug.Assert(!connections.ContainsKey(connectionID));
-
-			var endpoint = new ConnectionEndpoint
-			{
-				ID = connectionID,
-			};
-
-			connections.Add(connectionID, endpoint);
-
-			return endpoint;
+			return Hub.Register(instanceID);
 		}
 
-		internal void UnregisterConnection(string connectionID)
+		internal void UnregisterConnection(string instanceID)
 		{
-			//Debug.Assert(connections.ContainsKey(connectionID));
-			connections.Remove(connectionID);
+			Hub.Unregister(instanceID);
 		}
 
-		internal async Task MonitorAccounts(string connectionID, params string[] accountIDs)
+		internal async Task MonitorAccounts(string instanceID, params string[] accountIDs)
 		{
 			Debug.Assert(accountIDs != null);
 
 			if (accountIDs.Any())
 			{
-				var connection = connections[connectionID];
-
-				connection.MonitoredAccountIDs.AddRange(accountIDs);
-
 				foreach (var accountID in accountIDs)
 				{
 					var account = await GetAccount(accountID) as IEventSource;
 
-					account.Listeners.Add(connection);
-					Trace($"Monitor: {account}");
+					Hub.MonitorAccount(instanceID, account);
 				}
 			}
 		}
 
-		private void MonitorAccount(string connectionID, SimulatedAccount account)
+		private void MonitorAccount(string instanceID, SimulatedAccount account)
 		{
-			var connection = connections[connectionID];
-			connection.MonitoredAccountIDs.Add(account.AccountID);
-			(account as IEventSource).Listeners.Add(connection);
+			Hub.MonitorAccount(instanceID, account);
 		}
 
 		#endregion Connections
@@ -104,7 +61,6 @@ namespace SLD.Tezos.Simulation
 		#region Identities
 
 		public List<SimulatedIdentity> Identities = new List<SimulatedIdentity>();
-		public SimulatedIdentity MyIdentity;
 
 		private SimulatedIdentity FindIdentity(string identityID)
 			=> Identities.FirstOrDefault(i => i.AccountID == identityID);
@@ -185,8 +141,6 @@ namespace SLD.Tezos.Simulation
 
 		private async Task<TokenStore> GetAccount(string accountID, bool liveOnly = true)
 		{
-			await Task.Delay(50);
-
 			TokenStore account = Accounts.FirstOrDefault(a => a.AccountID == accountID);
 
 			if (account == null)
@@ -197,7 +151,7 @@ namespace SLD.Tezos.Simulation
 			if (account == null)
 			{
 				// Assume, it is an identity
-				var identity = new SimulatedIdentity(accountID);
+				var identity = new SimulatedIdentity(this, accountID);
 				Identities.Add(identity);
 
 				account = identity;
@@ -219,11 +173,9 @@ namespace SLD.Tezos.Simulation
 
 		internal async Task<CreateFaucetTask> AlphaCreateFaucet(CreateFaucetTask task, string connectionID)
 		{
-			await Task.Delay(50);
-
 			var manager = GetIdentity(task.ManagerID);
 
-			var account = new SimulatedAccount(manager, FaucetAmount);
+			var account = new SimulatedAccount(this, manager, FaucetAmount);
 
 			Accounts.Add(account);
 
@@ -251,8 +203,6 @@ namespace SLD.Tezos.Simulation
 
 		internal async Task<CreateContractTask> PrepareCreateContract(CreateContractTask task)
 		{
-			await Task.Delay(50);
-
 			task.Operation = "CCCCCC";
 			task.Progress = TaskProgress.Prepared;
 
@@ -261,8 +211,6 @@ namespace SLD.Tezos.Simulation
 
 		internal async Task<CreateContractTask> CreateContract(CreateContractTask task, string connectionID)
 		{
-			await Task.Delay(50);
-
 			task.OperationID = CreateOperationID();
 			task.Client = new ClientInfo
 			{
@@ -271,7 +219,7 @@ namespace SLD.Tezos.Simulation
 
 			var manager = GetIdentity(task.ManagerID);
 
-			var account = new SimulatedAccount(manager, 0);
+			var account = new SimulatedAccount(this, manager, 0);
 			Accounts.Add(account);
 
 			task.AccountID = account.AccountID;
@@ -308,7 +256,7 @@ namespace SLD.Tezos.Simulation
 			if (identity == null)
 			{
 				// Assume, it is an identity
-				identity = new SimulatedIdentity(identityID);
+				identity = new SimulatedIdentity(this, identityID);
 				Identities.Add(identity);
 			}
 
@@ -321,8 +269,6 @@ namespace SLD.Tezos.Simulation
 
 		internal async Task<TransferTask> PrepareTransfer(TransferTask task)
 		{
-			await Task.Delay(50);
-
 			task.Operation = "FFFFFF";
 			task.Progress = TaskProgress.Prepared;
 
@@ -331,8 +277,6 @@ namespace SLD.Tezos.Simulation
 
 		internal async Task<TransferTask> CommitTransfer(TransferTask task)
 		{
-			await Task.Delay(50);
-
 			task.OperationID = CreateOperationID();
 
 			blockchain.Add(task);

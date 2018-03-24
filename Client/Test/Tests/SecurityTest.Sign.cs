@@ -77,10 +77,10 @@ namespace SLD.Tezos.Client
 			var identity = Engine.Identities.First();
 
 			// Create, sign and submit a new contract origination
-			var task = await Engine.CreateAccount("Test", identity, identity, 1000);
+			var flow = await Engine.CreateAccount("Test", identity, identity, 1000);
 
 			// It should have been accepted by the network
-			Assert.AreEqual(TaskProgress.Submitted, task.Progress);
+			Assert.AreEqual(TaskProgress.Submitted, flow.Task.Progress);
 		}
 	}
 }

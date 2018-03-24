@@ -21,22 +21,21 @@ namespace SLD.Tezos.Client.Flow
 
 		public void Update(TaskProgress progress)
 		{
+			Trace($"Update progress: {progress}");
+
 			Task.Progress = progress;
 
 			switch (progress)
 			{
 				case TaskProgress.Acknowledged:
 
-					syncAcknowledged.SetResult(true);
+					syncAcknowledged.TrySetResult(true);
 
 					break;
 
 				case TaskProgress.Confirmed:
 
-					if (!syncAcknowledged.Task.IsCompleted)
-					{
-						syncAcknowledged.SetResult(true);
-					}
+					syncAcknowledged.TrySetResult(true);
 
 					syncCompleted.SetResult(true);
 
@@ -44,27 +43,24 @@ namespace SLD.Tezos.Client.Flow
 
 				case TaskProgress.Timeout:
 
-					if (!syncAcknowledged.Task.IsCompleted)
-					{
-						syncAcknowledged.SetResult(Result.Timeout);
-					}
+					syncAcknowledged.TrySetResult(Result.Timeout);
 
-					syncCompleted.TrySetResult(Result.Timeout);
+					syncCompleted.SetResult(Result.Timeout);
 
 					break;
 
 				case TaskProgress.Failed:
 
-					if (!syncAcknowledged.Task.IsCompleted)
-					{
-						syncAcknowledged.SetResult(Result.Error());
-					}
+					syncAcknowledged.TrySetResult(Result.Error());
 
-					syncCompleted.TrySetResult(Result.Error());
+					syncCompleted.SetResult(Result.Error());
 
 					break;
 			}
 		}
+
+		public override string ToString()
+			=> $"Flow | {Task}";
 	}
 
 	public class ProtectedTaskflow : Taskflow<ProtectedTask>

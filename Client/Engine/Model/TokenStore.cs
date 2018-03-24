@@ -124,11 +124,58 @@ namespace SLD.Tezos.Client.Model
 		internal async Task Initialize(Engine engine)
 		{
 			Trace($"Initialize");
-			BeginInitialize();
 
-			State = await OnInitialize(engine);
+			if (BeginInitialize())
+			{
+				try
+				{
+					State = await OnInitialize(engine);
+				}
+				catch
+				{
+					State = TokenStoreState.Offline;
+				}
 
-			EndInitialize();
+				EndInitialize();
+			}
+		}
+
+		internal async Task Refresh(Engine engine)
+		{
+			Trace($"Refresh");
+
+			if (BeginInitialize())
+			{
+				try
+				{
+					State = await RefreshInfo(engine);
+				}
+				catch
+				{
+					State = TokenStoreState.Offline;
+				}
+
+				EndInitialize();
+			}
+		}
+
+		protected abstract Task<TokenStoreState> OnInitialize(Engine engine);
+
+		private bool BeginInitialize()
+		{
+			if (syncInitialized == null)
+			{
+				// Start new
+				State = TokenStoreState.Initializing;
+				syncInitialized = new TaskCompletionSource<Result>();
+
+				return true;
+			}
+			else
+			{
+				// Already one running
+				return false;
+			}
 		}
 
 		private void EndInitialize()
@@ -137,26 +184,7 @@ namespace SLD.Tezos.Client.Model
 			syncInitialized = null;
 		}
 
-		private void BeginInitialize()
-		{
-			State = TokenStoreState.Initializing;
-			syncInitialized = new TaskCompletionSource<Result>();
-		}
-
-		internal async Task Refresh(Engine engine)
-		{
-			Trace($"Refresh");
-			BeginInitialize();
-
-			State = await RefreshInfo(engine);
-
-			EndInitialize();
-		}
-
-		protected abstract Task<TokenStoreState> OnInitialize(Engine engine);
-
-		#endregion
-
+		#endregion Initialization
 
 		protected async Task<TokenStoreState> RefreshInfo(Engine engine)
 		{
@@ -250,6 +278,9 @@ namespace SLD.Tezos.Client.Model
 			public string OperationID { get; set; }
 			public string ContraAccountID { get; set; }
 			public decimal Amount { get; set; }
+
+			public override string ToString()
+				=> $"Change: {Topic} | {OperationID}";
 		}
 
 		#endregion Changes
@@ -352,6 +383,5 @@ namespace SLD.Tezos.Client.Model
 		}
 
 		#endregion Entries
-
 	}
 }

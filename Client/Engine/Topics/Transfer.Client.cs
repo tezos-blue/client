@@ -2,12 +2,13 @@
 
 namespace SLD.Tezos.Client
 {
+	using Flow;
 	using Model;
 	using Protocol;
 
 	partial class Engine
 	{
-		public async Task<TransferTask> CommitTransfer(TokenStore source, TokenStore destination, decimal transferAmount, string reference = null)
+		public async Task<ProtectedTaskflow> CommitTransfer(TokenStore source, TokenStore destination, decimal transferAmount, string reference = null)
 		{
 			Trace($"Transfer {transferAmount} from {source} to {destination}");
 
@@ -35,7 +36,7 @@ namespace SLD.Tezos.Client
 
 				Trace($"Transfer committed: {transferAmount} from {source} to {destination}");
 
-				return result;
+				return new ProtectedTaskflow(result);
 			}
 
 			return null;

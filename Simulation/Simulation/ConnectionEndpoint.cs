@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace SLD.Tezos.Simulation
 {
@@ -7,8 +6,6 @@ namespace SLD.Tezos.Simulation
 
 	public class ConnectionEndpoint
 	{
-		public List<string> MonitoredAccountIDs = new List<string>();
-
 		public event Action<NetworkEvent> EventFired;
 
 		public string ID { get; set; }

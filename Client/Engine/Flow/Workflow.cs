@@ -2,7 +2,7 @@
 
 namespace SLD.Tezos.Client.Flow
 {
-	public class Workflow
+	public class Workflow : TezosObject
 	{
 		protected volatile TaskCompletionSource<Result> syncCompleted = new TaskCompletionSource<Result>();
 

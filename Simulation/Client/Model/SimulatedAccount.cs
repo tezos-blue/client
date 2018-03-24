@@ -12,26 +12,25 @@ namespace SLD.Tezos.Client.Model
 	{
 		private static int NextID = 1;
 
-		public SimulatedAccount(SimulatedIdentity manager, decimal balance) : base(null, $"Account {NextID++}")
+		NetworkSimulation simulation;
+
+		public SimulatedAccount(NetworkSimulation simulation, SimulatedIdentity manager, decimal balance) : base(null, $"Account {NextID++}")
 		{
+			this.simulation = simulation;
+
 			UpdateBalance(balance);
 			Name = AccountID;
 
 			SetManager(manager);
 		}
 
-		public SimulatedAccount(SerializationInfo info, StreamingContext context) : base(info, context)
-		{
-		}
+		//public SimulatedAccount(SerializationInfo info, StreamingContext context) : base(info, context)
+		//{
+		//}
 
 		public List<ConnectionEndpoint> Listeners { get; private set; } = new List<ConnectionEndpoint>();
 
 		public void Notify(NetworkEvent netEvent)
-		{
-			foreach (var listener in Listeners)
-			{
-				listener.Notify(netEvent);
-			}
-		}
+			=> simulation.Hub.Notify(this, netEvent);
 	}
 }

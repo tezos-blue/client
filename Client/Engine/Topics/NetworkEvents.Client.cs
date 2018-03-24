@@ -86,6 +86,8 @@ namespace SLD.Tezos.Client
 								transactionPending.Amount);
 
 							account.State = TokenStoreState.Changing;
+
+							ProtectedTaskflow.Update(transactionPending.OperationID, TaskProgress.Acknowledged);
 						}
 					}
 					break;
@@ -101,6 +103,8 @@ namespace SLD.Tezos.Client
 							account.UpdateState(changeBalance.State);
 							await account.CloseOperation(changeBalance.OperationID, changeBalance.Entry);
 						}
+
+						ProtectedTaskflow.Update(changeBalance.OperationID, TaskProgress.Confirmed);
 					}
 					break;
 
@@ -117,6 +121,8 @@ namespace SLD.Tezos.Client
 								await account.CloseOperation(opTimeout.OperationID);
 								account.State = TokenStoreState.UnheardOf;
 							}
+
+							ProtectedTaskflow.Update(opTimeout.OperationID, TaskProgress.Timeout);
 						}
 					}
 					break;
@@ -128,6 +134,8 @@ namespace SLD.Tezos.Client
 						if (accounts.TryGetValue(opTimeout.AccountID, out TokenStore account))
 						{
 							await account.CloseOperation(opTimeout.OperationID);
+
+							ProtectedTaskflow.Update(opTimeout.OperationID, TaskProgress.Timeout);
 						}
 					}
 					break;

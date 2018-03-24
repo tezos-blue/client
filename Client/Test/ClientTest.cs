@@ -13,6 +13,9 @@ namespace SLD.Tezos.Client
 		protected Engine Engine;
 		protected SimulatedConnection Connection;
 
+		protected Task WhenMessagesDelivered
+			=> Connection.WhenMessagesDelivered;
+
 		protected async Task ConnectToSimulation()
 		{
 			Engine = null;
@@ -23,7 +26,7 @@ namespace SLD.Tezos.Client
 			var parameters = new SimulationParameters
 			{
 				AutoBlocks = false,
-				CallLatency = TimeSpan.FromSeconds(0),
+				CallLatency = TimeSpan.FromMilliseconds(50),
 			};
 
 			PrepareSimulation(parameters);

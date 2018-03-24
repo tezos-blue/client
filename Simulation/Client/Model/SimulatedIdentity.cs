@@ -14,6 +14,7 @@ namespace SLD.Tezos.Client.Model
 	public class SimulatedIdentity : Identity, IEventSource
 	{
 		private string simAccountID;
+		NetworkSimulation simulation;
 
 		public SimulatedIdentity()
 		{
@@ -22,8 +23,10 @@ namespace SLD.Tezos.Client.Model
 			PublicKey = new PublicKey(publicKey);
 		}
 
-		public SimulatedIdentity(string accountID, IEnumerable<Account> accounts = null) : this()
+		public SimulatedIdentity(NetworkSimulation simulation, string accountID, IEnumerable<Account> accounts = null) : this()
 		{
+			this.simulation = simulation;
+
 			simAccountID = accountID;
 
 			if (accounts != null)
@@ -36,6 +39,7 @@ namespace SLD.Tezos.Client.Model
 		}
 
 		public override string AccountID => simAccountID;
+
 		public List<ConnectionEndpoint> Listeners { get; private set; } = new List<ConnectionEndpoint>();
 
 		internal IEnumerable<SimulatedAccount> ManagedAccounts
@@ -43,16 +47,7 @@ namespace SLD.Tezos.Client.Model
 			.Where(a => a.AccountID != AccountID)
 			.Cast<SimulatedAccount>();
 
-		public async void Notify(NetworkEvent netEvent)
-		{
-			await Task.Delay(50);
-
-			Trace($"Notify {Listeners.Count} listeners");
-
-			foreach (var listener in Listeners)
-			{
-				listener.Notify(netEvent);
-			}
-		}
+		public void Notify(NetworkEvent netEvent)
+			=> simulation.Hub.Notify(this, netEvent);
 	}
 }

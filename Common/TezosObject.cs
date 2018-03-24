@@ -5,7 +5,7 @@ namespace SLD.Tezos
 {
     public class TezosObject
     {
-        public void Trace(string text)
+		public void Trace(string text)
         {
             Tracer.Trace(this, text);
         }

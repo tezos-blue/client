@@ -2,12 +2,13 @@
 
 namespace SLD.Tezos.Client
 {
+	using Flow;
 	using Model;
 	using Protocol;
 
 	partial class Engine
 	{
-		public async Task<CreateContractTask> CreateAccount(string name, Identity managerIdentity, TokenStore source, decimal transferAmount, string stereotype = null)
+		public async Task<ProtectedTaskflow> CreateAccount(string name, Identity managerIdentity, TokenStore source, decimal transferAmount, string stereotype = null)
 		{
 			Trace("Create Account");
 
@@ -33,7 +34,7 @@ namespace SLD.Tezos.Client
 				// Create
 				Trace("Execute CreateContract");
 
-				return await Connection.CreateContract(task);
+				return new ProtectedTaskflow(await Connection.CreateContract(task));
 			}
 
 			return null;

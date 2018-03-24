@@ -29,14 +29,11 @@ namespace SLD.Tezos.Client.Connections
 				_ServiceState = parameters.ServiceState;
 			}
 		}
-
-		public event Action<NetworkEvent> EventReceived;
-
 		private string InstanceID => LocalStorageSimulation.instanceID;
 
 		public async Task<ConnectionState> Connect(InstanceInfo registration)
 		{
-			await Task.Delay(50);
+			await Latency();
 
 			endpoint = simulation.RegisterConnection(InstanceID);
 			endpoint.EventFired += FireEventReceived;
@@ -87,6 +84,9 @@ namespace SLD.Tezos.Client.Connections
 			await simulation.Timeout(task);
 		}
 
+		#region Events
+		public event Action<NetworkEvent> EventReceived;
+
 		private void FireEventReceived(NetworkEvent networkEvent)
 		{
 			try
@@ -99,6 +99,12 @@ namespace SLD.Tezos.Client.Connections
 				Trace(e);
 			}
 		}
+
+		public Task WhenMessagesDelivered
+			=> simulation.Hub.WhenPendingSent; 
+
+		#endregion
+
 
 		#region ServiceState
 
@@ -132,35 +138,35 @@ namespace SLD.Tezos.Client.Connections
 
 		public async Task<CreateFaucetTask> AlphaCreateFaucet(CreateFaucetTask task)
 		{
-			await Task.Delay(simulation.Parameters.CallLatency);
+			await Latency();
 
 			return await simulation.AlphaCreateFaucet(PrepareTask(task), InstanceID);
 		}
 
 		public async Task<CreateContractTask> PrepareCreateContract(CreateContractTask task)
 		{
-			await Task.Delay(simulation.Parameters.CallLatency);
+			await Latency();
 
 			return await simulation.PrepareCreateContract(PrepareTask(task));
 		}
 
 		public async Task<CreateContractTask> CreateContract(CreateContractTask task)
 		{
-			await Task.Delay(simulation.Parameters.CallLatency);
+			await Latency();
 
 			return await simulation.CreateContract(PrepareTask(task), InstanceID);
 		}
 
 		public async Task<TransferTask> PrepareTransfer(TransferTask task)
 		{
-			await Task.Delay(simulation.Parameters.CallLatency);
+			await Latency();
 
 			return await simulation.PrepareTransfer(PrepareTask(task));
 		}
 
 		public async Task<TransferTask> Transfer(TransferTask task)
 		{
-			await Task.Delay(simulation.Parameters.CallLatency);
+			await Latency();
 
 			return await simulation.CommitTransfer(PrepareTask(task));
 		}
