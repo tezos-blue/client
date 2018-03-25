@@ -46,6 +46,7 @@ namespace SLD.Tezos.Protocol
 		Origination,
 		Transfer,
 		Internal,
+		Delegation,
 	}
 
 	public class AccountEntryItem : TezosObject
