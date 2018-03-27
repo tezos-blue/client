@@ -14,9 +14,6 @@ namespace SLD.Tezos.Client
 		private Task<Result> WhenIdentityInitialized
 			=> Engine.DefaultIdentity.WhenInitialized;
 
-		private Task SmallDelay
-			=> Task.Delay(50);
-
 		[TestInitialize]
 		public async Task BeforeEach()
 		{
@@ -125,7 +122,7 @@ namespace SLD.Tezos.Client
 			var flow = await Engine.CreateAccount("Account", source, source, transferAmount);
 
 			await flow.WhenAcknowledged;
-			await WhenMessagesDelivered;
+			await WhenMessagesDelivered();
 
 			Assert.AreEqual(2, source.Accounts.Count);
 
@@ -153,12 +150,10 @@ namespace SLD.Tezos.Client
 			Assert.AreEqual(TokenStore.ChangeTopic.PendingTransfer, pending.Topic);
 			Assert.AreEqual(-transferAmount - networkFee, pending.Amount);
 
-			Assert.AreEqual(TokenStoreState.Creating, account.State);
-
 			await Connection.CreateBlock();
 
 			await flow.WhenCompleted;
-			await WhenMessagesDelivered;
+			await WhenMessagesDelivered();
 
 			Assert.AreEqual(TokenStoreState.Online, account.State);
 
@@ -226,7 +221,7 @@ namespace SLD.Tezos.Client
 			ProtectedTaskflow flow = await Engine.CommitTransfer(source, destination, transferAmount);
 
 			await flow.WhenAcknowledged;
-			await WhenMessagesDelivered;
+			await WhenMessagesDelivered();
 
 			// Destination
 			Assert.AreEqual(1, destination.PendingChanges.Count);
@@ -249,7 +244,7 @@ namespace SLD.Tezos.Client
 			await Connection.CreateBlock();
 
 			await flow.WhenCompleted;
-			await WhenMessagesDelivered;
+			await WhenMessagesDelivered();
 
 			// Destination
 			Assert.AreEqual(expectedDestinationBalance, destination.Balance);
@@ -341,7 +336,7 @@ namespace SLD.Tezos.Client
 			await Connection.Timeout(flow.Task);
 
 			await flow.WhenCompleted;
-			await WhenMessagesDelivered;
+			await WhenMessagesDelivered();
 
 			// Destination
 			Assert.IsFalse(destination.HasPendingChanges);
@@ -365,7 +360,7 @@ namespace SLD.Tezos.Client
 			await Connection.Timeout(flow.Task);
 
 			await flow.WhenCompleted;
-			await WhenMessagesDelivered;
+			await WhenMessagesDelivered();
 
 			Assert.AreEqual(2, source.Accounts.Count);
 
@@ -382,10 +377,10 @@ namespace SLD.Tezos.Client
 			// Create destination account
 			var flow = await Engine.CreateAccount("Destination", source, source, transferAmount);
 			await flow.WhenAcknowledged;
-			await WhenMessagesDelivered;
+			await WhenMessagesDelivered();
 			await Connection.CreateBlock();
 			await flow.WhenCompleted;
-			await WhenMessagesDelivered;
+			await WhenMessagesDelivered();
 		}
 	}
 }

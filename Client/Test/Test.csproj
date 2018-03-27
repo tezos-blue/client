@@ -63,6 +63,7 @@
     <Compile Include="Tests\ApprovalTest.cs" />
     <None Include="Tests\BIP39Test.cs" />
     <Compile Include="Tests\SimulationTest.cs" />
+    <Compile Include="Tests\NotificationTest.cs" />
     <Compile Include="Tests\VaultTest.cs" />
   </ItemGroup>
   <ItemGroup>

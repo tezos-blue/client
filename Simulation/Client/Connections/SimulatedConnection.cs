@@ -87,11 +87,11 @@ namespace SLD.Tezos.Client.Connections
 		#region Events
 		public event Action<NetworkEvent> EventReceived;
 
-		private void FireEventReceived(NetworkEvent networkEvent)
+		public void FireEventReceived(NetworkEvent networkEvent)
 		{
 			try
 			{
-				Trace($"NetworkEvent received: {networkEvent}");
+				Trace($"{networkEvent.GetType().Name} received: {networkEvent}");
 				EventReceived?.Invoke(networkEvent);
 			}
 			catch (Exception e)

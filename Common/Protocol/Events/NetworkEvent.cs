@@ -45,7 +45,7 @@
 
 		public override string ToString()
 		{
-			return $"{AccountID} | Pending: {Amount}";
+			return $"{AccountID} | Pending: {Amount} against {ContraAccountID}";
 		}
 	}
 
@@ -56,17 +56,27 @@
 
 		public override string ToString()
 		{
-			return $"{AccountID} | Pending: {Amount}";
+			return $"{AccountID} | Pending Originate as '{Name}' with Balance: {Amount}";
 		}
 	}
 
 	public class TransactionTimeoutEvent : OperationEvent
 	{
 		public string AccountID;
+
+		public override string ToString()
+		{
+			return $"{AccountID} | Timeout for transfer: {OperationID}";
+		}
 	}
 
 	public class OriginationTimeoutEvent : TransactionTimeoutEvent
 	{
 		public string ManagerID;
+
+		public override string ToString()
+		{
+			return $"{AccountID} | Timeout for origination: {OperationID}";
+		}
 	}
 }

@@ -13,8 +13,15 @@ namespace SLD.Tezos.Client
 		protected Engine Engine;
 		protected SimulatedConnection Connection;
 
-		protected Task WhenMessagesDelivered
-			=> Connection.WhenMessagesDelivered;
+		protected Task SmallDelay
+			=> Task.Delay(50);
+
+		protected async Task WhenMessagesDelivered()
+		{
+			await Connection.WhenMessagesDelivered;
+			await SmallDelay;
+		}
+			
 
 		protected async Task ConnectToSimulation()
 		{
