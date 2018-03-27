@@ -9,6 +9,7 @@
 		Confirmed,
 		Timeout,
 		Failed,
+		Cancelled,
 	}
 
 	public class BaseTask

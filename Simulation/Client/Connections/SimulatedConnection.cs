@@ -8,6 +8,7 @@ namespace SLD.Tezos.Client.Connections
 	using OS;
 	using Protocol;
 	using Simulation;
+	using System.Net.Http;
 
 	public class SimulatedConnection : TezosObject, IConnection
 	{
@@ -33,7 +34,7 @@ namespace SLD.Tezos.Client.Connections
 
 		public async Task<ConnectionState> Connect(InstanceInfo registration)
 		{
-			await Latency();
+			await CallService();
 
 			endpoint = simulation.RegisterConnection(InstanceID);
 			endpoint.EventFired += FireEventReceived;
@@ -101,10 +102,43 @@ namespace SLD.Tezos.Client.Connections
 		}
 
 		public Task WhenMessagesDelivered
-			=> simulation.Hub.WhenPendingSent; 
+			=> simulation.Hub.WhenPendingSent;
 
 		#endregion
 
+		#region Failure
+
+		public bool IsOnline { get; set; } = true;
+
+		int callsUntilFailure = -1;
+
+		public void FailAfter(int callsUntilFailure)
+		{
+			this.callsUntilFailure = callsUntilFailure;
+		}
+
+
+		private void CheckFailure()
+		{
+			if (!IsOnline)
+			{
+				throw new HttpRequestException("Not online");
+			}
+
+			if (callsUntilFailure >= 0)
+			{
+				callsUntilFailure--;
+
+				if (callsUntilFailure == -1)
+				{
+					throw new HttpRequestException("Call failed");
+				}
+			}
+		}
+
+
+
+		#endregion
 
 		#region ServiceState
 
@@ -138,35 +172,35 @@ namespace SLD.Tezos.Client.Connections
 
 		public async Task<CreateFaucetTask> AlphaCreateFaucet(CreateFaucetTask task)
 		{
-			await Latency();
+			await CallService();
 
 			return await simulation.AlphaCreateFaucet(PrepareTask(task), InstanceID);
 		}
 
 		public async Task<CreateContractTask> PrepareCreateContract(CreateContractTask task)
 		{
-			await Latency();
+			await CallService();
 
 			return await simulation.PrepareCreateContract(PrepareTask(task));
 		}
 
 		public async Task<CreateContractTask> CreateContract(CreateContractTask task)
 		{
-			await Latency();
+			await CallService();
 
 			return await simulation.CreateContract(PrepareTask(task), InstanceID);
 		}
 
 		public async Task<TransferTask> PrepareTransfer(TransferTask task)
 		{
-			await Latency();
+			await CallService();
 
 			return await simulation.PrepareTransfer(PrepareTask(task));
 		}
 
 		public async Task<TransferTask> Transfer(TransferTask task)
 		{
-			await Latency();
+			await CallService();
 
 			return await simulation.CommitTransfer(PrepareTask(task));
 		}
@@ -177,7 +211,7 @@ namespace SLD.Tezos.Client.Connections
 
 		public async Task<RegisterIdentityTask> RegisterIdentity(RegisterIdentityTask task)
 		{
-			await Latency();
+			await CallService();
 
 			return await simulation.RegisterIdentity(PrepareTask(task));
 		}
@@ -188,14 +222,14 @@ namespace SLD.Tezos.Client.Connections
 
 		public async Task<decimal> GetBalance(string accountID)
 		{
-			await Latency();
+			await CallService();
 
 			return await simulation.GetBalance(accountID);
 		}
 
 		public async Task<AccountInfo> GetAccountInfo(string accountID)
 		{
-			await Latency();
+			await CallService();
 
 			return await simulation.GetAccountInfo(accountID);
 		}
@@ -214,8 +248,10 @@ namespace SLD.Tezos.Client.Connections
 			return task;
 		}
 
-		private async Task Latency()
+		private async Task CallService()
 		{
+			CheckFailure();
+
 			var latency = simulation.Parameters.CallLatency;
 
 			if (latency.TotalMilliseconds > 0)

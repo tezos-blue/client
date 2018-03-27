@@ -22,6 +22,9 @@
 		public static Result Timeout
 			=> Error(nameof(Timeout));
 
+		public static Result Cancelled
+			=> Error(nameof(Cancelled));
+
 		public static Result Error(string errorID = GenericError)
 			=> new Result { ErrorID = errorID };
 

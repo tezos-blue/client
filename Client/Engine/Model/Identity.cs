@@ -109,6 +109,9 @@ namespace SLD.Tezos.Client.Model
 
 		public IReadOnlyList<TokenStore> Accounts => accounts;
 
+		public TokenStore this[string accountID]
+			=> accounts.FirstOrDefault(account => account.AccountID == accountID);
+
 		public async Task AddAccount(Account account)
 		{
 			Trace($"Add {account}");

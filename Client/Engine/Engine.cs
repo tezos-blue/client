@@ -439,9 +439,9 @@ namespace SLD.Tezos.Client
 
 					ConnectionState = await Connection.Connect(registration);
 				}
-				catch
+				catch(Exception e)
 				{
-					Trace("... failed");
+					Trace($"... failed: {e.Message}");
 
 					ConnectionState = ConnectionState.Disconnected;
 

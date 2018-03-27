@@ -14,12 +14,36 @@ namespace SLD.Tezos.Client.Flow
 			this.Task = task;
 		}
 
-		public T Task { get; private set; }
+		public T Task { get; internal set; }
 
 		public Task<Result> WhenAcknowledged
 			=> syncAcknowledged.Task;
 
-		public void Update(TaskProgress progress)
+		public bool IsFailed
+		{
+			get
+			{
+				switch (Task.Progress)
+				{
+					case TaskProgress.Timeout:
+					case TaskProgress.Failed:
+					case TaskProgress.Cancelled:
+						return true;
+
+					default:
+						return false;
+				}
+			}
+		}
+
+		public override string ToString()
+			=> $"Flow | {Task}";
+
+		internal void Update(T task)
+		{
+		}
+
+		internal void Update(TaskProgress progress)
 		{
 			Trace($"Update progress: {progress}");
 
@@ -56,11 +80,16 @@ namespace SLD.Tezos.Client.Flow
 					syncCompleted.SetResult(Result.Error());
 
 					break;
+
+				case TaskProgress.Cancelled:
+
+					syncAcknowledged.TrySetResult(true);
+
+					syncCompleted.SetResult(Result.Cancelled);
+
+					break;
 			}
 		}
-
-		public override string ToString()
-			=> $"Flow | {Task}";
 	}
 
 	public class ProtectedTaskflow : Taskflow<ProtectedTask>
@@ -69,13 +98,12 @@ namespace SLD.Tezos.Client.Flow
 
 		public ProtectedTaskflow(ProtectedTask task) : base(task)
 		{
-			pending.Add(task.OperationID, this);
 		}
 
 		public static int NumPending
 					=> pending.Count;
 
-		public static void Update(string operationID, TaskProgress progress)
+		internal static void Update(string operationID, TaskProgress progress)
 		{
 			if (pending.TryGetValue(operationID, out ProtectedTaskflow flow))
 			{
@@ -86,6 +114,25 @@ namespace SLD.Tezos.Client.Flow
 
 				flow.Update(progress);
 			}
+		}
+
+		internal void SetPending()
+		{
+			pending.Add(Task.OperationID, this);
+		}
+	}
+
+	public class ProtectedTaskflow<T> : ProtectedTaskflow where T : ProtectedTask
+	{
+		public ProtectedTaskflow(T task) : base(task)
+		{
+		}
+
+		new public T Task
+		{
+			get => base.Task as T;
+
+			internal set { base.Task = value; }
 		}
 	}
 }

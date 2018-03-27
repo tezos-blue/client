@@ -8,11 +8,11 @@ namespace SLD.Tezos.Client
 
 	partial class Engine
 	{
-		public async Task<ProtectedTaskflow> CreateAccount(string name, Identity managerIdentity, TokenStore source, decimal transferAmount, string stereotype = null)
+		public async Task<ProtectedTaskflow<CreateContractTask>> CreateAccount(string name, Identity managerIdentity, TokenStore source, decimal transferAmount, string stereotype = null)
 		{
-			Trace("Create Account");
+			Trace($"Create Account '{name}' for {managerIdentity}, transferring {transferAmount} from {source}");
 
-			// Prepare
+			// Create Task and Flow
 			var task = new CreateContractTask
 			{
 				Name = name,
@@ -26,18 +26,46 @@ namespace SLD.Tezos.Client
 				TransferAmount = transferAmount,
 			};
 
-			Trace("Prepare CreateContract");
-			task = await Connection.PrepareCreateContract(task);
 
-			if (await Sign(task, source.Manager))
+			var flow = new ProtectedTaskflow<CreateContractTask>(task);
+
+			// Prepare Task
+			try
 			{
-				// Create
-				Trace("Execute CreateContract");
-
-				return new ProtectedTaskflow(await Connection.CreateContract(task));
+				Trace("Prepare CreateContract");
+				flow.Task = task = await Connection.PrepareCreateContract(task);
+			}
+			catch
+			{
+				flow.Update(TaskProgress.Failed);
 			}
 
-			return null;
+			if (flow.IsFailed)
+			{
+				return flow;
+			}
+
+			// External Signing
+			if (await Sign(task, source.Manager))
+			{
+				try
+				{
+					// Submit
+					Trace("Execute CreateContract");
+					flow.Task = await Connection.CreateContract(task);
+					flow.SetPending();
+				}
+				catch
+				{
+					flow.Update(TaskProgress.Failed);
+				}
+			}
+			else
+			{
+				flow.Update(TaskProgress.Cancelled);
+			}
+
+			return flow;
 		}
 	}
 }
