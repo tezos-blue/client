@@ -17,19 +17,17 @@ namespace SLD.Tezos.Client.Connections
 			InstanceID = LocalStorageSimulation.instanceID,
 		};
 
-		private NetworkSimulation simulation;
+		NetworkSimulation simulation;
 
 		private ConnectionEndpoint endpoint;
 
-		public SimulatedConnection(SimulationParameters parameters = null)
+		internal SimulatedConnection(SimulationParameters parameters)
 		{
-			simulation = new NetworkSimulation(parameters);
+			simulation = parameters.Simulation;
 
-			if (parameters != null)
-			{
-				_ServiceState = parameters.ServiceState;
-			}
+			_ServiceState = parameters.ServiceState;
 		}
+
 		private string InstanceID => LocalStorageSimulation.instanceID;
 
 		public async Task<ConnectionState> Connect(InstanceInfo registration)

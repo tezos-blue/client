@@ -12,6 +12,7 @@ namespace SLD.Tezos.Client
 	{
 		protected Engine Engine;
 		protected SimulatedConnection Connection;
+		protected NetworkSimulation Simulation;
 
 		protected Task SmallDelay
 			=> Task.Delay(50);
@@ -46,7 +47,9 @@ namespace SLD.Tezos.Client
 
 		protected void PrepareSimulation(SimulationParameters parameters)
 		{
-			Connection = new SimulatedConnection(parameters);
+			Simulation = new NetworkSimulation(parameters);
+
+			Connection = Simulation.Connect("InstanceID");
 
 			Engine = new Engine(
 				new EngineConfiguration

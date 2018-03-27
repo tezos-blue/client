@@ -10,6 +10,7 @@ namespace SLD.Tezos.Simulation
 	using Client.Model;
 	using Notifications;
 	using Protocol;
+	using SLD.Tezos.Client.Connections;
 
 	public partial class NetworkSimulation : SimulationObject
 	{
@@ -24,17 +25,28 @@ namespace SLD.Tezos.Simulation
 
 		#region Connections
 
-		public NotificationHub Hub { get; private set; }
-
 		public ConnectionEndpoint RegisterConnection(string instanceID)
 		{
 			return Hub.Register(instanceID);
+		}
+
+		public SimulatedConnection Connect(string instanceID)
+		{
+			RegisterConnection(instanceID);
+
+			return new SimulatedConnection(Parameters);
 		}
 
 		internal void UnregisterConnection(string instanceID)
 		{
 			Hub.Unregister(instanceID);
 		}
+
+		#endregion Connections
+
+		#region Notifications
+
+		public NotificationHub Hub { get; private set; }
 
 		internal void MonitorAccounts(string instanceID, params string[] accountIDs)
 		{
@@ -56,7 +68,7 @@ namespace SLD.Tezos.Simulation
 			Hub.MonitorAccount(instanceID, account);
 		}
 
-		#endregion Connections
+		#endregion Notifications
 
 		#region Identities
 
@@ -64,6 +76,20 @@ namespace SLD.Tezos.Simulation
 
 		private SimulatedIdentity FindIdentity(string identityID)
 			=> Identities.FirstOrDefault(i => i.AccountID == identityID);
+
+		private SimulatedIdentity GetIdentity(string identityID)
+		{
+			var identity = Identities.FirstOrDefault(i => i.ManagerID == identityID);
+
+			if (identity == null)
+			{
+				// Assume, it is an identity
+				identity = new SimulatedIdentity(this, identityID);
+				Identities.Add(identity);
+			}
+
+			return identity;
+		}
 
 		#endregion Identities
 
@@ -117,6 +143,13 @@ namespace SLD.Tezos.Simulation
 			return task;
 		}
 
+		public void SetBalance(string accountID, decimal balance)
+		{
+			var account = GetAccount(accountID) as ISimulatedTokenStore;
+
+			account.SetBalance(balance);
+		}
+
 		internal AccountInfo GetAccountInfo(string accountID)
 		{
 			TokenStore account = GetAccount(accountID);
@@ -134,13 +167,6 @@ namespace SLD.Tezos.Simulation
 			TokenStore account = GetAccount(accountID);
 
 			return account.Balance;
-		}
-
-		public void SetBalance(string accountID, decimal balance)
-		{
-			var account = GetAccount(accountID) as ISimulatedTokenStore;
-
-			account.SetBalance(balance);
 		}
 
 		internal TokenStore GetAccount(string accountID, bool liveOnly = true)
@@ -174,36 +200,6 @@ namespace SLD.Tezos.Simulation
 		#endregion Accounts
 
 		#region Origination
-
-		internal CreateFaucetTask AlphaCreateFaucet(CreateFaucetTask task, string connectionID)
-		{
-			var manager = GetIdentity(task.ManagerID);
-
-			var account = new SimulatedAccount(this, manager, FaucetAmount);
-
-			Accounts.Add(account);
-
-			task.AccountID = account.AccountID;
-			task.TransferAmount = FaucetAmount;
-			task.OperationID = CreateOperationID();
-			task.Client = new ClientInfo
-			{
-				InstanceID = connectionID,
-			};
-
-			blockchain.Add(task);
-
-			manager.Notify(new OriginatePendingEvent
-			{
-				AccountID = account.AccountID,
-				Amount = FaucetAmount,
-				ManagerID = task.ManagerID,
-				Name = task.Name,
-				OperationID = task.OperationID,
-			});
-
-			return task;
-		}
 
 		public CreateContractTask PrepareCreateContract(CreateContractTask task)
 		{
@@ -253,18 +249,34 @@ namespace SLD.Tezos.Simulation
 			return task;
 		}
 
-		private SimulatedIdentity GetIdentity(string identityID)
+		internal CreateFaucetTask AlphaCreateFaucet(CreateFaucetTask task, string connectionID)
 		{
-			var identity = Identities.FirstOrDefault(i => i.ManagerID == identityID);
+			var manager = GetIdentity(task.ManagerID);
 
-			if (identity == null)
+			var account = new SimulatedAccount(this, manager, FaucetAmount);
+
+			Accounts.Add(account);
+
+			task.AccountID = account.AccountID;
+			task.TransferAmount = FaucetAmount;
+			task.OperationID = CreateOperationID();
+			task.Client = new ClientInfo
 			{
-				// Assume, it is an identity
-				identity = new SimulatedIdentity(this, identityID);
-				Identities.Add(identity);
-			}
+				InstanceID = connectionID,
+			};
 
-			return identity;
+			blockchain.Add(task);
+
+			manager.Notify(new OriginatePendingEvent
+			{
+				AccountID = account.AccountID,
+				Amount = FaucetAmount,
+				ManagerID = task.ManagerID,
+				Name = task.Name,
+				OperationID = task.OperationID,
+			});
+
+			return task;
 		}
 
 		#endregion Origination

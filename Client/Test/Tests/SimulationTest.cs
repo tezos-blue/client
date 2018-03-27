@@ -8,7 +8,7 @@ namespace SLD.Tezos.Client
 	using Tools;
 
 	[TestClass]
-	public class SimulationTest : ClientTest
+	public class SimulationTest
 	{
 		private const decimal StartBalance = 100m;
 		private const decimal TransferAmount = 10m;
