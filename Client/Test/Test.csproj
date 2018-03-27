@@ -61,6 +61,7 @@
     <Compile Include="Tests\SecurityTest.cs" />
     <Compile Include="Tests\ConnectionTest.cs" />
     <Compile Include="Tests\ApprovalTest.cs" />
+    <Compile Include="Tools\NetworkEventMonitor.cs" />
     <None Include="Tests\BIP39Test.cs" />
     <Compile Include="Tests\SimulationTest.cs" />
     <Compile Include="Tests\NotificationTest.cs" />
@@ -89,9 +90,7 @@
       <Name>Engine</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Tools\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

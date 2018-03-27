@@ -9,7 +9,7 @@ namespace SLD.Tezos.Simulation
 		public TimeSpan TimeBetweenBlocks = TimeSpan.FromSeconds(60);
 		public bool AutoBlocks { get; set; } = true;
 
-		public bool AddStaleAccount { get; set; } = false;
+		public bool EnforceValidation { get; set; } = true;
 
 		public ServiceState ServiceState { get; set; } = ServiceState.Operational;
 

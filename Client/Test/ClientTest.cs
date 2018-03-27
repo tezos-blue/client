@@ -34,6 +34,7 @@ namespace SLD.Tezos.Client
 			{
 				AutoBlocks = false,
 				CallLatency = TimeSpan.FromMilliseconds(50),
+				EnforceValidation = false,
 			};
 
 			PrepareSimulation(parameters);

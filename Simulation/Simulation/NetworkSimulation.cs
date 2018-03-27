@@ -36,7 +36,7 @@ namespace SLD.Tezos.Simulation
 			Hub.Unregister(instanceID);
 		}
 
-		internal async Task MonitorAccounts(string instanceID, params string[] accountIDs)
+		internal void MonitorAccounts(string instanceID, params string[] accountIDs)
 		{
 			Debug.Assert(accountIDs != null);
 
@@ -44,7 +44,7 @@ namespace SLD.Tezos.Simulation
 			{
 				foreach (var accountID in accountIDs)
 				{
-					var account = await GetAccount(accountID) as IEventSource;
+					var account = GetAccount(accountID) as IEventSource;
 
 					Hub.MonitorAccount(instanceID, account);
 				}
@@ -71,7 +71,7 @@ namespace SLD.Tezos.Simulation
 
 		public List<SimulatedAccount> Accounts = new List<SimulatedAccount>();
 
-		public async Task<RegisterIdentityTask> RegisterIdentity(RegisterIdentityTask task)
+		public RegisterIdentityTask RegisterIdentity(RegisterIdentityTask task)
 		{
 			var identityID = task.IdentityID;
 
@@ -84,33 +84,30 @@ namespace SLD.Tezos.Simulation
 			};
 
 			// Register for identity notifications
-			await MonitorAccounts(task.Client.InstanceID, identityID);
+			MonitorAccounts(task.Client.InstanceID, identityID);
 
 			// Find identity in database
 			var identity = FindIdentity(identityID);
 
 			if (identity != null)
 			{
-				info.Balance = await GetBalance(identityID);
+				info.Balance = GetBalance(identityID);
 				info.Name = identity.Name;
 				info.Stereotype = identity.Stereotype;
 
 				// Add managed accounts to info
-				var accountTasks = identity.ManagedAccounts.Select(
-					async account => new IdentityAccountInfo
+				info.Accounts = identity.ManagedAccounts.Select(
+					account => new IdentityAccountInfo
 					{
 						AccountID = account.AccountID,
 						Name = account.Name,
 						Stereotype = account.Stereotype,
-						Balance = await GetBalance(account.AccountID),
-					});
-
-				await Task.WhenAll(accountTasks);
-
-				info.Accounts = accountTasks.Select(t => t.Result).ToArray();
+						Balance = GetBalance(account.AccountID),
+					})
+					.ToArray();
 
 				// Register for account notifications
-				await MonitorAccounts(task.Client.InstanceID, info.Accounts.Select(a => a.AccountID).ToArray());
+				MonitorAccounts(task.Client.InstanceID, info.Accounts.Select(a => a.AccountID).ToArray());
 			}
 
 			// All the info we have
@@ -120,9 +117,9 @@ namespace SLD.Tezos.Simulation
 			return task;
 		}
 
-		internal async Task<AccountInfo> GetAccountInfo(string accountID)
+		internal AccountInfo GetAccountInfo(string accountID)
 		{
-			TokenStore account = await GetAccount(accountID);
+			TokenStore account = GetAccount(accountID);
 
 			return new AccountInfo
 			{
@@ -132,14 +129,14 @@ namespace SLD.Tezos.Simulation
 			};
 		}
 
-		internal async Task<decimal> GetBalance(string accountID)
+		internal decimal GetBalance(string accountID)
 		{
-			TokenStore account = await GetAccount(accountID);
+			TokenStore account = GetAccount(accountID);
 
 			return account.Balance;
 		}
 
-		private async Task<TokenStore> GetAccount(string accountID, bool liveOnly = true)
+		internal TokenStore GetAccount(string accountID, bool liveOnly = true)
 		{
 			TokenStore account = Accounts.FirstOrDefault(a => a.AccountID == accountID);
 
@@ -171,7 +168,7 @@ namespace SLD.Tezos.Simulation
 
 		#region Origination
 
-		internal async Task<CreateFaucetTask> AlphaCreateFaucet(CreateFaucetTask task, string connectionID)
+		internal CreateFaucetTask AlphaCreateFaucet(CreateFaucetTask task, string connectionID)
 		{
 			var manager = GetIdentity(task.ManagerID);
 
@@ -201,7 +198,7 @@ namespace SLD.Tezos.Simulation
 			return task;
 		}
 
-		internal async Task<CreateContractTask> PrepareCreateContract(CreateContractTask task)
+		internal CreateContractTask PrepareCreateContract(CreateContractTask task)
 		{
 			task.Operation = "CCCCCC";
 			task.Progress = TaskProgress.Prepared;
@@ -209,7 +206,7 @@ namespace SLD.Tezos.Simulation
 			return task;
 		}
 
-		internal async Task<CreateContractTask> CreateContract(CreateContractTask task, string connectionID)
+		internal CreateContractTask CreateContract(CreateContractTask task, string connectionID)
 		{
 			task.OperationID = CreateOperationID();
 			task.Client = new ClientInfo
@@ -224,7 +221,7 @@ namespace SLD.Tezos.Simulation
 
 			task.AccountID = account.AccountID;
 
-			var source = await GetAccount(task.SourceID);
+			var source = GetAccount(task.SourceID);
 
 			source.Notify(new TransactionPendingEvent
 			{
@@ -267,7 +264,7 @@ namespace SLD.Tezos.Simulation
 
 		#region Transactions
 
-		internal async Task<TransferTask> PrepareTransfer(TransferTask task)
+		internal TransferTask PrepareTransfer(TransferTask task)
 		{
 			task.Operation = "FFFFFF";
 			task.Progress = TaskProgress.Prepared;
@@ -275,7 +272,7 @@ namespace SLD.Tezos.Simulation
 			return task;
 		}
 
-		internal async Task<TransferTask> CommitTransfer(TransferTask task)
+		internal TransferTask CommitTransfer(TransferTask task)
 		{
 			task.OperationID = CreateOperationID();
 
@@ -283,8 +280,8 @@ namespace SLD.Tezos.Simulation
 
 			var notify = Task.Run(async () =>
 			{
-				var source = await GetAccount(task.SourceID);
-				var destination = await GetAccount(task.DestinationID);
+				var source = GetAccount(task.SourceID);
+				var destination = GetAccount(task.DestinationID);
 
 				source.Notify(new TransactionPendingEvent
 				{
@@ -310,7 +307,7 @@ namespace SLD.Tezos.Simulation
 
 		#region Timeout
 
-		internal async Task Timeout(ProtectedTask task)
+		internal void Timeout(ProtectedTask task)
 		{
 			switch (task)
 			{
@@ -327,7 +324,7 @@ namespace SLD.Tezos.Simulation
 					});
 
 					var source = pendingOriginate.SourceID != null ?
-						await GetAccount(pendingOriginate.SourceID, false) :
+						GetAccount(pendingOriginate.SourceID, false) :
 						null;
 
 					if (source != null)
@@ -343,7 +340,7 @@ namespace SLD.Tezos.Simulation
 
 				case TransferTask pendingTransfer:
 					// Notify clients
-					var destination = await GetAccount(pendingTransfer.DestinationID);
+					var destination = GetAccount(pendingTransfer.DestinationID);
 
 					destination.Notify(new TransactionTimeoutEvent
 					{
@@ -351,7 +348,7 @@ namespace SLD.Tezos.Simulation
 						AccountID = pendingTransfer.DestinationID,
 					});
 
-					source = await GetAccount(pendingTransfer.SourceID, false);
+					source = GetAccount(pendingTransfer.SourceID, false);
 
 					source.Notify(new TransactionTimeoutEvent
 					{
@@ -377,7 +374,7 @@ namespace SLD.Tezos.Simulation
 		{
 			var block = blockchain.CreateBlock();
 
-			await OnBlockCreated(block);
+			OnBlockCreated(block);
 		}
 
 		private string CreateOperationID()
@@ -392,7 +389,7 @@ namespace SLD.Tezos.Simulation
 			blockchain.BlockCreated += block => Task.Run(() => OnBlockCreated(block));
 		}
 
-		private async Task OnBlockCreated(Blockchain.Block block)
+		private void OnBlockCreated(Block block)
 		{
 			foreach (var task in block.Operations)
 			{
@@ -401,7 +398,7 @@ namespace SLD.Tezos.Simulation
 					case CreateFaucetTask taskFaucet:
 						{
 							// Update state
-							var destination = await GetAccount(taskFaucet.AccountID, false) as SimulatedAccount;
+							var destination = GetAccount(taskFaucet.AccountID, false) as SimulatedAccount;
 							destination.UpdateBalance(taskFaucet.TransferAmount);
 
 							// Register
@@ -426,7 +423,7 @@ namespace SLD.Tezos.Simulation
 							destination.Entries.Add(entry);
 
 							// Notify client
-							var identity = await GetAccount(taskFaucet.ManagerID);
+							var identity = GetAccount(taskFaucet.ManagerID);
 
 							identity.Notify(new OriginateEvent
 							{
@@ -443,12 +440,12 @@ namespace SLD.Tezos.Simulation
 					case CreateContractTask taskOriginate:
 						{
 							// Update state
-							var source = await GetAccount(taskOriginate.SourceID);
+							var source = GetAccount(taskOriginate.SourceID);
 							var sourceBalance = source.Balance - taskOriginate.TotalAmount;
 
 							source.UpdateBalance(sourceBalance);
 
-							var destination = await GetAccount(taskOriginate.AccountID, false) as SimulatedAccount;
+							var destination = GetAccount(taskOriginate.AccountID, false) as SimulatedAccount;
 							destination.UpdateBalance(taskOriginate.TransferAmount);
 
 							// Register
@@ -519,10 +516,10 @@ namespace SLD.Tezos.Simulation
 					case TransferTask taskTransfer:
 						{
 							//Update state
-							var source = await GetAccount(taskTransfer.SourceID);
+							var source = GetAccount(taskTransfer.SourceID);
 							source.UpdateBalance(source.Balance - taskTransfer.TransferAmount - taskTransfer.NetworkFee);
 
-							var destination = await GetAccount(taskTransfer.DestinationID, false);
+							var destination = GetAccount(taskTransfer.DestinationID, false);
 							destination.UpdateBalance(destination.Balance + taskTransfer.TransferAmount);
 
 							// Add entries

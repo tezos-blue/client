@@ -33,12 +33,14 @@ namespace SLD.Tezos.Notifications
 			}
 		}
 
-		public void Broadcast(NetworkEvent networkEvent)
+		public async Task Broadcast(NetworkEvent networkEvent)
 		{
 			foreach (var endpoint in connections.Values)
 			{
 				Notify(endpoint, networkEvent);
 			}
+
+			await WhenPendingSent;
 		}
 
 		internal ConnectionEndpoint Register(string instanceID)
@@ -66,7 +68,14 @@ namespace SLD.Tezos.Notifications
 			account.Listeners.Add(connection);
 		}
 
-		internal void Notify(IEventSource eventSource, NetworkEvent networkEvent)
+		public async Task Notify(string accountID, NetworkEvent networkEvent)
+		{
+			var eventSource = Parameters.Simulation.GetAccount(accountID) as IEventSource;
+
+			await Notify(eventSource, networkEvent);
+		}
+
+		internal async Task Notify(IEventSource eventSource, NetworkEvent networkEvent)
 		{
 			Trace($"Notify {eventSource} | {networkEvent}");
 
@@ -74,6 +83,8 @@ namespace SLD.Tezos.Notifications
 			{
 				Notify(endpoint, networkEvent);
 			}
+
+			await WhenPendingSent;
 		}
 
 		private async void Notify(ConnectionEndpoint endpoint, NetworkEvent networkEvent)

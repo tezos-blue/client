@@ -300,7 +300,7 @@ namespace SLD.Tezos.Client
 
 			await flow.WhenAcknowledged;
 
-			await Connection.Timeout(flow.Task);
+			Connection.Timeout(flow.Task);
 
 			await flow.WhenCompleted;
 
@@ -333,7 +333,7 @@ namespace SLD.Tezos.Client
 
 			await flow.WhenAcknowledged;
 
-			await Connection.Timeout(flow.Task);
+			Connection.Timeout(flow.Task);
 
 			await flow.WhenCompleted;
 			await WhenMessagesDelivered();
@@ -357,7 +357,7 @@ namespace SLD.Tezos.Client
 
 			await flow.WhenAcknowledged;
 
-			await Connection.Timeout(flow.Task);
+			Connection.Timeout(flow.Task);
 
 			await flow.WhenCompleted;
 			await WhenMessagesDelivered();

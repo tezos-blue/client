@@ -58,9 +58,11 @@ namespace SLD.Tezos.Client.Connections
 
 		public async Task Monitor(IEnumerable<string> accountIDs)
 		{
+			await CallService();
+
 			if (accountIDs != null)
 			{
-				await simulation.MonitorAccounts(InstanceID, accountIDs.ToArray());
+				simulation.MonitorAccounts(InstanceID, accountIDs.ToArray());
 			}
 		}
 
@@ -80,9 +82,9 @@ namespace SLD.Tezos.Client.Connections
 			return Task.FromResult(new AccountEntry[0]);
 		}
 
-		public async Task Timeout(ProtectedTask task)
+		public void Timeout(ProtectedTask task)
 		{
-			await simulation.Timeout(task);
+			simulation.Timeout(task);
 		}
 
 		#region Events
@@ -174,35 +176,35 @@ namespace SLD.Tezos.Client.Connections
 		{
 			await CallService();
 
-			return await simulation.AlphaCreateFaucet(PrepareTask(task), InstanceID);
+			return simulation.AlphaCreateFaucet(PrepareTask(task), InstanceID);
 		}
 
 		public async Task<CreateContractTask> PrepareCreateContract(CreateContractTask task)
 		{
 			await CallService();
 
-			return await simulation.PrepareCreateContract(PrepareTask(task));
+			return simulation.PrepareCreateContract(PrepareTask(task));
 		}
 
 		public async Task<CreateContractTask> CreateContract(CreateContractTask task)
 		{
 			await CallService();
 
-			return await simulation.CreateContract(PrepareTask(task), InstanceID);
+			return simulation.CreateContract(PrepareTask(task), InstanceID);
 		}
 
 		public async Task<TransferTask> PrepareTransfer(TransferTask task)
 		{
 			await CallService();
 
-			return await simulation.PrepareTransfer(PrepareTask(task));
+			return simulation.PrepareTransfer(PrepareTask(task));
 		}
 
 		public async Task<TransferTask> Transfer(TransferTask task)
 		{
 			await CallService();
 
-			return await simulation.CommitTransfer(PrepareTask(task));
+			return simulation.CommitTransfer(PrepareTask(task));
 		}
 
 		#endregion Operations
@@ -213,7 +215,7 @@ namespace SLD.Tezos.Client.Connections
 		{
 			await CallService();
 
-			return await simulation.RegisterIdentity(PrepareTask(task));
+			return simulation.RegisterIdentity(PrepareTask(task));
 		}
 
 		#endregion Identities
@@ -224,14 +226,14 @@ namespace SLD.Tezos.Client.Connections
 		{
 			await CallService();
 
-			return await simulation.GetBalance(accountID);
+			return simulation.GetBalance(accountID);
 		}
 
 		public async Task<AccountInfo> GetAccountInfo(string accountID)
 		{
 			await CallService();
 
-			return await simulation.GetAccountInfo(accountID);
+			return simulation.GetAccountInfo(accountID);
 		}
 
 		public Task RemoveStaleAccount(string accountID, string managerID)

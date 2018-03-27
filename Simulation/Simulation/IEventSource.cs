@@ -4,7 +4,7 @@ namespace SLD.Tezos.Simulation
 {
 	using Protocol;
 
-	internal interface IEventSource
+	interface IEventSource
 	{
 		List<ConnectionEndpoint> Listeners { get; }
 
