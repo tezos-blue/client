@@ -6,9 +6,10 @@ namespace SLD.Tezos.Client.Model
 {
 	using Protocol;
 	using Simulation;
+	using System.Threading.Tasks;
 
 	[Serializable]
-	public class SimulatedAccount : Account, IEventSource
+	public class SimulatedAccount : Account, ISimulatedTokenStore
 	{
 		private static int NextID = 1;
 
@@ -30,7 +31,12 @@ namespace SLD.Tezos.Client.Model
 
 		public List<ConnectionEndpoint> Listeners { get; private set; } = new List<ConnectionEndpoint>();
 
-		public void Notify(NetworkEvent netEvent)
+		public Task Notify(NetworkEvent netEvent)
 			=> simulation.Hub.Notify(this, netEvent);
+
+		public void SetBalance(decimal balance)
+		{
+			Balance = balance;
+		}
 	}
 }

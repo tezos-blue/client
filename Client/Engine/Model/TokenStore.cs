@@ -229,7 +229,7 @@ namespace SLD.Tezos.Client.Model
 				return _Balance;
 			}
 
-			private set
+			protected set
 			{
 				if (_Balance != value)
 				{

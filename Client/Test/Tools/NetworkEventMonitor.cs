@@ -1,19 +1,16 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SLD.Tezos.Simulation;
 
 namespace SLD.Tezos.Client.Tools
 {
 	using Protocol;
+	using Simulation;
 
-	class NetworkEventMonitor
+	internal class NetworkEventMonitor
 	{
 		private ConnectionEndpoint endpoint;
-		List<NetworkEvent> received = new List<NetworkEvent>();
-
+		private List<NetworkEvent> received = new List<NetworkEvent>();
 
 		public NetworkEventMonitor(ConnectionEndpoint endpoint)
 		{
@@ -26,5 +23,14 @@ namespace SLD.Tezos.Client.Tools
 		}
 
 		public int MessageCount => received.Count;
+
+		public T Single<T>() where T : NetworkEvent
+			=> received.Single(message => message.GetType() == typeof(T)) as T;
+
+		internal void AssertCount(int count)
+			=> Assert.AreEqual(count, MessageCount);
+
+		internal void Clear()
+			=> received.Clear();
 	}
 }

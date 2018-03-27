@@ -11,7 +11,7 @@ namespace SLD.Tezos.Client.Model
 	using Simulation;
 
 	[Serializable]
-	public class SimulatedIdentity : Identity, IEventSource
+	public class SimulatedIdentity : Identity, ISimulatedTokenStore
 	{
 		private string simAccountID;
 		NetworkSimulation simulation;
@@ -47,7 +47,12 @@ namespace SLD.Tezos.Client.Model
 			.Where(a => a.AccountID != AccountID)
 			.Cast<SimulatedAccount>();
 
-		public void Notify(NetworkEvent netEvent)
+		public Task Notify(NetworkEvent netEvent)
 			=> simulation.Hub.Notify(this, netEvent);
+
+		public void SetBalance(decimal balance)
+		{
+			Balance = balance;
+		}
 	}
 }

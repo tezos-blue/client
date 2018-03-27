@@ -3,11 +3,14 @@
 namespace SLD.Tezos.Simulation
 {
 	using Protocol;
+	using System.Threading.Tasks;
 
-	interface IEventSource
+	interface ISimulatedTokenStore
 	{
 		List<ConnectionEndpoint> Listeners { get; }
 
-		void Notify(NetworkEvent netEvent);
+		Task Notify(NetworkEvent netEvent);
+
+		void SetBalance(decimal balance);
 	}
 }

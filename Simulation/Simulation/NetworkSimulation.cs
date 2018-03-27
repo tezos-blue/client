@@ -44,7 +44,7 @@ namespace SLD.Tezos.Simulation
 			{
 				foreach (var accountID in accountIDs)
 				{
-					var account = GetAccount(accountID) as IEventSource;
+					var account = GetAccount(accountID) as ISimulatedTokenStore;
 
 					Hub.MonitorAccount(instanceID, account);
 				}
@@ -136,6 +136,13 @@ namespace SLD.Tezos.Simulation
 			return account.Balance;
 		}
 
+		public void SetBalance(string accountID, decimal balance)
+		{
+			var account = GetAccount(accountID) as ISimulatedTokenStore;
+
+			account.SetBalance(balance);
+		}
+
 		internal TokenStore GetAccount(string accountID, bool liveOnly = true)
 		{
 			TokenStore account = Accounts.FirstOrDefault(a => a.AccountID == accountID);
@@ -198,7 +205,7 @@ namespace SLD.Tezos.Simulation
 			return task;
 		}
 
-		internal CreateContractTask PrepareCreateContract(CreateContractTask task)
+		public CreateContractTask PrepareCreateContract(CreateContractTask task)
 		{
 			task.Operation = "CCCCCC";
 			task.Progress = TaskProgress.Prepared;
@@ -206,7 +213,7 @@ namespace SLD.Tezos.Simulation
 			return task;
 		}
 
-		internal CreateContractTask CreateContract(CreateContractTask task, string connectionID)
+		public CreateContractTask CreateContract(CreateContractTask task, string connectionID)
 		{
 			task.OperationID = CreateOperationID();
 			task.Client = new ClientInfo
@@ -264,7 +271,7 @@ namespace SLD.Tezos.Simulation
 
 		#region Transactions
 
-		internal TransferTask PrepareTransfer(TransferTask task)
+		public TransferTask PrepareTransfer(TransferTask task)
 		{
 			task.Operation = "FFFFFF";
 			task.Progress = TaskProgress.Prepared;
@@ -272,7 +279,7 @@ namespace SLD.Tezos.Simulation
 			return task;
 		}
 
-		internal TransferTask CommitTransfer(TransferTask task)
+		public TransferTask CommitTransfer(TransferTask task)
 		{
 			task.OperationID = CreateOperationID();
 
@@ -370,7 +377,7 @@ namespace SLD.Tezos.Simulation
 		private static int NextOperationID = 0;
 		private SimulatedBlockchain blockchain;
 
-		internal async Task CreateBlock()
+		public void CreateBlock()
 		{
 			var block = blockchain.CreateBlock();
 

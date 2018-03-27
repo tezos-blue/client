@@ -72,9 +72,9 @@ namespace SLD.Tezos.Client.Connections
 			endpoint.EventFired -= FireEventReceived;
 		}
 
-		public async Task CreateBlock()
+		public void CreateBlock()
 		{
-			await simulation.CreateBlock();
+			simulation.CreateBlock();
 		}
 
 		public Task<AccountEntry[]> GetAccountEntries(string accountID)
