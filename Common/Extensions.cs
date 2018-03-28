@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.IO;
+﻿using System;
 using System.Linq;
 using System.Text;
 
@@ -33,40 +31,6 @@ namespace SLD.Tezos
 		}
 
 		#endregion Byte Arrays
-
-		#region Serialization
-
-		public static readonly JsonSerializer Serializer = JsonSerializer.Create(new JsonSerializerSettings
-		{
-			TypeNameHandling = TypeNameHandling.Objects,
-			MissingMemberHandling = MissingMemberHandling.Ignore,
-		});
-
-		public static T ToModelObject<T>(this string json) where T : class
-		{
-			if (string.IsNullOrEmpty(json))
-			{
-				return null;
-			}
-
-			using (var inner = new StringReader(json))
-			using (var outer = new JsonTextReader(inner))
-			{
-				return Serializer.Deserialize<T>(outer);
-			}
-		}
-
-		public static string ToJson(this object source)
-		{
-			using (var writer = new StringWriter())
-			{
-				Serializer.Serialize(writer, source);
-
-				return writer.ToString();
-			}
-		}
-
-		#endregion Serialization
 
 		#region Safe strings
 
