@@ -52,7 +52,7 @@ namespace SLD.Tezos.Client.OS
 			throw new NotImplementedException();
 		}
 
-		private Stream MakeOutput(ClientObject item)
+		private Stream MakeOutput(object item)
 		{
 			var output = new MemoryStream();
 			var formatter = new BinaryFormatter();

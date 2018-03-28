@@ -62,7 +62,7 @@ namespace SLD.Tezos.Notifications
 			connections.Remove(instanceID);
 		}
 
-		internal void MonitorAccount(string instanceID, ISimulatedTokenStore account)
+		internal void MonitorAccount(string instanceID, SimulatedTokenStore account)
 		{
 			var connection = connections[instanceID];
 			account.Listeners.Add(connection);
@@ -70,12 +70,12 @@ namespace SLD.Tezos.Notifications
 
 		public async Task Notify(string accountID, NetworkEvent networkEvent)
 		{
-			var eventSource = Parameters.Simulation.GetAccount(accountID) as ISimulatedTokenStore;
+			var eventSource = Parameters.Simulation.GetAccount(accountID) as SimulatedTokenStore;
 
 			await Notify(eventSource, networkEvent);
 		}
 
-		internal async Task Notify(ISimulatedTokenStore eventSource, NetworkEvent networkEvent)
+		internal async Task Notify(SimulatedTokenStore eventSource, NetworkEvent networkEvent)
 		{
 			Trace($"Notify {eventSource} | {networkEvent}");
 

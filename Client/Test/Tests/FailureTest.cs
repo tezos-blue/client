@@ -109,7 +109,7 @@ namespace SLD.Tezos.Client.Tests
 		{
 			var flow = await Engine.CreateAccount("Account", identity, identity, 1);
 
-			Connection.CreateBlock();
+			Simulation.CreateBlock();
 
 			await flow.WhenCompleted;
 			await WhenMessagesDelivered();

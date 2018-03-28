@@ -8,7 +8,8 @@ namespace SLD.Tezos
 	{
 		partial class NetworkSimulation
 		{
-			public static decimal FaucetAmount = 100000;
+			public const decimal FaucetAmount = 100000;
+			public const decimal MinimumBalance = 0.9m;
 		}
 	}
 }

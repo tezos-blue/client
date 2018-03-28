@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client.Connections
@@ -8,7 +9,6 @@ namespace SLD.Tezos.Client.Connections
 	using OS;
 	using Protocol;
 	using Simulation;
-	using System.Net.Http;
 
 	public class SimulatedConnection : TezosObject, IConnection
 	{
@@ -17,7 +17,7 @@ namespace SLD.Tezos.Client.Connections
 			InstanceID = LocalStorageSimulation.instanceID,
 		};
 
-		NetworkSimulation simulation;
+		private NetworkSimulation simulation;
 
 		private ConnectionEndpoint endpoint;
 
@@ -70,23 +70,22 @@ namespace SLD.Tezos.Client.Connections
 			endpoint.EventFired -= FireEventReceived;
 		}
 
-		public void CreateBlock()
+		public async Task<AccountEntry[]> GetAccountEntries(string accountID)
 		{
-			simulation.CreateBlock();
-		}
+			await CallService();
 
-		public Task<AccountEntry[]> GetAccountEntries(string accountID)
-		{
-			return Task.FromResult(new AccountEntry[0]);
-		}
+			var account = simulation.GetAccount(accountID);
 
-		public void Timeout(ProtectedTask task)
-		{
-			simulation.Timeout(task);
+			return account.Entries
+				.ToArray();
 		}
 
 		#region Events
+
 		public event Action<NetworkEvent> EventReceived;
+
+		public Task WhenMessagesDelivered
+			=> simulation.Hub.WhenPendingSent;
 
 		public void FireEventReceived(NetworkEvent networkEvent)
 		{
@@ -101,22 +100,17 @@ namespace SLD.Tezos.Client.Connections
 			}
 		}
 
-		public Task WhenMessagesDelivered
-			=> simulation.Hub.WhenPendingSent;
-
-		#endregion
+		#endregion Events
 
 		#region Failure
 
+		private int callsUntilFailure = -1;
 		public bool IsOnline { get; set; } = true;
-
-		int callsUntilFailure = -1;
 
 		public void FailAfter(int callsUntilFailure)
 		{
 			this.callsUntilFailure = callsUntilFailure;
 		}
-
 
 		private void CheckFailure()
 		{
@@ -136,9 +130,7 @@ namespace SLD.Tezos.Client.Connections
 			}
 		}
 
-
-
-		#endregion
+		#endregion Failure
 
 		#region ServiceState
 
@@ -234,9 +226,11 @@ namespace SLD.Tezos.Client.Connections
 			return simulation.GetAccountInfo(accountID);
 		}
 
-		public Task RemoveStaleAccount(string accountID, string managerID)
+		public async Task RemoveStaleAccount(string accountID, string managerID)
 		{
-			throw new NotImplementedException();
+			await CallService();
+
+			simulation.RemoveStaleAccount(accountID, managerID);
 		}
 
 		#endregion Accounts

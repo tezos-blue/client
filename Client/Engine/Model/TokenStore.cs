@@ -37,12 +37,12 @@ namespace SLD.Tezos.Client.Model
 				return _Name ?? AccountID;
 			}
 
-			set
+			internal set
 			{
 				if (_Name != value)
 				{
 					_Name = value;
-					FirePropertyChanged("Name");
+					FirePropertyChanged(nameof(Name));
 				}
 			}
 		}
@@ -66,7 +66,7 @@ namespace SLD.Tezos.Client.Model
 				{
 					_State = value;
 					FirePropertyChanged();
-					FirePropertyChanged("IsChanging");
+					FirePropertyChanged(nameof(IsChanging));
 				}
 			}
 		}
@@ -194,7 +194,7 @@ namespace SLD.Tezos.Client.Model
 			{
 				var info = await engine.Connection.GetAccountInfo(AccountID);
 
-				UpdateBalance(info.Balance);
+				Balance = info.Balance;
 
 				return TokenStoreState.Online;
 			}
@@ -229,24 +229,24 @@ namespace SLD.Tezos.Client.Model
 				return _Balance;
 			}
 
-			protected set
+			internal set
 			{
 				if (_Balance != value)
 				{
 					_Balance = value;
-					FirePropertyChanged("Balance");
-					FirePropertyChanged("IsLive");
-					FirePropertyChanged("CanTransfer");
+					FirePropertyChanged(nameof(Balance));
+					FirePropertyChanged(nameof(IsLive));
+					FirePropertyChanged(nameof(CanTransfer));
 					FireChange(new Change(ChangeTopic.Balance) { Amount = value });
+					OnBalanceChanged();
 				}
 			}
 		}
 
 		public bool CanTransfer => Balance > 0;
 
-		public virtual void UpdateBalance(decimal current)
+		protected virtual void OnBalanceChanged()
 		{
-			Balance = current;
 		}
 
 		#endregion Balance
@@ -313,10 +313,10 @@ namespace SLD.Tezos.Client.Model
 
 			if (PendingChanges.Count == 1)
 			{
-				FirePropertyChanged("HasPendingChanges");
+				FirePropertyChanged(nameof(HasPendingChanges));
 			}
 
-			FirePropertyChanged("AmountPending");
+			FirePropertyChanged(nameof(AmountPending));
 		}
 
 		internal async Task CloseOperation(string operationID, AccountEntry entry = null)
@@ -332,10 +332,10 @@ namespace SLD.Tezos.Client.Model
 
 				if (PendingChanges.Count == 0)
 				{
-					FirePropertyChanged("HasPendingChanges");
+					FirePropertyChanged(nameof(HasPendingChanges));
 				}
 
-				FirePropertyChanged("AmountPending");
+				FirePropertyChanged(nameof(AmountPending));
 			}
 
 			if (entry != null)
@@ -373,8 +373,8 @@ namespace SLD.Tezos.Client.Model
 
 				IsEntriesComplete = true;
 
-				FirePropertyChanged("Entries");
-				FirePropertyChanged("IsEntriesComplete");
+				FirePropertyChanged(nameof(Entries));
+				FirePropertyChanged(nameof(IsEntriesComplete));
 			}
 			catch (ServerException e)
 			{

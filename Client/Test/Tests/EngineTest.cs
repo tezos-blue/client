@@ -81,7 +81,7 @@ namespace SLD.Tezos.Client
 			Assert.AreEqual(TokenStore.ChangeTopic.PendingTransfer, pending.Topic);
 			Assert.AreEqual(NetworkSimulation.FaucetAmount, pending.Amount);
 
-			Connection.CreateBlock();
+			Simulation.CreateBlock();
 
 			await faucetFlow.WhenCompleted;
 
@@ -150,7 +150,7 @@ namespace SLD.Tezos.Client
 			Assert.AreEqual(TokenStore.ChangeTopic.PendingTransfer, pending.Topic);
 			Assert.AreEqual(-transferAmount - networkFee, pending.Amount);
 
-			Connection.CreateBlock();
+			Simulation.CreateBlock();
 
 			await flow.WhenCompleted;
 			await WhenMessagesDelivered();
@@ -241,7 +241,7 @@ namespace SLD.Tezos.Client
 			Assert.AreEqual(TokenStore.ChangeTopic.PendingTransfer, pending.Topic);
 			Assert.AreEqual(-transferAmount - networkFee, pending.Amount);
 
-			Connection.CreateBlock();
+			Simulation.CreateBlock();
 
 			await flow.WhenCompleted;
 			await WhenMessagesDelivered();
@@ -300,7 +300,7 @@ namespace SLD.Tezos.Client
 
 			await flow.WhenAcknowledged;
 
-			Connection.Timeout(flow.Task);
+			Simulation.Timeout(flow.Task);
 
 			await flow.WhenCompleted;
 
@@ -333,7 +333,7 @@ namespace SLD.Tezos.Client
 
 			await flow.WhenAcknowledged;
 
-			Connection.Timeout(flow.Task);
+			Simulation.Timeout(flow.Task);
 
 			await flow.WhenCompleted;
 			await WhenMessagesDelivered();
@@ -357,7 +357,7 @@ namespace SLD.Tezos.Client
 
 			await flow.WhenAcknowledged;
 
-			Connection.Timeout(flow.Task);
+			Simulation.Timeout(flow.Task);
 
 			await flow.WhenCompleted;
 			await WhenMessagesDelivered();
@@ -378,7 +378,7 @@ namespace SLD.Tezos.Client
 			var flow = await Engine.CreateAccount("Destination", source, source, transferAmount);
 			await flow.WhenAcknowledged;
 			await WhenMessagesDelivered();
-			Connection.CreateBlock();
+			Simulation.CreateBlock();
 			await flow.WhenCompleted;
 			await WhenMessagesDelivered();
 		}

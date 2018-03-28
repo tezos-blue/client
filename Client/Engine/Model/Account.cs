@@ -34,8 +34,8 @@ namespace SLD.Tezos.Client.Model
 		internal void SetAccountID(string accountID)
 		{
 			_AccountID = accountID;
-			FirePropertyChanged("AccountID");
-			FirePropertyChanged("Name");
+			FirePropertyChanged(nameof(AccountID));
+			FirePropertyChanged(nameof(Name));
 		}
 
 		#endregion AccountID
@@ -49,8 +49,8 @@ namespace SLD.Tezos.Client.Model
 		public void SetManager(Identity manager)
 		{
 			_Manager = manager;
-			FirePropertyChanged("Manager");
-			FirePropertyChanged("ManagerID");
+			FirePropertyChanged(nameof(Manager));
+			FirePropertyChanged(nameof(ManagerID));
 		}
 
 

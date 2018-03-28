@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace SLD.Tezos.Simulation
 {
 	using Blockchain;
+	using Client.Connections;
 	using Client.Model;
 	using Notifications;
 	using Protocol;
-	using SLD.Tezos.Client.Connections;
 
 	public partial class NetworkSimulation : SimulationObject
 	{
@@ -56,14 +56,14 @@ namespace SLD.Tezos.Simulation
 			{
 				foreach (var accountID in accountIDs)
 				{
-					var account = GetAccount(accountID) as ISimulatedTokenStore;
+					var account = GetAccount(accountID) as SimulatedTokenStore;
 
 					Hub.MonitorAccount(instanceID, account);
 				}
 			}
 		}
 
-		private void MonitorAccount(string instanceID, SimulatedAccount account)
+		private void MonitorAccount(string instanceID, SimulatedTokenStore account)
 		{
 			Hub.MonitorAccount(instanceID, account);
 		}
@@ -145,14 +145,14 @@ namespace SLD.Tezos.Simulation
 
 		public void SetBalance(string accountID, decimal balance)
 		{
-			var account = GetAccount(accountID) as ISimulatedTokenStore;
+			var account = GetAccount(accountID);
 
-			account.SetBalance(balance);
+			account.Balance = balance;
 		}
 
 		internal AccountInfo GetAccountInfo(string accountID)
 		{
-			TokenStore account = GetAccount(accountID);
+			var account = GetAccount(accountID);
 
 			return new AccountInfo
 			{
@@ -164,14 +164,14 @@ namespace SLD.Tezos.Simulation
 
 		internal decimal GetBalance(string accountID)
 		{
-			TokenStore account = GetAccount(accountID);
+			var account = GetAccount(accountID);
 
 			return account.Balance;
 		}
 
-		internal TokenStore GetAccount(string accountID, bool liveOnly = true)
+		internal SimulatedTokenStore GetAccount(string accountID, bool liveOnly = true)
 		{
-			TokenStore account = Accounts.FirstOrDefault(a => a.AccountID == accountID);
+			SimulatedTokenStore account = Accounts.FirstOrDefault(a => a.AccountID == accountID);
 
 			if (account == null)
 			{
@@ -188,6 +188,7 @@ namespace SLD.Tezos.Simulation
 			}
 			else
 			{
+				// Check if account is alive
 				if (liveOnly && !account.IsLive)
 				{
 					throw new ServerException(ServerError.AccountNotFound, $"Not in simulated Network: {accountID}", null);
@@ -195,6 +196,21 @@ namespace SLD.Tezos.Simulation
 			}
 
 			return account;
+		}
+
+		public void RemoveStaleAccount(string accountID, string managerID)
+		{
+			var identity = FindIdentity(managerID);
+
+			if (identity == null)
+				throw new ArgumentException("Identity not found", nameof(managerID));
+
+			var found = identity.Accounts.FirstOrDefault(account => account.AccountID == accountID);
+
+			if (found == null)
+				throw new ArgumentException("Account not found", nameof(accountID));
+
+			identity.Accounts.Remove(found);
 		}
 
 		#endregion Accounts
@@ -220,7 +236,9 @@ namespace SLD.Tezos.Simulation
 			var manager = GetIdentity(task.ManagerID);
 
 			var account = new SimulatedAccount(this, manager, 0);
+
 			Accounts.Add(account);
+			manager.Accounts.Add(account);
 
 			task.AccountID = account.AccountID;
 
@@ -256,6 +274,7 @@ namespace SLD.Tezos.Simulation
 			var account = new SimulatedAccount(this, manager, FaucetAmount);
 
 			Accounts.Add(account);
+			manager.Accounts.Add(account);
 
 			task.AccountID = account.AccountID;
 			task.TransferAmount = FaucetAmount;
@@ -297,26 +316,23 @@ namespace SLD.Tezos.Simulation
 
 			blockchain.Add(task);
 
-			var notify = Task.Run(async () =>
+			var source = GetAccount(task.SourceID);
+			var destination = GetAccount(task.DestinationID);
+
+			source.Notify(new TransactionPendingEvent
 			{
-				var source = GetAccount(task.SourceID);
-				var destination = GetAccount(task.DestinationID);
+				AccountID = source.AccountID,
+				Amount = -task.TotalAmount,
+				ContraAccountID = destination.AccountID,
+				OperationID = task.OperationID,
+			});
 
-				source.Notify(new TransactionPendingEvent
-				{
-					AccountID = source.AccountID,
-					Amount = -task.TotalAmount,
-					ContraAccountID = destination.AccountID,
-					OperationID = task.OperationID,
-				});
-
-				destination.Notify(new TransactionPendingEvent
-				{
-					AccountID = destination.AccountID,
-					Amount = task.TransferAmount,
-					ContraAccountID = source.AccountID,
-					OperationID = task.OperationID,
-				});
+			destination.Notify(new TransactionPendingEvent
+			{
+				AccountID = destination.AccountID,
+				Amount = task.TransferAmount,
+				ContraAccountID = source.AccountID,
+				OperationID = task.OperationID,
 			});
 
 			return task;
@@ -326,7 +342,7 @@ namespace SLD.Tezos.Simulation
 
 		#region Timeout
 
-		internal void Timeout(ProtectedTask task)
+		public void Timeout(ProtectedTask task)
 		{
 			switch (task)
 			{
@@ -417,8 +433,8 @@ namespace SLD.Tezos.Simulation
 					case CreateFaucetTask taskFaucet:
 						{
 							// Update state
-							var destination = GetAccount(taskFaucet.AccountID, false) as SimulatedAccount;
-							destination.UpdateBalance(taskFaucet.TransferAmount);
+							var destination = GetAccount(taskFaucet.AccountID, false);
+							destination.Balance = taskFaucet.TransferAmount;
 
 							// Register
 							MonitorAccount(taskFaucet.Client.InstanceID, destination);
@@ -452,6 +468,7 @@ namespace SLD.Tezos.Simulation
 								Balance = destination.Balance,
 								OperationID = taskFaucet.OperationID,
 								Entry = entry,
+								State = AccountState.Live,
 							});
 						}
 						break;
@@ -460,12 +477,11 @@ namespace SLD.Tezos.Simulation
 						{
 							// Update state
 							var source = GetAccount(taskOriginate.SourceID);
-							var sourceBalance = source.Balance - taskOriginate.TotalAmount;
 
-							source.UpdateBalance(sourceBalance);
+							source.Balance -= taskOriginate.TotalAmount;
 
-							var destination = GetAccount(taskOriginate.AccountID, false) as SimulatedAccount;
-							destination.UpdateBalance(taskOriginate.TransferAmount);
+							var destination = GetAccount(taskOriginate.AccountID, false);
+							destination.Balance = taskOriginate.TransferAmount;
 
 							// Register
 							MonitorAccount(taskOriginate.Client.InstanceID, destination);
@@ -473,7 +489,7 @@ namespace SLD.Tezos.Simulation
 							// Add entries
 							var sourceEntry = new AccountEntry(block.Index, block.Time)
 							{
-								Balance = sourceBalance,
+								Balance = source.Balance,
 								OperationID = taskOriginate.OperationID,
 								NetworkFee = taskOriginate.NetworkFee,
 								StorageFee = 1,
@@ -516,6 +532,7 @@ namespace SLD.Tezos.Simulation
 								Balance = source.Balance,
 								OperationID = taskOriginate.OperationID,
 								Entry = sourceEntry,
+								State = source.IsLive ? AccountState.Live : AccountState.Archived,
 							});
 
 							var manager = GetIdentity(taskOriginate.ManagerID);
@@ -528,6 +545,7 @@ namespace SLD.Tezos.Simulation
 								Balance = destination.Balance,
 								OperationID = taskOriginate.OperationID,
 								Entry = destinationEntry,
+								State = AccountState.Live,
 							});
 						}
 						break;
@@ -536,10 +554,10 @@ namespace SLD.Tezos.Simulation
 						{
 							//Update state
 							var source = GetAccount(taskTransfer.SourceID);
-							source.UpdateBalance(source.Balance - taskTransfer.TransferAmount - taskTransfer.NetworkFee);
+							source.Balance -= taskTransfer.TotalAmount;
 
 							var destination = GetAccount(taskTransfer.DestinationID, false);
-							destination.UpdateBalance(destination.Balance + taskTransfer.TransferAmount);
+							destination.Balance += taskTransfer.TransferAmount;
 
 							// Add entries
 							var sourceEntry = new AccountEntry(block.Index, block.Time)
@@ -586,6 +604,7 @@ namespace SLD.Tezos.Simulation
 								Balance = source.Balance,
 								OperationID = taskTransfer.OperationID,
 								Entry = sourceEntry,
+								State = source.IsLive ? AccountState.Live : AccountState.Archived,
 							});
 
 							destination.Notify(new BalanceChangedEvent
@@ -594,6 +613,7 @@ namespace SLD.Tezos.Simulation
 								Balance = destination.Balance,
 								OperationID = taskTransfer.OperationID,
 								Entry = destinationEntry,
+								State = AccountState.Live,
 							});
 						}
 						break;

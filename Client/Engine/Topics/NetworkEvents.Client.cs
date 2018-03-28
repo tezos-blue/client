@@ -65,7 +65,7 @@ namespace SLD.Tezos.Client
 								account.Entries.Insert(0, originate.Entry);
 							}
 
-							account.UpdateBalance(originate.Balance);
+							account.Balance = originate.Balance;
 
 							account.State = TokenStoreState.Online;
 
@@ -99,7 +99,7 @@ namespace SLD.Tezos.Client
 
 						if (accounts.TryGetValue(changeBalance.AccountID, out TokenStore account))
 						{
-							account.UpdateBalance(changeBalance.Balance);
+							account.Balance = changeBalance.Balance;
 							account.UpdateState(changeBalance.State);
 							await account.CloseOperation(changeBalance.OperationID, changeBalance.Entry);
 						}

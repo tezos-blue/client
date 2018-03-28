@@ -11,7 +11,7 @@ namespace SLD.Tezos.Client.Model
 	using Protocol;
 	using Security;
 
-	public partial class Identity : TokenStore
+	public sealed partial class Identity : TokenStore
 	{
 		public const string DefaultStereotype = "Identity";
 
@@ -56,22 +56,22 @@ namespace SLD.Tezos.Client.Model
 
 			register = await engine.Connection.RegisterIdentity(register);
 
-			var identity = register.Info;
+			var identityInfo = register.Info;
 
 			// Initialize
-			if (identity != null && !identity.IsUnknown)
+			if (identityInfo != null && !identityInfo.IsUnknown)
 			{
-				UpdateBalance(identity.Balance);
+				Balance = identityInfo.Balance;
 
 				// Managed Accounts
-				var accounts = identity.Accounts.Select(info =>
+				var accounts = identityInfo.Accounts.Select(info =>
 				{
 					var account = new Account(info.Name, info.AccountID)
 					{
 						Stereotype = info.Stereotype,
 					};
 
-					account.UpdateBalance(info.Balance);
+					account.Balance = info.Balance;
 					account.UpdateState(info.State);
 
 					return account;
@@ -85,7 +85,7 @@ namespace SLD.Tezos.Client.Model
 				}
 			}
 
-			FirePropertyChanged("TotalBalance");
+			FirePropertyChanged(nameof(TotalBalance));
 
 			return TokenStoreState.Online;
 		}
@@ -94,11 +94,9 @@ namespace SLD.Tezos.Client.Model
 
 		public decimal TotalBalance => Accounts.Sum(account => account.Balance);
 
-		public override void UpdateBalance(decimal change)
+		protected override void OnBalanceChanged()
 		{
-			base.UpdateBalance(change);
-
-			FirePropertyChanged("TotalBalance");
+			FirePropertyChanged(nameof(TotalBalance));
 		}
 
 		#endregion Balance
@@ -112,7 +110,7 @@ namespace SLD.Tezos.Client.Model
 		public TokenStore this[string accountID]
 			=> accounts.FirstOrDefault(account => account.AccountID == accountID);
 
-		public async Task AddAccount(Account account)
+		internal async Task AddAccount(Account account)
 		{
 			Trace($"Add {account}");
 
@@ -162,7 +160,7 @@ namespace SLD.Tezos.Client.Model
 			switch (change.Topic)
 			{
 				case Account.ChangeTopic.Balance:
-					FirePropertyChanged("TotalBalance");
+					FirePropertyChanged(nameof(TotalBalance));
 					break;
 
 				default:
