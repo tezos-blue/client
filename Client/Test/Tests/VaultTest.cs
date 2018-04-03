@@ -23,10 +23,10 @@ namespace SLD.Tezos.Client
 				Name = "Name",
 				Stereotype = "Stereotype",
 				Keys = new KeyPair
-				{
-					PublicKey = new PublicKey(new byte[] { 1, 2, 3 }),
-					PrivateKey = new PrivateKey(new byte[] { 4, 5, 6 }, "Passphrase"),
-				}
+				(
+					new PublicKey(new byte[] { 1, 2, 3 }),
+					new PrivateKey(new byte[] { 4, 5, 6 }, "Passphrase")
+				),
 			};
 
 			// Serialize - Deserialize

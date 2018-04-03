@@ -211,5 +211,12 @@ namespace SLD.Tezos.Client.Model
 		}
 
 		#endregion Lock
+
+		#region Backup
+
+		public byte[] BackupData
+			=> provider.GetBackupData(AccountID);
+
+		#endregion
 	}
 }

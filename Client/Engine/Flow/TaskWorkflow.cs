@@ -61,7 +61,7 @@ namespace SLD.Tezos.Client.Flow
 
 					syncAcknowledged.TrySetResult(true);
 
-					syncCompleted.SetResult(true);
+					syncCompleted.TrySetResult(true);
 
 					break;
 
@@ -69,7 +69,7 @@ namespace SLD.Tezos.Client.Flow
 
 					syncAcknowledged.TrySetResult(Result.Timeout);
 
-					syncCompleted.SetResult(Result.Timeout);
+					syncCompleted.TrySetResult(Result.Timeout);
 
 					break;
 
@@ -77,7 +77,7 @@ namespace SLD.Tezos.Client.Flow
 
 					syncAcknowledged.TrySetResult(Result.Error());
 
-					syncCompleted.SetResult(Result.Error());
+					syncCompleted.TrySetResult(Result.Error());
 
 					break;
 
@@ -85,7 +85,7 @@ namespace SLD.Tezos.Client.Flow
 
 					syncAcknowledged.TrySetResult(true);
 
-					syncCompleted.SetResult(Result.Cancelled);
+					syncCompleted.TrySetResult(Result.Cancelled);
 
 					break;
 			}

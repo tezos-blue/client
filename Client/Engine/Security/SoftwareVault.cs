@@ -27,6 +27,8 @@ namespace SLD.Tezos.Client.Security
 		void Lock(string identityID);
 
 		bool IsUnlocked(string identityID);
+
+		byte[] GetBackupData(string identityID);
 	}
 
 	public class SoftwareVault : IManageIdentities, IProvideSigning
@@ -57,8 +59,16 @@ namespace SLD.Tezos.Client.Security
 		{
 			if (keyPair == null) throw new ArgumentNullException(nameof(keyPair), "Identities must have keys");
 
+			// Remove existing
+			var slot = Find(keyPair.PublicID);
+
+			if (slot != null)
+			{
+				identities.Remove(slot);
+			}
+
 			// Store in slot
-			var slot = new Slot
+			slot = new Slot
 			{
 				Name = name,
 				Stereotype = stereotype,
@@ -115,6 +125,12 @@ namespace SLD.Tezos.Client.Security
 			return identity.IsUnlocked;
 		}
 
+		public byte[] GetBackupData(string identityID)
+			=> Get(identityID)
+			.Keys
+			.PrivateKey
+			.EncryptedData;
+		
 		#endregion IManageIdentities
 
 		#region IProvideSigning
@@ -217,6 +233,7 @@ namespace SLD.Tezos.Client.Security
 
 			public string IdentityID => Keys.PublicID;
 
+			// SECURITY Critical, never let outside of Engine
 			internal byte[] PrivateKeyData
 			{
 				get
@@ -268,17 +285,17 @@ namespace SLD.Tezos.Client.Security
 				Name = info.GetString("Name");
 				Stereotype = info.GetString("Stereotype");
 
-				Keys = new KeyPair
-				{
-					PublicKey = (PublicKey)info.GetValue("PublicKey", typeof(PublicKey))
-				};
+				PublicKey publicKey = (PublicKey)info.GetValue("PublicKey", typeof(PublicKey));
+				PrivateKey privateKey = null;
 
 				var encryptedPrivate = (byte[])info.GetValue("PrivateKey", typeof(byte[]));
 
 				if (encryptedPrivate != null)
 				{
-					Keys.PrivateKey = PrivateKey.Restore(encryptedPrivate);
+					privateKey = new PrivateKey(encryptedPrivate);
 				}
+
+				Keys = new KeyPair(publicKey, privateKey);
 			}
 
 			public void GetObjectData(SerializationInfo info, StreamingContext context)

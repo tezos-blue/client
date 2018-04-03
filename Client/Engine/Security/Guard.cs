@@ -4,21 +4,17 @@ using System.IO;
 namespace SLD.Tezos.Client.Security
 {
 	using Cryptography;
-	using SLD.Tezos.Protocol;
+	using Protocol;
 
 	internal static class Guard
 	{
 		internal static KeyPair CreateKeyPair(Passphrase passphrase)
 		{
-			byte[] publicKey, privateKey;
+			CryptoServices.CreateKeyPair(out byte[] publicKey, out byte[] privateKey);
 
-			CryptoServices.CreateKeyPair(out publicKey, out privateKey);
-
-			return new KeyPair
-			{
-				PublicKey = new PublicKey(publicKey),
-				PrivateKey = new PrivateKey(privateKey, passphrase),
-			};
+			return new KeyPair(
+				new PublicKey(publicKey),
+				new PrivateKey(privateKey, passphrase));
 		}
 
 		#region Import keys

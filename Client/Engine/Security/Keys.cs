@@ -64,16 +64,11 @@ namespace SLD.Tezos.Client.Security
 		{
 		}
 
-		private PrivateKey(byte[] encryptedData) : base(encryptedData)
+		public PrivateKey(byte[] encryptedData) : base(encryptedData)
 		{
 		}
 
 		public byte[] EncryptedData => Data;
-
-		internal static PrivateKey Restore(byte[] encryptedData)
-		{
-			return new PrivateKey(encryptedData);
-		}
 
 		internal byte[] AccessData(Passphrase passphrase)
 		{
@@ -84,8 +79,14 @@ namespace SLD.Tezos.Client.Security
 	[Serializable]
 	public class KeyPair
 	{
-		public PublicKey PublicKey { get; set; }
-		public PrivateKey PrivateKey { get; set; }
+		public KeyPair(PublicKey publicKey, PrivateKey privateKey)
+		{
+			PublicKey = publicKey;
+			PrivateKey = privateKey;
+		}
+
+		public PublicKey PublicKey { get; private set; }
+		public PrivateKey PrivateKey { get; private set; }
 
 		public string PublicID => PublicKey.Hash;
 
