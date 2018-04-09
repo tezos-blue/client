@@ -7,7 +7,7 @@ namespace SLD.Tezos.Client.Flow
 
 	public class Taskflow<T> : Workflow where T : BaseTask
 	{
-		protected volatile TaskCompletionSource<Result> syncAcknowledged = new TaskCompletionSource<Result>();
+		protected volatile SyncEvent syncAcknowledged = new SyncEvent();
 
 		public Taskflow(T task)
 		{
@@ -17,7 +17,7 @@ namespace SLD.Tezos.Client.Flow
 		public T Task { get; internal set; }
 
 		public Task<Result> WhenAcknowledged
-			=> syncAcknowledged.Task;
+			=> syncAcknowledged.WhenComplete;
 
 		public bool IsFailed
 		{
@@ -53,39 +53,39 @@ namespace SLD.Tezos.Client.Flow
 			{
 				case TaskProgress.Acknowledged:
 
-					syncAcknowledged.TrySetResult(true);
+					syncAcknowledged.SetComplete();
 
 					break;
 
 				case TaskProgress.Confirmed:
 
-					syncAcknowledged.TrySetResult(true);
+					syncAcknowledged.SetComplete();
 
-					syncCompleted.TrySetResult(true);
+					syncCompleted.SetComplete();
 
 					break;
 
 				case TaskProgress.Timeout:
 
-					syncAcknowledged.TrySetResult(Result.Timeout);
+					syncAcknowledged.Timeout();
 
-					syncCompleted.TrySetResult(Result.Timeout);
+					syncCompleted.Timeout();
 
 					break;
 
 				case TaskProgress.Failed:
 
-					syncAcknowledged.TrySetResult(Result.Error());
+					syncAcknowledged.Fail();
 
-					syncCompleted.TrySetResult(Result.Error());
+					syncCompleted.Fail();
 
 					break;
 
 				case TaskProgress.Cancelled:
 
-					syncAcknowledged.TrySetResult(true);
+					syncAcknowledged.SetComplete();
 
-					syncCompleted.TrySetResult(Result.Cancelled);
+					syncCompleted.Cancel();
 
 					break;
 			}

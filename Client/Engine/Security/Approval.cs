@@ -18,7 +18,7 @@ namespace SLD.Tezos.Client.Security
 
 		#region User interface
 
-		private TaskCompletionSource<bool> taskUser = new TaskCompletionSource<bool>();
+		private SyncEvent taskUser = new SyncEvent();
 
 		public event Action TimedOut;
 
@@ -37,16 +37,16 @@ namespace SLD.Tezos.Client.Security
 		{
 			IsApproved = isApproved;
 
-			taskUser.TrySetResult(isApproved);
+			taskUser.SetComplete(isApproved);
 
-			return taskSign.Task;
+			return taskSign.WhenComplete;
 		}
 
 		#endregion User interface
 
 		#region Engine interface
 
-		private TaskCompletionSource<SigningResult> taskSign = new TaskCompletionSource<SigningResult>();
+		private SyncEvent<SigningResult> taskSign = new SyncEvent<SigningResult>();
 
 		public bool IsApproved { get; private set; }
 
@@ -55,7 +55,7 @@ namespace SLD.Tezos.Client.Security
 		internal void Close(SigningResult result)
 		{
 			Result = result;
-			taskSign.SetResult(result);
+			taskSign.SetComplete(result);
 		}
 
 		internal void Retry(SigningResult result)
@@ -63,12 +63,12 @@ namespace SLD.Tezos.Client.Security
 			Result = SigningResult.Pending;
 			Passphrase = null;
 			IsApproved = false;
-			taskUser = new TaskCompletionSource<bool>();
+			taskUser = new SyncEvent();
 
 			var attempt = taskSign;
-			taskSign = new TaskCompletionSource<SigningResult>();
+			taskSign = new SyncEvent<SigningResult>();
 
-			attempt.SetResult(result);
+			attempt.SetComplete(result);
 		}
 
 		internal async Task<SigningResult> GetUserResult()
@@ -77,7 +77,7 @@ namespace SLD.Tezos.Client.Security
 
 			var winner = await ThreadTask.WhenAny(
 				taskTimeout,
-				taskUser.Task
+				taskUser.WhenComplete
 				);
 
 			if (winner == taskTimeout)

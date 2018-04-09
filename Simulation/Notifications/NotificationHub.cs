@@ -13,13 +13,13 @@ namespace SLD.Tezos.Notifications
 
 		private int pendingCount;
 
-		private TaskCompletionSource<object> syncPendingSent;
+		private SyncEvent syncPendingSent;
 
 		public NotificationHub(SimulationParameters parameters) : base(parameters)
 		{
 			// start with all messages sent
-			syncPendingSent = new TaskCompletionSource<object>();
-			syncPendingSent.SetResult(null);
+			syncPendingSent = new SyncEvent();
+			syncPendingSent.SetComplete();
 		}
 
 		public Task WhenPendingSent
@@ -28,7 +28,7 @@ namespace SLD.Tezos.Notifications
 			{
 				lock (this)
 				{
-					return syncPendingSent.Task;
+					return syncPendingSent.WhenComplete;
 				}
 			}
 		}
@@ -41,6 +41,13 @@ namespace SLD.Tezos.Notifications
 			}
 
 			await WhenPendingSent;
+		}
+
+		public async Task Notify(string accountID, NetworkEvent networkEvent)
+		{
+			var eventSource = Parameters.Simulation.GetAccount(accountID) as SimulatedTokenStore;
+
+			await Notify(eventSource, networkEvent);
 		}
 
 		internal ConnectionEndpoint Register(string instanceID)
@@ -68,13 +75,6 @@ namespace SLD.Tezos.Notifications
 			account.Listeners.Add(connection);
 		}
 
-		public async Task Notify(string accountID, NetworkEvent networkEvent)
-		{
-			var eventSource = Parameters.Simulation.GetAccount(accountID) as SimulatedTokenStore;
-
-			await Notify(eventSource, networkEvent);
-		}
-
 		internal async Task Notify(SimulatedTokenStore eventSource, NetworkEvent networkEvent)
 		{
 			Trace($"Notify {eventSource} | {networkEvent}");
@@ -96,7 +96,7 @@ namespace SLD.Tezos.Notifications
 				if (pendingCount == 1)
 				{
 					Trace("Queue started");
-					syncPendingSent = new TaskCompletionSource<object>();
+					syncPendingSent = new SyncEvent();
 				}
 			}
 
@@ -111,7 +111,7 @@ namespace SLD.Tezos.Notifications
 				if (pendingCount == 0)
 				{
 					Trace("Queue empty");
-					syncPendingSent.SetResult(null);
+					syncPendingSent.SetComplete();
 				}
 			}
 		}

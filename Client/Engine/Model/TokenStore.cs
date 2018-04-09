@@ -116,10 +116,10 @@ namespace SLD.Tezos.Client.Model
 
 		#region Initialization
 
-		private volatile TaskCompletionSource<Result> syncInitialized;
+		private volatile SyncEvent syncInitialized;
 
 		public Task<Result> WhenInitialized
-			=> syncInitialized.Task;
+			=> syncInitialized.WhenComplete;
 
 		internal async Task Initialize(Engine engine)
 		{
@@ -167,7 +167,7 @@ namespace SLD.Tezos.Client.Model
 			{
 				// Start new
 				State = TokenStoreState.Initializing;
-				syncInitialized = new TaskCompletionSource<Result>();
+				syncInitialized = new SyncEvent();
 
 				return true;
 			}
@@ -180,7 +180,7 @@ namespace SLD.Tezos.Client.Model
 
 		private void EndInitialize()
 		{
-			syncInitialized.TrySetResult(true);
+			syncInitialized.SetComplete();
 			syncInitialized = null;
 		}
 

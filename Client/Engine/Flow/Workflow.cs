@@ -4,9 +4,9 @@ namespace SLD.Tezos.Client.Flow
 {
 	public class Workflow : TezosObject
 	{
-		protected volatile TaskCompletionSource<Result> syncCompleted = new TaskCompletionSource<Result>();
+		protected volatile SyncEvent syncCompleted = new SyncEvent();
 
 		public Task<Result> WhenCompleted
-			=> syncCompleted.Task;
+			=> syncCompleted.WhenComplete;
 	}
 }
