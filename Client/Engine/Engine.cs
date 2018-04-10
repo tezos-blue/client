@@ -317,6 +317,8 @@ namespace SLD.Tezos.Client
 
 		public bool IsValidAccountID(string accountID)
 		{
+			if (string.IsNullOrWhiteSpace(accountID)) return false;
+
 			try
 			{
 				CryptoServices.DecodePrefixed(HashType.PublicKeyHash, accountID);

@@ -50,7 +50,7 @@ namespace SLD.Tezos.Client.Security
 
 		public bool IsApproved { get; private set; }
 
-		internal Passphrase Passphrase { get; private set; }
+		public Passphrase Passphrase { internal get; set; }
 
 		internal void Close(SigningResult result)
 		{

@@ -21,7 +21,8 @@ namespace SLD.Tezos.Cryptography
 		public Passphrase(Passphrase passphrase) : base(passphrase) { }
 
 		// Conveniently convert string to Passphrase where required
-		public static implicit operator Passphrase(string passphrase) => new Passphrase(passphrase);
+		public static implicit operator Passphrase(string passphrase) 
+			=> passphrase != null ? new Passphrase(passphrase) : null;
 
 		// SECURITY
 		// Access to the data is restricted to the Cryptography assembly
