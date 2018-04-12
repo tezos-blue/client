@@ -90,7 +90,7 @@ namespace SLD.Tezos.Client.Security
 
 		public string PublicID => PublicKey.Hash;
 
-		internal bool CanUnlockWith(Passphrase passphrase)
+		public bool CanUnlockWith(Passphrase passphrase)
 		{
 			try
 			{
