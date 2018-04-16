@@ -390,6 +390,11 @@ namespace SLD.Tezos.Client
 
 		#region Life Cycle
 
+		SyncEvent syncInitialized = new SyncEvent();
+
+		public Task WhenInitialized
+			=> syncInitialized.WhenComplete;
+
 		public async Task Start()
 		{
 			Trace($"Start");
@@ -401,6 +406,10 @@ namespace SLD.Tezos.Client
 
 			// Connected now, get info about identities
 			await InitializeIdentities();
+
+			Trace($"Initialized");
+
+			syncInitialized.SetComplete();
 		}
 
 		public async Task Resume()
