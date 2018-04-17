@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace SLD.Tezos
 {
@@ -9,8 +10,8 @@ namespace SLD.Tezos
 		public Task<T> WhenComplete
 			=> tcs.Task;
 
-		public Task<T> GetAwaiter()
-			=> WhenComplete;
+		public TaskAwaiter<T> GetAwaiter()
+			=> WhenComplete.GetAwaiter();
 
 		public bool SetComplete(T result)
 		{

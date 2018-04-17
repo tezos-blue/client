@@ -83,6 +83,8 @@ namespace SLD.Tezos.Cryptography
 
 		public static bool IsValidEd25519(string edsk)
 		{
+			if (string.IsNullOrWhiteSpace(edsk)) return false;
+
 			try
 			{
 				ImportEd25519(edsk);
