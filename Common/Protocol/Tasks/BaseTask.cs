@@ -18,14 +18,18 @@
 		public TaskProgress Progress;
 	}
 
-	public class ProtectedTask : BaseTask
+	public class OperationTask : BaseTask
+	{
+		public string OperationID { get; set; }
+	}
+
+	public class ProtectedTask : OperationTask
 	{
 		public string ChainID;
 		public string SourceID;
 		public string SourceManagerPublicKey;
 		public decimal TransferAmount;
 		public string Operation { get; set; }
-		public string OperationID { get; set; }
 		public string SignedOperation { get; set; }
 		public string Signature { get; set; }
 

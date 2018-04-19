@@ -47,7 +47,7 @@ namespace SLD.Tezos.Client
 		{
 			Trace($"Cache {tokenStore}");
 
-			accounts.Add(tokenStore.AccountID, tokenStore);
+			accounts[tokenStore.AccountID] = tokenStore;
 		}
 
 		private void Uncache(TokenStore tokenStore)
@@ -225,6 +225,9 @@ namespace SLD.Tezos.Client
 			return configuration?.LocalStorage?.PurgeAll();
 		}
 
+		public Identity FindIdentity(string identityID)
+			=> identities.FirstOrDefault(i => i.AccountID == identityID);
+
 		// Internal add
 		private async Task AddIdentity(Identity identity)
 		{
@@ -390,10 +393,7 @@ namespace SLD.Tezos.Client
 
 		#region Life Cycle
 
-		SyncEvent syncInitialized = new SyncEvent();
-
-		public Task WhenInitialized
-			=> syncInitialized.WhenComplete;
+		public readonly SyncEvent WhenInitialized = new SyncEvent();
 
 		public async Task Start()
 		{
@@ -409,7 +409,7 @@ namespace SLD.Tezos.Client
 
 			Trace($"Initialized");
 
-			syncInitialized.SetComplete();
+			WhenInitialized.SetComplete();
 		}
 
 		public async Task Resume()
@@ -450,7 +450,7 @@ namespace SLD.Tezos.Client
 
 					ConnectionState = await Connection.Connect(registration);
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					Trace($"... failed: {e.Message}");
 

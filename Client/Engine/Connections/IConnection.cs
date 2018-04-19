@@ -38,6 +38,12 @@ namespace SLD.Tezos.Client.Connections
 
 		#endregion Origination
 
+		#region Activation
+
+		Task<ActivateIdentityTask> ActivateIdentity(ActivateIdentityTask task);
+
+		#endregion Activation
+
 		#region Transfer
 
 		Task<TransferTask> PrepareTransfer(TransferTask task);

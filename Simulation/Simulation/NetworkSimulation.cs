@@ -8,7 +8,6 @@ namespace SLD.Tezos.Simulation
 {
 	using Blockchain;
 	using Client.Connections;
-	using Client.Model;
 	using Notifications;
 	using Protocol;
 
@@ -150,6 +149,21 @@ namespace SLD.Tezos.Simulation
 			account.Balance = balance;
 		}
 
+		public void RemoveStaleAccount(string accountID, string managerID)
+		{
+			var identity = FindIdentity(managerID);
+
+			if (identity == null)
+				throw new ArgumentException("Identity not found", nameof(managerID));
+
+			var found = identity.Accounts.FirstOrDefault(account => account.AccountID == accountID);
+
+			if (found == null)
+				throw new ArgumentException("Account not found", nameof(accountID));
+
+			identity.Accounts.Remove(found);
+		}
+
 		internal AccountInfo GetAccountInfo(string accountID)
 		{
 			var account = GetAccount(accountID);
@@ -196,21 +210,6 @@ namespace SLD.Tezos.Simulation
 			}
 
 			return account;
-		}
-
-		public void RemoveStaleAccount(string accountID, string managerID)
-		{
-			var identity = FindIdentity(managerID);
-
-			if (identity == null)
-				throw new ArgumentException("Identity not found", nameof(managerID));
-
-			var found = identity.Accounts.FirstOrDefault(account => account.AccountID == accountID);
-
-			if (found == null)
-				throw new ArgumentException("Account not found", nameof(accountID));
-
-			identity.Accounts.Remove(found);
 		}
 
 		#endregion Accounts
@@ -298,6 +297,28 @@ namespace SLD.Tezos.Simulation
 			return task;
 		}
 
+		internal ActivateIdentityTask ActivateIdentity(ActivateIdentityTask task, string connectionID)
+		{
+			var identity = GetIdentity(task.IdentityID);
+
+			task.OperationID = CreateOperationID();
+			task.Client = new ClientInfo
+			{
+				InstanceID = connectionID,
+			};
+
+			blockchain.Add(task);
+
+			identity.Notify(new ActivationPendingEvent
+			{
+				IdentityID = identity.AccountID,
+				Amount = task.Amount,
+				OperationID = task.OperationID,
+			});
+
+			return task;
+		}
+
 		#endregion Origination
 
 		#region Transactions
@@ -342,7 +363,7 @@ namespace SLD.Tezos.Simulation
 
 		#region Timeout
 
-		public void Timeout(ProtectedTask task)
+		public void Timeout(OperationTask task)
 		{
 			switch (task)
 			{
@@ -389,6 +410,18 @@ namespace SLD.Tezos.Simulation
 					{
 						OperationID = pendingTransfer.OperationID,
 						AccountID = pendingTransfer.SourceID,
+					});
+
+					break;
+
+				case ActivateIdentityTask pendingActivate:
+					// Notify clients
+					var identity = GetAccount(pendingActivate.IdentityID);
+
+					identity.Notify(new ActivationTimeoutEvent
+					{
+						IdentityID = pendingActivate.IdentityID,
+						OperationID = pendingActivate.OperationID,
 					});
 
 					break;
@@ -612,6 +645,42 @@ namespace SLD.Tezos.Simulation
 								AccountID = destination.AccountID,
 								Balance = destination.Balance,
 								OperationID = taskTransfer.OperationID,
+								Entry = destinationEntry,
+								State = AccountState.Live,
+							});
+						}
+						break;
+
+					case ActivateIdentityTask taskActivate:
+						{
+							//Update state
+							var destination = GetAccount(taskActivate.IdentityID, true);
+							destination.Balance += taskActivate.Amount;
+
+							// Add entries
+							var destinationEntry = new AccountEntry(block.Index, block.Time)
+							{
+								Balance = destination.Balance,
+								OperationID = taskActivate.OperationID,
+								Items = new AccountEntryItem[]
+								{
+									new AccountEntryItem
+									{
+										Kind = AccountEntryItemKind.Activation,
+										Amount = taskActivate.Amount,
+									},
+								}
+								.ToList(),
+							};
+
+							destination.Entries.Add(destinationEntry);
+
+							// Notify clients
+							destination.Notify(new BalanceChangedEvent
+							{
+								AccountID = destination.AccountID,
+								Balance = destination.Balance,
+								OperationID = taskActivate.OperationID,
 								Entry = destinationEntry,
 								State = AccountState.Live,
 							});

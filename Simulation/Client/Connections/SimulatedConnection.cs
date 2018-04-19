@@ -162,11 +162,16 @@ namespace SLD.Tezos.Client.Connections
 
 		#region Operations
 
-		public async Task<CreateFaucetTask> AlphaCreateFaucet(CreateFaucetTask task)
+		public Task<CreateFaucetTask> AlphaCreateFaucet(CreateFaucetTask task)
+		{
+			throw new NotSupportedException("No more instant faucets");
+		}
+
+		public async Task<ActivateIdentityTask> ActivateIdentity(ActivateIdentityTask task)
 		{
 			await CallService();
 
-			return simulation.AlphaCreateFaucet(PrepareTask(task), InstanceID);
+			return simulation.ActivateIdentity(PrepareTask(task), InstanceID);
 		}
 
 		public async Task<CreateContractTask> PrepareCreateContract(CreateContractTask task)

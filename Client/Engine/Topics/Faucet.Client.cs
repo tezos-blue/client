@@ -5,27 +5,28 @@ namespace SLD.Tezos.Client
 	using Flow;
 	using Model;
 	using Protocol;
+	using System;
 
 	partial class Engine
 	{
-		public async Task<ProtectedTaskflow<CreateFaucetTask>> AlphaCreateFaucetAccount(string name, Identity managerIdentity)
+		public async Task<OperationTaskflow> ActivateFaucetIdentity(Identity identity, string secret, decimal expectedAmount)
 		{
-			Trace("Create Faucet Account");
+			Trace("Activate Faucet Identity");
 
-			var task = new CreateFaucetTask
+			var task = new ActivateIdentityTask
 			{
-				ManagerID = managerIdentity.AccountID,
-				Name = name,
-				Stereotype = Account.DefaultStereotype,
+				IdentityID = identity.AccountID,
+				Amount = expectedAmount,
+				Secret = secret,
 			};
 
-			var flow = new ProtectedTaskflow<CreateFaucetTask>(task);
+			var flow = new OperationTaskflow(task);
 
 			try
 			{
-				flow.Task = await Connection.AlphaCreateFaucet(task);
+				flow.Task = await Connection.ActivateIdentity(task);
 				flow.SetPending();
-				Trace($"{task.AccountID} | Waiting for creation");
+				Trace($"{identity.AccountID} | Waiting for activation");
 			}
 			catch
 			{
@@ -33,6 +34,11 @@ namespace SLD.Tezos.Client
 			}
 
 			return flow;
+		}
+
+		public Task<ProtectedTaskflow<CreateFaucetTask>> AlphaCreateFaucetAccount(string name, Identity managerIdentity)
+		{
+			throw new NotSupportedException("No more faucets in the alphanet");
 		}
 	}
 }

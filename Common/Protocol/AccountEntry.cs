@@ -3,26 +3,19 @@ using System.Collections.Generic;
 
 namespace SLD.Tezos.Protocol
 {
-
+	public enum AccountEntryItemKind
+	{
+		Invalid,
+		Origination,
+		Transfer,
+		Internal,
+		Delegation,
+		Activation,
+	}
 
 	public class AccountEntry : TezosObject
 	{
-		public DateTime TimeGMT { get; set; }
-
-		public int BlockIndex { get; set; }
-
-		public decimal NetworkFee { get; set; }
-		public decimal StorageFee { get; set; }
-
-		public decimal Fees => NetworkFee + StorageFee;
-
 		public List<AccountEntryItem> Items = new List<AccountEntryItem>();
-
-		public decimal Balance { get; set; }
-
-		public string OperationID { get; set; }
-
-		public string Reference { get; set; }
 
 		public AccountEntry()
 		{
@@ -34,19 +27,24 @@ namespace SLD.Tezos.Protocol
 			TimeGMT = time;
 		}
 
+		public DateTime TimeGMT { get; set; }
+
+		public int BlockIndex { get; set; }
+
+		public decimal NetworkFee { get; set; }
+		public decimal StorageFee { get; set; }
+
+		public decimal Fees => NetworkFee + StorageFee;
+		public decimal Balance { get; set; }
+
+		public string OperationID { get; set; }
+
+		public string Reference { get; set; }
+
 		public override string ToString()
 		{
 			return $"{BlockIndex}: {Items.Count} items | {Balance}";
 		}
-	}
-
-	public enum AccountEntryItemKind
-	{
-		Invalid,
-		Origination,
-		Transfer,
-		Internal,
-		Delegation,
 	}
 
 	public class AccountEntryItem : TezosObject

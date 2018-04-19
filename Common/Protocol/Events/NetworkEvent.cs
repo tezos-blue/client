@@ -25,14 +25,15 @@
 		}
 	}
 
-	public class OriginateEvent : BalanceChangedEvent
+	#region Transaction
+
+	public class TransactionTimeoutEvent : OperationEvent
 	{
-		public string ManagerID;
-		public string Name;
+		public string AccountID;
 
 		public override string ToString()
 		{
-			return $"Originate {AccountID} with Balance: {Balance}";
+			return $"{AccountID} | Timeout for transfer: {OperationID}";
 		}
 	}
 
@@ -49,6 +50,20 @@
 		}
 	}
 
+	#endregion Transaction
+
+	#region Origination
+
+	public class OriginationTimeoutEvent : TransactionTimeoutEvent
+	{
+		public string ManagerID;
+
+		public override string ToString()
+		{
+			return $"{AccountID} | Timeout for origination: {OperationID}";
+		}
+	}
+
 	public class OriginatePendingEvent : TransactionPendingEvent
 	{
 		public string ManagerID;
@@ -60,23 +75,42 @@
 		}
 	}
 
-	public class TransactionTimeoutEvent : OperationEvent
-	{
-		public string AccountID;
-
-		public override string ToString()
-		{
-			return $"{AccountID} | Timeout for transfer: {OperationID}";
-		}
-	}
-
-	public class OriginationTimeoutEvent : TransactionTimeoutEvent
+	public class OriginateEvent : BalanceChangedEvent
 	{
 		public string ManagerID;
+		public string Name;
 
 		public override string ToString()
 		{
-			return $"{AccountID} | Timeout for origination: {OperationID}";
+			return $"Originate {AccountID} with Balance: {Balance}";
 		}
 	}
+
+	#endregion Origination
+
+	#region Activation
+
+	public class ActivationTimeoutEvent : OperationEvent
+	{
+		public string IdentityID;
+
+		public override string ToString()
+		{
+			return $"{IdentityID} | Timeout for activation: {OperationID}";
+		}
+	}
+
+	public class ActivationPendingEvent : OperationEvent
+	{
+		public string IdentityID;
+
+		public decimal Amount;
+
+		public override string ToString()
+		{
+			return $"{IdentityID} | Pending activation: {Amount}";
+		}
+	}
+
+	#endregion Activation
 }

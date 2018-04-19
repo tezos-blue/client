@@ -13,7 +13,7 @@ namespace SLD.Tezos.Simulation
 		public string Stereotype;
 
 		internal SimulatedIdentity Manager;
-		internal List<ConnectionEndpoint> Listeners = new List<ConnectionEndpoint>();
+		internal HashSet<ConnectionEndpoint> Listeners = new HashSet<ConnectionEndpoint>();
 		internal List<AccountEntry> Entries = new List<AccountEntry>();
 
 		private NetworkSimulation simulation;

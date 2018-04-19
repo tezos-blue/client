@@ -31,7 +31,7 @@ namespace SLD.Tezos.Client
 								originate.ContraAccountID,
 								originate.Amount);
 
-							ProtectedTaskflow.Update(originate.OperationID, TaskProgress.Acknowledged);
+							OperationTaskflow.Update(originate.OperationID, TaskProgress.Acknowledged);
 						}
 					}
 					break;
@@ -71,40 +71,8 @@ namespace SLD.Tezos.Client
 
 							Cache(account);
 
-							ProtectedTaskflow.Update(originate.OperationID, TaskProgress.Confirmed);
+							OperationTaskflow.Update(originate.OperationID, TaskProgress.Confirmed);
 						}
-					}
-					break;
-
-				case TransactionPendingEvent transactionPending:
-					{
-						if (accounts.TryGetValue(transactionPending.AccountID, out TokenStore account))
-						{
-							account.ExpectOperation(
-								transactionPending.OperationID,
-								transactionPending.ContraAccountID,
-								transactionPending.Amount);
-
-							account.State = TokenStoreState.Changing;
-
-							ProtectedTaskflow.Update(transactionPending.OperationID, TaskProgress.Acknowledged);
-						}
-					}
-					break;
-
-				case BalanceChangedEvent changeBalance:
-					{
-						if (IsTooOld(changeBalance.BlockIndex))
-							return;
-
-						if (accounts.TryGetValue(changeBalance.AccountID, out TokenStore account))
-						{
-							account.Balance = changeBalance.Balance;
-							account.UpdateState(changeBalance.State);
-							await account.CloseOperation(changeBalance.OperationID, changeBalance.Entry);
-						}
-
-						ProtectedTaskflow.Update(changeBalance.OperationID, TaskProgress.Confirmed);
 					}
 					break;
 
@@ -122,7 +90,39 @@ namespace SLD.Tezos.Client
 								account.State = TokenStoreState.UnheardOf;
 							}
 
-							ProtectedTaskflow.Update(opTimeout.OperationID, TaskProgress.Timeout);
+							OperationTaskflow.Update(opTimeout.OperationID, TaskProgress.Timeout);
+						}
+					}
+					break;
+
+				case BalanceChangedEvent changeBalance:
+					{
+						if (IsTooOld(changeBalance.BlockIndex))
+							return;
+
+						if (accounts.TryGetValue(changeBalance.AccountID, out TokenStore account))
+						{
+							account.Balance = changeBalance.Balance;
+							account.UpdateState(changeBalance.State);
+							await account.CloseOperation(changeBalance.OperationID, changeBalance.Entry);
+						}
+
+						OperationTaskflow.Update(changeBalance.OperationID, TaskProgress.Confirmed);
+					}
+					break;
+
+				case TransactionPendingEvent transactionPending:
+					{
+						if (accounts.TryGetValue(transactionPending.AccountID, out TokenStore account))
+						{
+							account.ExpectOperation(
+								transactionPending.OperationID,
+								transactionPending.ContraAccountID,
+								transactionPending.Amount);
+
+							account.State = TokenStoreState.Changing;
+
+							OperationTaskflow.Update(transactionPending.OperationID, TaskProgress.Acknowledged);
 						}
 					}
 					break;
@@ -135,7 +135,36 @@ namespace SLD.Tezos.Client
 						{
 							await account.CloseOperation(opTimeout.OperationID);
 
-							ProtectedTaskflow.Update(opTimeout.OperationID, TaskProgress.Timeout);
+							OperationTaskflow.Update(opTimeout.OperationID, TaskProgress.Timeout);
+						}
+					}
+					break;
+
+				case ActivationPendingEvent activationPending:
+					{
+						if (accounts.TryGetValue(activationPending.IdentityID, out TokenStore account))
+						{
+							account.ExpectOperation(
+								activationPending.OperationID,
+								null,
+								activationPending.Amount);
+
+							account.State = TokenStoreState.Changing;
+
+							OperationTaskflow.Update(activationPending.OperationID, TaskProgress.Acknowledged);
+						}
+					}
+					break;
+
+				case ActivationTimeoutEvent opTimeout:
+					{
+						Debug.Assert(opTimeout.IdentityID != null);
+
+						if (accounts.TryGetValue(opTimeout.IdentityID, out TokenStore account))
+						{
+							await account.CloseOperation(opTimeout.OperationID);
+
+							OperationTaskflow.Update(opTimeout.OperationID, TaskProgress.Timeout);
 						}
 					}
 					break;

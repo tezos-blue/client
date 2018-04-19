@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client.Flow
 {
@@ -7,7 +6,7 @@ namespace SLD.Tezos.Client.Flow
 
 	public class Taskflow<T> : Workflow where T : BaseTask
 	{
-		protected volatile SyncEvent syncAcknowledged = new SyncEvent();
+		public SyncEvent WhenAcknowledged = new SyncEvent();
 
 		public Taskflow(T task)
 		{
@@ -15,9 +14,6 @@ namespace SLD.Tezos.Client.Flow
 		}
 
 		public T Task { get; internal set; }
-
-		public Task<Result> WhenAcknowledged
-			=> syncAcknowledged.WhenComplete;
 
 		public bool IsFailed
 		{
@@ -39,10 +35,6 @@ namespace SLD.Tezos.Client.Flow
 		public override string ToString()
 			=> $"Flow | {Task}";
 
-		internal void Update(T task)
-		{
-		}
-
 		internal void Update(TaskProgress progress)
 		{
 			Trace($"Update progress: {progress}");
@@ -53,50 +45,50 @@ namespace SLD.Tezos.Client.Flow
 			{
 				case TaskProgress.Acknowledged:
 
-					syncAcknowledged.SetComplete();
+					WhenAcknowledged.SetComplete();
 
 					break;
 
 				case TaskProgress.Confirmed:
 
-					syncAcknowledged.SetComplete();
+					WhenAcknowledged.SetComplete();
 
-					syncCompleted.SetComplete();
+					WhenCompleted.SetComplete();
 
 					break;
 
 				case TaskProgress.Timeout:
 
-					syncAcknowledged.Timeout();
+					WhenAcknowledged.Timeout();
 
-					syncCompleted.Timeout();
+					WhenCompleted.Timeout();
 
 					break;
 
 				case TaskProgress.Failed:
 
-					syncAcknowledged.Fail();
+					WhenAcknowledged.Fail();
 
-					syncCompleted.Fail();
+					WhenCompleted.Fail();
 
 					break;
 
 				case TaskProgress.Cancelled:
 
-					syncAcknowledged.SetComplete();
+					WhenAcknowledged.SetComplete();
 
-					syncCompleted.Cancel();
+					WhenCompleted.Cancel();
 
 					break;
 			}
 		}
 	}
 
-	public class ProtectedTaskflow : Taskflow<ProtectedTask>
+	public class OperationTaskflow : Taskflow<OperationTask>
 	{
-		private static Dictionary<string, ProtectedTaskflow> pending = new Dictionary<string, ProtectedTaskflow>();
+		private static Dictionary<string, OperationTaskflow> pending = new Dictionary<string, OperationTaskflow>();
 
-		public ProtectedTaskflow(ProtectedTask task) : base(task)
+		public OperationTaskflow(OperationTask task) : base(task)
 		{
 		}
 
@@ -105,7 +97,7 @@ namespace SLD.Tezos.Client.Flow
 
 		internal static void Update(string operationID, TaskProgress progress)
 		{
-			if (pending.TryGetValue(operationID, out ProtectedTaskflow flow))
+			if (pending.TryGetValue(operationID, out OperationTaskflow flow))
 			{
 				if (progress.IsFinal())
 				{
@@ -122,7 +114,7 @@ namespace SLD.Tezos.Client.Flow
 		}
 	}
 
-	public class ProtectedTaskflow<T> : ProtectedTaskflow where T : ProtectedTask
+	public class ProtectedTaskflow<T> : OperationTaskflow where T : ProtectedTask
 	{
 		public ProtectedTaskflow(T task) : base(task)
 		{
