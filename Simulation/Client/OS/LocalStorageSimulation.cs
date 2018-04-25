@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client.OS
@@ -11,8 +9,6 @@ namespace SLD.Tezos.Client.OS
 
 	public class LocalStorageSimulation : IStoreLocal
 	{
-		internal static string instanceID = Guid.NewGuid().ToString();
-
 		public LocalStorageSimulation(SimulationParameters parameters = null)
 		{
 			Parameters = parameters ?? new SimulationParameters();
@@ -27,19 +23,16 @@ namespace SLD.Tezos.Client.OS
 
 		public Task<IEnumerable<Stream>> OpenIdentityFilesAsync()
 		{
-			if (Parameters.Simulation != null)
-			{
-				return Task.FromResult(Parameters.Simulation.Identities.Select(i => MakeOutput(i)));
-			}
-			else
-			{
-				return Task.FromResult(new Stream[0] as IEnumerable<Stream>);
-			}
-		}
+			//if (Parameters.Simulation != null)
+			//{
+			//	return Task.FromResult(Parameters.Simulation.Identities.Select(i => CreateIdentitySlot(i)));
+			//}
+			//else
+			//{
+			//	return Task.FromResult(new Stream[0] as IEnumerable<Stream>);
+			//}
 
-		public Task<string> GetInstanceID()
-		{
-			return Task.FromResult(instanceID);
+			return Task.FromResult(new Stream[0] as IEnumerable<Stream>);
 		}
 
 		public Task DeleteIdentity(string identityID)
@@ -52,14 +45,22 @@ namespace SLD.Tezos.Client.OS
 			throw new NotImplementedException();
 		}
 
-		private Stream MakeOutput(object item)
-		{
-			var output = new MemoryStream();
-			var formatter = new BinaryFormatter();
-			formatter.Serialize(output, item);
-			output.Position = 0;
+		//private Stream CreateIdentitySlot(SimulatedIdentity identity)
+		//{
+		//	var output = new MemoryStream();
+		//	var formatter = new BinaryFormatter();
 
-			return output;
-		}
+		//	var slot = new SoftwareVault.Slot
+		//	{
+		//		//Keys = identity.Keys,
+		//		Name = identity.Name,
+		//		Stereotype = identity.Stereotype,
+		//	};
+
+		//	formatter.Serialize(output, slot);
+		//	output.Position = 0;
+
+		//	return output;
+		//}
 	}
 }

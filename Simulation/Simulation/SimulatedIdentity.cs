@@ -16,11 +16,11 @@ namespace SLD.Tezos.Simulation
 			Manager = this;
 		}
 
+		public override bool IsLive => true;
+
 		internal IEnumerable<SimulatedAccount> ManagedAccounts
 			=> Accounts
 			.Where(a => a.AccountID != AccountID)
 			.Cast<SimulatedAccount>();
-
-		public override bool IsLive => true;
 	}
 }

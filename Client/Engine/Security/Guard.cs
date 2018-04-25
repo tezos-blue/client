@@ -6,9 +6,9 @@ namespace SLD.Tezos.Client.Security
 	using Cryptography;
 	using Protocol;
 
-	internal static class Guard
+	public static class Guard
 	{
-		internal static KeyPair CreateKeyPair(Passphrase passphrase)
+		public static KeyPair CreateKeyPair(Passphrase passphrase)
 		{
 			CryptoServices.CreateKeyPair(out byte[] publicKey, out byte[] privateKey);
 

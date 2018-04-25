@@ -61,11 +61,11 @@ namespace SLD.Tezos.Client
 
 		public IConnection Connection => configuration.Connection;
 
-		internal async Task<decimal> GetBalance(string accountID)
+		internal Task<decimal> GetBalance(string accountID)
 		{
 			Trace($"Query Balance for {accountID}");
 
-			return await Connection.GetBalance(accountID);
+			return Connection.GetBalance(accountID);
 		}
 
 		#region Initialization

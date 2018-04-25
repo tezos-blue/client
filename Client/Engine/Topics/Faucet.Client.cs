@@ -25,7 +25,8 @@ namespace SLD.Tezos.Client
 			try
 			{
 				flow.Task = await Connection.ActivateIdentity(task);
-				flow.SetPending();
+				flow.SetPending(this);
+
 				Trace($"{identity.AccountID} | Waiting for activation");
 			}
 			catch

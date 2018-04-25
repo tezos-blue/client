@@ -32,6 +32,12 @@ namespace SLD.Tezos.Client.Flow
 			}
 		}
 
+		public bool IsComplete
+			=> Task.Progress == TaskProgress.Confirmed || IsFailed;
+
+		public bool IsAcknowledged
+			=> Task.Progress >= TaskProgress.Acknowledged;
+
 		public override string ToString()
 			=> $"Flow | {Task}";
 
@@ -86,7 +92,7 @@ namespace SLD.Tezos.Client.Flow
 
 	public class OperationTaskflow : Taskflow<OperationTask>
 	{
-		private static Dictionary<string, OperationTaskflow> pending = new Dictionary<string, OperationTaskflow>();
+		private static Dictionary<string, OperationMonitor> pending = new Dictionary<string, OperationMonitor>();
 
 		public OperationTaskflow(OperationTask task) : base(task)
 		{
@@ -97,7 +103,7 @@ namespace SLD.Tezos.Client.Flow
 
 		internal static void Update(string operationID, TaskProgress progress)
 		{
-			if (pending.TryGetValue(operationID, out OperationTaskflow flow))
+			if (pending.TryGetValue(operationID, out OperationMonitor flow))
 			{
 				if (progress.IsFinal())
 				{
@@ -108,9 +114,9 @@ namespace SLD.Tezos.Client.Flow
 			}
 		}
 
-		internal void SetPending()
+		internal void SetPending(Engine engine)
 		{
-			pending.Add(Task.OperationID, this);
+			pending.Add(Task.OperationID, new OperationMonitor(this, engine));
 		}
 	}
 

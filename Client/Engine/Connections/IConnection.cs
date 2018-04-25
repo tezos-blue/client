@@ -61,5 +61,7 @@ namespace SLD.Tezos.Client.Connections
 		Task Monitor(IEnumerable<string> accountIDs);
 
 		#endregion Connect / Disconnect
+
+		Task<OperationStatus> GetOperationStatus(OperationTask task);
 	}
 }

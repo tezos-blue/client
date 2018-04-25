@@ -6,17 +6,12 @@ using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client.Connections
 {
-	using OS;
 	using Protocol;
 	using Simulation;
 
 	public class SimulatedConnection : TezosObject, IConnection
 	{
-		private ClientInfo clientInfo = new ClientInfo
-		{
-			InstanceID = LocalStorageSimulation.instanceID,
-		};
-
+		public string InstanceID;
 		private NetworkSimulation simulation;
 
 		private ConnectionEndpoint endpoint;
@@ -27,8 +22,6 @@ namespace SLD.Tezos.Client.Connections
 
 			_ServiceState = parameters.ServiceState;
 		}
-
-		private string InstanceID => LocalStorageSimulation.instanceID;
 
 		public async Task<ConnectionState> Connect(InstanceInfo registration)
 		{
@@ -87,8 +80,12 @@ namespace SLD.Tezos.Client.Connections
 		public Task WhenMessagesDelivered
 			=> simulation.Hub.WhenPendingSent;
 
+		public bool IsPushEnabled { get; set; } = true;
+
 		public void FireEventReceived(NetworkEvent networkEvent)
 		{
+			if (!IsPushEnabled) return;
+
 			try
 			{
 				Trace($"{networkEvent.GetType().Name} received: {networkEvent}");
@@ -202,6 +199,13 @@ namespace SLD.Tezos.Client.Connections
 			return simulation.CommitTransfer(PrepareTask(task));
 		}
 
+		public async Task<OperationStatus> GetOperationStatus(OperationTask task)
+		{
+			await CallService();
+
+			return simulation.GetOperationStatus(task);
+		}
+
 		#endregion Operations
 
 		#region Identities
@@ -242,7 +246,10 @@ namespace SLD.Tezos.Client.Connections
 
 		private T PrepareTask<T>(T task) where T : BaseTask
 		{
-			task.Client = clientInfo;
+			task.Client = new ClientInfo
+			{
+				InstanceID = InstanceID,
+			};
 
 			return task;
 		}

@@ -11,7 +11,7 @@ namespace SLD.Tezos.Blockchain
 	{
 		private Timer pulse;
 		private Stack<Block> blocks = new Stack<Block>();
-		private List<BaseTask> pendingTasks = new List<BaseTask>();
+		private List<OperationTask> pendingTasks = new List<OperationTask>();
 
 		private int NextIndex = 0;
 
@@ -57,7 +57,7 @@ namespace SLD.Tezos.Blockchain
 			return block;
 		}
 
-		internal void Add(BaseTask task)
+		internal void Add(OperationTask task)
 		{
 			lock (pendingTasks)
 			{

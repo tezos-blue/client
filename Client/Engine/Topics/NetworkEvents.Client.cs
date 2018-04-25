@@ -12,6 +12,9 @@ namespace SLD.Tezos.Client
 	{
 		public event Action<Engine, ServiceEvent> ServiceEventReceived;
 
+		internal void InjectNetworkEvent(NetworkEvent networkEvent)
+			=> OnNetworkEvent(networkEvent);
+
 		private async void OnNetworkEvent(NetworkEvent networkEvent)
 		{
 			switch (networkEvent)

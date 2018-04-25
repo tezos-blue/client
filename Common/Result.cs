@@ -37,5 +37,8 @@
 		public static implicit operator Result(bool result) => result ? OK : Error();
 
 		#endregion Boolean conversions
+
+		public override string ToString()
+			=> IsOK ? "OK" : $"FAILED: {ErrorID}";
 	}
 }

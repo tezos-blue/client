@@ -13,6 +13,7 @@ namespace SLD.Tezos.Client
 		protected Engine Engine;
 		protected SimulatedConnection Connection;
 		protected NetworkSimulation Simulation;
+		private LocalStorageSimulation LocalStorage;
 
 		protected Task SmallDelay
 			=> Task.Delay(50);
@@ -22,7 +23,6 @@ namespace SLD.Tezos.Client
 			await Connection.WhenMessagesDelivered;
 			await SmallDelay;
 		}
-			
 
 		protected async Task ConnectToSimulation()
 		{
@@ -51,11 +51,13 @@ namespace SLD.Tezos.Client
 
 			Connection = Simulation.Connect("InstanceID");
 
+			LocalStorage = new LocalStorageSimulation(parameters);
+
 			Engine = new Engine(
 				new EngineConfiguration
 				{
 					Connection = Connection,
-					LocalStorage = new LocalStorageSimulation(parameters),
+					LocalStorage = LocalStorage,
 				});
 		}
 	}

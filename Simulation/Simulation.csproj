@@ -29,8 +29,4 @@
     <ProjectReference Include="..\Cryptography\Cryptography.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Client\Model\" />
-  </ItemGroup>
-
 </Project>

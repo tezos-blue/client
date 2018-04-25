@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace SLD.Tezos.Notifications
+namespace SLD.Tezos.Services
 {
 	using Protocol;
 	using Simulation;

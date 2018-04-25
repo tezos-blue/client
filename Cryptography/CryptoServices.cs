@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 namespace SLD.Tezos.Cryptography
 {
 	using Blake2;
-	using SLD.Tezos.Cryptography.NaCl;
+	using NaCl;
 
 	public static class CryptoServices
 	{
@@ -131,9 +131,7 @@ namespace SLD.Tezos.Cryptography
 
 			var seed = new ArraySegment<byte>(bip.SeedBytes, 0, Ed25519.PrivateKeySeedSizeInBytes);
 
-			byte[] publicKey, privateKey;
-
-			Ed25519.KeyPairFromSeed(out publicKey, out privateKey, seed.ToArray());
+			Ed25519.KeyPairFromSeed(out byte[] publicKey, out byte[] privateKey, seed.ToArray());
 
 			return (PublicFromPrivate(privateKey), privateKey);
 		}

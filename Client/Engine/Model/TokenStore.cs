@@ -116,7 +116,9 @@ namespace SLD.Tezos.Client.Model
 
 		#region Initialization
 
-		public SyncEvent WhenInitialized;
+		private bool isInitializing;
+
+		public SyncEvent WhenInitialized = new SyncEvent();
 
 		internal async Task Initialize(Engine engine)
 		{
@@ -160,8 +162,10 @@ namespace SLD.Tezos.Client.Model
 
 		private bool BeginInitialize()
 		{
-			if (WhenInitialized == null)
+			if (!isInitializing)
 			{
+				isInitializing = true;
+
 				// Start new
 				State = TokenStoreState.Initializing;
 				WhenInitialized = new SyncEvent();
@@ -177,8 +181,9 @@ namespace SLD.Tezos.Client.Model
 
 		private void EndInitialize()
 		{
+			isInitializing = false;
+
 			WhenInitialized.SetComplete();
-			WhenInitialized = null;
 		}
 
 		#endregion Initialization

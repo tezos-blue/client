@@ -8,8 +8,8 @@ namespace SLD.Tezos.Simulation
 {
 	using Blockchain;
 	using Client.Connections;
-	using Notifications;
 	using Protocol;
+	using Services;
 
 	public partial class NetworkSimulation : SimulationObject
 	{
@@ -20,7 +20,29 @@ namespace SLD.Tezos.Simulation
 			Hub = new NotificationHub(Parameters);
 
 			InitializeBlockchain();
+
+			//InitializeTestModel();
 		}
+
+		#region Test Model
+
+		public SimulatedIdentity TestIdentity { get; private set; }
+
+		public (SimulatedTokenStore, SimulatedTokenStore) TestSourceAndDestination
+			=> (TestIdentity, TestIdentity.Accounts[0]);
+
+		private void InitializeTestModel()
+		{
+			TestIdentity = GetIdentity(nameof(TestIdentity));
+
+			// Default source is identity account
+			TestIdentity.Balance = 1000;
+
+			// Default destination
+			CreateAccount(TestIdentity, 0);
+		}
+
+		#endregion Test Model
 
 		#region Connections
 
@@ -31,9 +53,10 @@ namespace SLD.Tezos.Simulation
 
 		public SimulatedConnection Connect(string instanceID)
 		{
-			RegisterConnection(instanceID);
-
-			return new SimulatedConnection(Parameters);
+			return new SimulatedConnection(Parameters)
+			{
+				InstanceID = instanceID,
+			};
 		}
 
 		internal void UnregisterConnection(string instanceID)
@@ -69,12 +92,44 @@ namespace SLD.Tezos.Simulation
 
 		#endregion Notifications
 
+		#region Cache
+
+		private Cache Cache = new Cache();
+
+		#endregion Cache
+
 		#region Identities
 
 		public List<SimulatedIdentity> Identities = new List<SimulatedIdentity>();
 
+		internal ActivateIdentityTask ActivateIdentity(ActivateIdentityTask task, string connectionID)
+		{
+			var identity = GetIdentity(task.IdentityID);
+
+			task.OperationID = CreateOperationID();
+			task.Client = new ClientInfo
+			{
+				InstanceID = connectionID,
+			};
+
+			blockchain.Add(task);
+
+			var sourceEvent = new ActivationPendingEvent
+			{
+				IdentityID = identity.AccountID,
+				Amount = task.Amount,
+				OperationID = task.OperationID,
+			};
+
+			identity.Notify(sourceEvent);
+
+			Cache.Store(task, sourceEvent, null);
+
+			return task;
+		}
+
 		private SimulatedIdentity FindIdentity(string identityID)
-			=> Identities.FirstOrDefault(i => i.AccountID == identityID);
+					=> Identities.FirstOrDefault(i => i.AccountID == identityID);
 
 		private SimulatedIdentity GetIdentity(string identityID)
 		{
@@ -234,24 +289,25 @@ namespace SLD.Tezos.Simulation
 
 			var manager = GetIdentity(task.ManagerID);
 
-			var account = new SimulatedAccount(this, manager, 0);
-
-			Accounts.Add(account);
-			manager.Accounts.Add(account);
+			SimulatedAccount account = CreateAccount(manager, 0);
 
 			task.AccountID = account.AccountID;
 
+			blockchain.Add(task);
+
 			var source = GetAccount(task.SourceID);
 
-			source.Notify(new TransactionPendingEvent
+			var sourceEvent = new TransactionPendingEvent
 			{
 				AccountID = source.AccountID,
 				Amount = -task.TotalAmount,
 				ContraAccountID = account.AccountID,
 				OperationID = task.OperationID,
-			});
+			};
 
-			manager.Notify(new OriginatePendingEvent
+			source.Notify(sourceEvent);
+
+			var destinationEvent = new OriginatePendingEvent
 			{
 				Name = task.Name,
 				ManagerID = task.ManagerID,
@@ -259,64 +315,23 @@ namespace SLD.Tezos.Simulation
 				Amount = task.TransferAmount,
 				ContraAccountID = source.AccountID,
 				OperationID = task.OperationID,
-			});
+			};
 
-			blockchain.Add(task);
+			manager.Notify(destinationEvent);
+
+			Cache.Store(task, sourceEvent, destinationEvent);
 
 			return task;
 		}
 
-		internal CreateFaucetTask AlphaCreateFaucet(CreateFaucetTask task, string connectionID)
+		private SimulatedAccount CreateAccount(SimulatedIdentity manager, decimal balance)
 		{
-			var manager = GetIdentity(task.ManagerID);
-
-			var account = new SimulatedAccount(this, manager, FaucetAmount);
+			var account = new SimulatedAccount(this, manager, balance);
 
 			Accounts.Add(account);
 			manager.Accounts.Add(account);
 
-			task.AccountID = account.AccountID;
-			task.TransferAmount = FaucetAmount;
-			task.OperationID = CreateOperationID();
-			task.Client = new ClientInfo
-			{
-				InstanceID = connectionID,
-			};
-
-			blockchain.Add(task);
-
-			manager.Notify(new OriginatePendingEvent
-			{
-				AccountID = account.AccountID,
-				Amount = FaucetAmount,
-				ManagerID = task.ManagerID,
-				Name = task.Name,
-				OperationID = task.OperationID,
-			});
-
-			return task;
-		}
-
-		internal ActivateIdentityTask ActivateIdentity(ActivateIdentityTask task, string connectionID)
-		{
-			var identity = GetIdentity(task.IdentityID);
-
-			task.OperationID = CreateOperationID();
-			task.Client = new ClientInfo
-			{
-				InstanceID = connectionID,
-			};
-
-			blockchain.Add(task);
-
-			identity.Notify(new ActivationPendingEvent
-			{
-				IdentityID = identity.AccountID,
-				Amount = task.Amount,
-				OperationID = task.OperationID,
-			});
-
-			return task;
+			return account;
 		}
 
 		#endregion Origination
@@ -340,21 +355,27 @@ namespace SLD.Tezos.Simulation
 			var source = GetAccount(task.SourceID);
 			var destination = GetAccount(task.DestinationID);
 
-			source.Notify(new TransactionPendingEvent
+			var sourceEvent = new TransactionPendingEvent
 			{
 				AccountID = source.AccountID,
 				Amount = -task.TotalAmount,
 				ContraAccountID = destination.AccountID,
 				OperationID = task.OperationID,
-			});
+			};
 
-			destination.Notify(new TransactionPendingEvent
+			source.Notify(sourceEvent);
+
+			var destinationEvent = new TransactionPendingEvent
 			{
 				AccountID = destination.AccountID,
 				Amount = task.TransferAmount,
 				ContraAccountID = source.AccountID,
 				OperationID = task.OperationID,
-			});
+			};
+
+			destination.Notify(destinationEvent);
+
+			Cache.Store(task, sourceEvent, destinationEvent);
 
 			return task;
 		}
@@ -435,7 +456,6 @@ namespace SLD.Tezos.Simulation
 
 		#region Blockchain
 
-		private static int NextOperationID = 0;
 		private SimulatedBlockchain blockchain;
 
 		public void CreateBlock()
@@ -443,11 +463,6 @@ namespace SLD.Tezos.Simulation
 			var block = blockchain.CreateBlock();
 
 			OnBlockCreated(block);
-		}
-
-		private string CreateOperationID()
-		{
-			return $"op#{NextOperationID++}";
 		}
 
 		private void InitializeBlockchain()
@@ -461,6 +476,8 @@ namespace SLD.Tezos.Simulation
 		{
 			foreach (var task in block.Operations)
 			{
+				OperationEvent sourceEvent = null, destinationEvent = null;
+
 				switch (task)
 				{
 					case CreateFaucetTask taskFaucet:
@@ -493,7 +510,7 @@ namespace SLD.Tezos.Simulation
 							// Notify client
 							var identity = GetAccount(taskFaucet.ManagerID);
 
-							identity.Notify(new OriginateEvent
+							sourceEvent = new OriginateEvent
 							{
 								Name = taskFaucet.Name,
 								ManagerID = taskFaucet.ManagerID,
@@ -502,7 +519,9 @@ namespace SLD.Tezos.Simulation
 								OperationID = taskFaucet.OperationID,
 								Entry = entry,
 								State = AccountState.Live,
-							});
+							};
+
+							identity.Notify(sourceEvent);
 						}
 						break;
 
@@ -559,18 +578,21 @@ namespace SLD.Tezos.Simulation
 							destination.Entries.Add(destinationEntry);
 
 							// Notify clients
-							source.Notify(new BalanceChangedEvent
+
+							sourceEvent = new BalanceChangedEvent
 							{
 								AccountID = source.AccountID,
 								Balance = source.Balance,
 								OperationID = taskOriginate.OperationID,
 								Entry = sourceEntry,
 								State = source.IsLive ? AccountState.Live : AccountState.Archived,
-							});
+							};
+
+							source.Notify(sourceEvent);
 
 							var manager = GetIdentity(taskOriginate.ManagerID);
 
-							manager.Notify(new OriginateEvent
+							destinationEvent = new OriginateEvent
 							{
 								Name = taskOriginate.Name,
 								ManagerID = taskOriginate.ManagerID,
@@ -579,7 +601,9 @@ namespace SLD.Tezos.Simulation
 								OperationID = taskOriginate.OperationID,
 								Entry = destinationEntry,
 								State = AccountState.Live,
-							});
+							};
+
+							manager.Notify(destinationEvent);
 						}
 						break;
 
@@ -631,14 +655,16 @@ namespace SLD.Tezos.Simulation
 							destination.Entries.Add(destinationEntry);
 
 							// Notify clients
-							source.Notify(new BalanceChangedEvent
+							sourceEvent = new BalanceChangedEvent
 							{
 								AccountID = source.AccountID,
 								Balance = source.Balance,
 								OperationID = taskTransfer.OperationID,
 								Entry = sourceEntry,
 								State = source.IsLive ? AccountState.Live : AccountState.Archived,
-							});
+							};
+
+							source.Notify(sourceEvent);
 
 							destination.Notify(new BalanceChangedEvent
 							{
@@ -654,13 +680,13 @@ namespace SLD.Tezos.Simulation
 					case ActivateIdentityTask taskActivate:
 						{
 							//Update state
-							var destination = GetAccount(taskActivate.IdentityID, true);
-							destination.Balance += taskActivate.Amount;
+							var source = GetAccount(taskActivate.IdentityID, true);
+							source.Balance += taskActivate.Amount;
 
 							// Add entries
-							var destinationEntry = new AccountEntry(block.Index, block.Time)
+							var sourceEntry = new AccountEntry(block.Index, block.Time)
 							{
-								Balance = destination.Balance,
+								Balance = source.Balance,
 								OperationID = taskActivate.OperationID,
 								Items = new AccountEntryItem[]
 								{
@@ -673,27 +699,66 @@ namespace SLD.Tezos.Simulation
 								.ToList(),
 							};
 
-							destination.Entries.Add(destinationEntry);
+							source.Entries.Add(sourceEntry);
 
 							// Notify clients
-							destination.Notify(new BalanceChangedEvent
+							sourceEvent = new BalanceChangedEvent
 							{
-								AccountID = destination.AccountID,
-								Balance = destination.Balance,
+								AccountID = source.AccountID,
+								Balance = source.Balance,
 								OperationID = taskActivate.OperationID,
-								Entry = destinationEntry,
+								Entry = sourceEntry,
 								State = AccountState.Live,
-							});
+							};
+
+							source.Notify(sourceEvent);
 						}
 						break;
 
 					default:
 						throw new NotImplementedException();
 				}
+
+				Cache.Update(task, TaskProgress.Confirmed, sourceEvent, destinationEvent);
 			}
 		}
 
 		#endregion Blockchain
+
+		#region Operations
+
+		private int NextOperationID = 0;
+
+		internal OperationStatus GetOperationStatus(OperationTask task)
+		{
+			var info = Cache.GetOperation(task.OperationID);
+
+			if (info.Progress == task.Progress)
+			{
+				// Nothing changed
+				return new OperationStatus
+				{
+					OperationID = task.OperationID,
+					RetryAfter = TimeSpan.FromMilliseconds(300),
+				};
+			}
+			else
+			{
+				// Progress has changed
+				return new OperationStatus
+				{
+					OperationID = task.OperationID,
+					NewEvent = info.LastSourceEvent,
+				};
+			}
+		}
+
+		private string CreateOperationID()
+		{
+			return $"op#{NextOperationID++}";
+		}
+
+		#endregion Operations
 
 		#region Helpers
 

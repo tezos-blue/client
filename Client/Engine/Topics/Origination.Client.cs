@@ -26,7 +26,6 @@ namespace SLD.Tezos.Client
 				TransferAmount = transferAmount,
 			};
 
-
 			var flow = new ProtectedTaskflow<CreateContractTask>(task);
 
 			// Prepare Task
@@ -53,7 +52,7 @@ namespace SLD.Tezos.Client
 					// Submit
 					Trace("Execute CreateContract");
 					flow.Task = await Connection.CreateContract(task);
-					flow.SetPending();
+					flow.SetPending(this);
 				}
 				catch
 				{

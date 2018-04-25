@@ -49,7 +49,7 @@ namespace SLD.Tezos.Client
 					// Submit
 					Trace("Execute CreateContract");
 					flow.Task = await Connection.Transfer(task);
-					flow.SetPending();
+					flow.SetPending(this);
 				}
 				catch
 				{

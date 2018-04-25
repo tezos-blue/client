@@ -1,13 +1,14 @@
-﻿namespace SLD.Tezos.Blockchain
+﻿using System;
+
+namespace SLD.Tezos.Blockchain
 {
 	using Protocol;
-	using System;
 
 	public class Block
 	{
-		public BaseTask[] Operations;
-
 		public int Index;
 		public DateTime Time;
+
+		public OperationTask[] Operations;
 	}
 }
