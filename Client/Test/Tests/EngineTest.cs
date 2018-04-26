@@ -59,17 +59,17 @@ namespace SLD.Tezos.Client
 		}
 
 		[TestMethod]
-		public async Task Engine_CreateFaucet()
+		public async Task Engine_ActivateIdentity()
 		{
-			await TestCreateFaucet();
+			await TestActivateIdentity();
 		}
 
 		[TestMethod]
-		public async Task Engine_CreateFaucet_NoPush()
+		public async Task Engine_ActivateIdentity_NoPush()
 		{
 			Connection.IsPushEnabled = false;
 
-			await TestCreateFaucet();
+			await TestActivateIdentity();
 		}
 
 		[TestMethod]
@@ -101,7 +101,7 @@ namespace SLD.Tezos.Client
 		}
 
 		[TestMethod]
-		public async Task Engine_TimeoutFaucet()
+		public async Task Engine_TimeoutActivateIdentity()
 		{
 			const decimal FaucetAmount = 1000;
 
@@ -109,7 +109,7 @@ namespace SLD.Tezos.Client
 
 			var identity = Engine.DefaultIdentity;
 
-			var flow = await Engine.ActivateFaucetIdentity(identity, null, FaucetAmount);
+			var flow = await Engine.ActivateIdentity(identity, null, FaucetAmount);
 
 			await flow.WhenAcknowledged;
 
@@ -191,7 +191,7 @@ namespace SLD.Tezos.Client
 			await flow.WhenAcknowledged;
 			await WhenMessagesDelivered();
 
-			Assert.AreEqual(startAccounts + (testDestination ? 1 : 0), source.Accounts.Count);
+			Assert.AreEqual(startAccounts + 1, source.Accounts.Count);
 
 			// Source
 			TokenStore account = null;
@@ -273,7 +273,7 @@ namespace SLD.Tezos.Client
 			}
 		}
 
-		private async Task TestCreateFaucet()
+		private async Task TestActivateIdentity()
 		{
 			const decimal FaucetAmount = 1000;
 
@@ -281,7 +281,7 @@ namespace SLD.Tezos.Client
 
 			await identity.WhenInitialized;
 
-			var faucetFlow = await Engine.ActivateFaucetIdentity(identity, null, FaucetAmount);
+			var faucetFlow = await Engine.ActivateIdentity(identity, null, FaucetAmount);
 
 			Assert.AreEqual(1, OperationTaskflow.NumPending);
 

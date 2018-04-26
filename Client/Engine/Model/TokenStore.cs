@@ -116,9 +116,8 @@ namespace SLD.Tezos.Client.Model
 
 		#region Initialization
 
-		private bool isInitializing;
-
 		public SyncEvent WhenInitialized = new SyncEvent();
+		private bool isInitializing;
 
 		internal async Task Initialize(Engine engine)
 		{

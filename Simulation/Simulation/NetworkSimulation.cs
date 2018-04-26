@@ -480,51 +480,6 @@ namespace SLD.Tezos.Simulation
 
 				switch (task)
 				{
-					case CreateFaucetTask taskFaucet:
-						{
-							// Update state
-							var destination = GetAccount(taskFaucet.AccountID, false);
-							destination.Balance = taskFaucet.TransferAmount;
-
-							// Register
-							MonitorAccount(taskFaucet.Client.InstanceID, destination);
-
-							// Add entry
-							var entry = new AccountEntry(block.Index, block.Time)
-							{
-								Balance = destination.Balance,
-								OperationID = taskFaucet.OperationID,
-								Items = new AccountEntryItem[]
-								{
-									new AccountEntryItem
-									{
-										Kind = AccountEntryItemKind.Origination,
-										Amount = FaucetAmount,
-									},
-								}
-								.ToList(),
-							};
-
-							destination.Entries.Add(entry);
-
-							// Notify client
-							var identity = GetAccount(taskFaucet.ManagerID);
-
-							sourceEvent = new OriginateEvent
-							{
-								Name = taskFaucet.Name,
-								ManagerID = taskFaucet.ManagerID,
-								AccountID = destination.AccountID,
-								Balance = destination.Balance,
-								OperationID = taskFaucet.OperationID,
-								Entry = entry,
-								State = AccountState.Live,
-							};
-
-							identity.Notify(sourceEvent);
-						}
-						break;
-
 					case CreateContractTask taskOriginate:
 						{
 							// Update state
@@ -748,7 +703,8 @@ namespace SLD.Tezos.Simulation
 				return new OperationStatus
 				{
 					OperationID = task.OperationID,
-					NewEvent = info.LastSourceEvent,
+					SourceEvent = info.LastSourceEvent,
+					DestinationEvent = info.LastDestinationEvent,
 				};
 			}
 		}

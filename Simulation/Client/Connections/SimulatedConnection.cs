@@ -159,11 +159,6 @@ namespace SLD.Tezos.Client.Connections
 
 		#region Operations
 
-		public Task<CreateFaucetTask> AlphaCreateFaucet(CreateFaucetTask task)
-		{
-			throw new NotSupportedException("No more instant faucets");
-		}
-
 		public async Task<ActivateIdentityTask> ActivateIdentity(ActivateIdentityTask task)
 		{
 			await CallService();

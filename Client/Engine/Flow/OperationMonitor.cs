@@ -86,9 +86,14 @@ namespace SLD.Tezos.Client.Flow
 		{
 			var operationStatus = await engine.Connection.GetOperationStatus(flow.Task);
 
-			if (operationStatus.NewEvent != null)
+			if (operationStatus.SourceEvent != null)
 			{
-				engine.InjectNetworkEvent(operationStatus.NewEvent);
+				engine.InjectNetworkEvent(operationStatus.SourceEvent);
+			}
+
+			if (operationStatus.DestinationEvent != null)
+			{
+				engine.InjectNetworkEvent(operationStatus.DestinationEvent);
 			}
 
 			return operationStatus.RetryAfter;

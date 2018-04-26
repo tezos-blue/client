@@ -30,8 +30,6 @@ namespace SLD.Tezos.Client.Connections
 
 		#region Origination
 
-		Task<CreateFaucetTask> AlphaCreateFaucet(CreateFaucetTask task);
-
 		Task<CreateContractTask> PrepareCreateContract(CreateContractTask request);
 
 		Task<CreateContractTask> CreateContract(CreateContractTask contract);

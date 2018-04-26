@@ -6,7 +6,8 @@ namespace SLD.Tezos.Protocol
 	{
 		public string OperationID;
 
-		public OperationEvent NewEvent;
+		public OperationEvent SourceEvent;
+		public OperationEvent DestinationEvent;
 
 		public TimeSpan RetryAfter;
 	}
