@@ -21,17 +21,13 @@
 	public class OperationTask : BaseTask
 	{
 		public string OperationID { get; set; }
+		public string SourceID { get; set; }
 	}
 
-	public class ProtectedTask : OperationTask
+	public class TransactionTask : OperationTask
 	{
-		public string ChainID;
-		public string SourceID;
-		public string SourceManagerPublicKey;
-		public decimal TransferAmount;
-		public string Operation { get; set; }
-		public string SignedOperation { get; set; }
-		public string Signature { get; set; }
+		public string DestinationID { get; set; }
+		public decimal TransferAmount { get; set; }
 
 		#region Fees
 
@@ -43,9 +39,18 @@
 
 		#endregion Fees
 
-		public bool HasSource => !string.IsNullOrEmpty(SourceID);
-
 		public virtual decimal TotalAmount => TransferAmount + Fees;
+	}
+
+	public class ProtectedTask : TransactionTask
+	{
+		public string ChainID;
+		public string SourceManagerPublicKey;
+		public string Operation { get; set; }
+		public string SignedOperation { get; set; }
+		public string Signature { get; set; }
+
+		public bool HasSource => !string.IsNullOrEmpty(SourceID);
 
 		public override string ToString()
 			=> OperationID;

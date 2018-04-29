@@ -104,7 +104,7 @@ namespace SLD.Tezos.Simulation
 
 		internal ActivateIdentityTask ActivateIdentity(ActivateIdentityTask task, string connectionID)
 		{
-			var identity = GetIdentity(task.IdentityID);
+			var identity = GetIdentity(task.SourceID);
 
 			task.OperationID = CreateOperationID();
 			task.Client = new ClientInfo
@@ -291,7 +291,7 @@ namespace SLD.Tezos.Simulation
 
 			SimulatedAccount account = CreateAccount(manager, 0);
 
-			task.AccountID = account.AccountID;
+			task.DestinationID = account.AccountID;
 
 			blockchain.Add(task);
 
@@ -397,7 +397,7 @@ namespace SLD.Tezos.Simulation
 					{
 						OperationID = pendingOriginate.OperationID,
 						ManagerID = pendingOriginate.ManagerID,
-						AccountID = pendingOriginate.AccountID,
+						AccountID = pendingOriginate.DestinationID,
 					});
 
 					var source = pendingOriginate.SourceID != null ?
@@ -437,11 +437,11 @@ namespace SLD.Tezos.Simulation
 
 				case ActivateIdentityTask pendingActivate:
 					// Notify clients
-					var identity = GetAccount(pendingActivate.IdentityID);
+					var identity = GetAccount(pendingActivate.SourceID);
 
 					identity.Notify(new ActivationTimeoutEvent
 					{
-						IdentityID = pendingActivate.IdentityID,
+						IdentityID = pendingActivate.SourceID,
 						OperationID = pendingActivate.OperationID,
 					});
 
@@ -487,7 +487,7 @@ namespace SLD.Tezos.Simulation
 
 							source.Balance -= taskOriginate.TotalAmount;
 
-							var destination = GetAccount(taskOriginate.AccountID, false);
+							var destination = GetAccount(taskOriginate.DestinationID, false);
 							destination.Balance = taskOriginate.TransferAmount;
 
 							// Register
@@ -506,7 +506,7 @@ namespace SLD.Tezos.Simulation
 									{
 										Kind = AccountEntryItemKind.Origination,
 										Amount = -taskOriginate.TransferAmount,
-										ContraAccountID = taskOriginate.AccountID,
+										ContraAccountID = taskOriginate.DestinationID,
 									},
 								}
 								.ToList(),
@@ -635,7 +635,7 @@ namespace SLD.Tezos.Simulation
 					case ActivateIdentityTask taskActivate:
 						{
 							//Update state
-							var source = GetAccount(taskActivate.IdentityID, true);
+							var source = GetAccount(taskActivate.SourceID, true);
 							source.Balance += taskActivate.Amount;
 
 							// Add entries

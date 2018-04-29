@@ -114,7 +114,7 @@ namespace SLD.Tezos.Client.Tests
 			await flow.WhenCompleted;
 			await WhenMessagesDelivered();
 
-			return identity[flow.Task.AccountID] as Account;
+			return identity[flow.Task.DestinationID] as Account;
 		}
 	}
 }

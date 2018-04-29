@@ -49,6 +49,8 @@ namespace SLD.Tezos.Client.Flow
 				{
 					await Task.Delay(retryAfter, cancelSource.Token);
 
+					if (flow.IsAcknowledged) continue;
+
 					Trace("Timeout for acknowledge");
 
 					retryAfter = await GetNextEvent(flow);
@@ -70,6 +72,8 @@ namespace SLD.Tezos.Client.Flow
 				try
 				{
 					await Task.Delay(retryAfter, cancelSource.Token);
+
+					if (flow.IsComplete) continue;
 
 					Trace("Timeout for completion");
 

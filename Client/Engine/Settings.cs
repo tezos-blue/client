@@ -10,6 +10,6 @@ namespace SLD.Tezos.Client
 
 		public TimeSpan ApprovalTimeout { get; set; } = TimeSpan.FromMinutes(1);
 		public TimeSpan AcknowledgeTimeout { get; set; } = TimeSpan.FromSeconds(15);
-		public TimeSpan CompleteTimeout { get; set; } = TimeSpan.FromMinutes(2);
+		public TimeSpan CompleteTimeout { get; set; } = TimeSpan.FromMinutes(1);
 	}
 }

@@ -14,7 +14,7 @@ namespace SLD.Tezos.Client
 
 			var task = new ActivateIdentityTask
 			{
-				IdentityID = identity.AccountID,
+				SourceID = identity.AccountID,
 				Amount = expectedAmount,
 				Secret = secret,
 			};
