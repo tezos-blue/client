@@ -41,7 +41,7 @@ namespace SLD.Tezos.Client.Flow
 		public override string ToString()
 			=> $"Flow | {Task}";
 
-		internal void Update(TaskProgress progress)
+		public void Update(TaskProgress progress)
 		{
 			Trace($"Update progress: {progress}");
 
@@ -116,7 +116,12 @@ namespace SLD.Tezos.Client.Flow
 
 		internal void SetPending(Engine engine)
 		{
-			pending.Add(Task.OperationID, new OperationMonitor(this, engine));
+			pending.Add(Task.OperationID, new OperationMonitor(
+				this,
+				engine.AcknowledgeTimeout,
+				engine.CompleteTimeout,
+				engine.Connection,
+				engine.InjectNetworkEvent));
 		}
 	}
 

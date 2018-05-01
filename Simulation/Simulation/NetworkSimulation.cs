@@ -688,25 +688,24 @@ namespace SLD.Tezos.Simulation
 		{
 			var info = Cache.GetOperation(task.OperationID);
 
+			var status = new OperationStatus
+			{
+				OperationID = task.OperationID,
+				Progress = info.Progress,
+			};
+
 			if (info.Progress == task.Progress)
 			{
 				// Nothing changed
-				return new OperationStatus
-				{
-					OperationID = task.OperationID,
-					RetryAfter = TimeSpan.FromMilliseconds(300),
-				};
+				status.RetryAfter = TimeSpan.FromMilliseconds(300);
 			}
 			else
 			{
 				// Progress has changed
-				return new OperationStatus
-				{
-					OperationID = task.OperationID,
-					SourceEvent = info.LastSourceEvent,
-					DestinationEvent = info.LastDestinationEvent,
-				};
+				status.Events = new OperationEvent[] { info.LastSourceEvent, info.LastDestinationEvent };
 			}
+
+			return status;
 		}
 
 		private string CreateOperationID()

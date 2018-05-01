@@ -58,6 +58,7 @@
     <Compile Include="Tests\SecurityTest.cs" />
     <Compile Include="Tests\ConnectionTest.cs" />
     <Compile Include="Tests\ApprovalTest.cs" />
+    <Compile Include="Tests\OperationMonitorTest.cs" />
     <Compile Include="Tools\NetworkEventMonitor.cs" />
     <None Include="packages.config" />
     <None Include="Tests\BIP39Test.cs" />

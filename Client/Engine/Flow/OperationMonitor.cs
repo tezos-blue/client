@@ -5,36 +5,46 @@ using System.Threading.Tasks;
 namespace SLD.Tezos.Client.Flow
 {
 	using Protocol;
+	using Connections;
 
-	internal class OperationMonitor : TezosObject
+	public class OperationMonitor : TezosObject
 	{
 		private OperationTaskflow flow;
-		private Engine engine;
-
+		Action<OperationEvent> callback;
 		private CancellationTokenSource cancelSource = new CancellationTokenSource();
+		IConnection connection;
+		public bool IsComplete;
 
-		public OperationMonitor(OperationTaskflow flow, Engine engine)
+		public OperationMonitor(
+			OperationTaskflow flow,
+			TimeSpan timeoutAcknowledge,
+			TimeSpan timeoutComplete,
+			IConnection connection,
+			Action<OperationEvent> callback)
 		{
 			this.flow = flow;
-			this.engine = engine;
+			this.callback = callback;
+			this.connection = connection;
+			TimeoutAcknowledge = timeoutAcknowledge;
+			TimeoutComplete = timeoutComplete;
 
 			Monitor();
 		}
 
-		private TimeSpan TimeoutAcknowledge
-			=> engine.AcknowledgeTimeout;
-
-		private TimeSpan TimeoutComplete
-			=> engine.CompleteTimeout;
+		private TimeSpan TimeoutAcknowledge, TimeoutComplete;
 
 		public override string ToString()
-			=> flow.Task.OperationID;
+			=> $"Mon | {flow.Task.OperationID}";
 
-		internal void Update(TaskProgress progress)
+		public void Update(TaskProgress progress)
 		{
-			flow.Update(progress);
+			// Only when progress changed, flows might be updated by more than one message
+			if (progress != flow.Task.Progress)
+			{
+				flow.Update(progress);
 
-			cancelSource.Cancel();
+				cancelSource.Cancel(); 
+			}
 		}
 
 		private async void Monitor()
@@ -54,6 +64,10 @@ namespace SLD.Tezos.Client.Flow
 					Trace("Timeout for acknowledge");
 
 					retryAfter = await GetNextEvent(flow);
+				}
+				catch(TaskCanceledException)
+				{
+					continue;
 				}
 				catch
 				{
@@ -79,28 +93,30 @@ namespace SLD.Tezos.Client.Flow
 
 					retryAfter = await GetNextEvent(flow);
 				}
+				catch (TaskCanceledException)
+				{
+					continue;
+				}
 				catch
 				{
 					// Most likely cancelled, but any expection shall continue
 				}
 			}
+
+			IsComplete = true;
 		}
 
 		private async Task<TimeSpan> GetNextEvent(OperationTaskflow flow)
 		{
-			var operationStatus = await engine.Connection.GetOperationStatus(flow.Task);
+			var operationStatus = await connection.GetOperationStatus(flow.Task);
 
-			if (operationStatus.SourceEvent != null)
+			foreach (var operationEvent in operationStatus.Events)
 			{
-				engine.InjectNetworkEvent(operationStatus.SourceEvent);
-			}
-
-			if (operationStatus.DestinationEvent != null)
-			{
-				engine.InjectNetworkEvent(operationStatus.DestinationEvent);
+				callback(operationEvent);
 			}
 
 			return operationStatus.RetryAfter;
 		}
+
 	}
 }
