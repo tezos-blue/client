@@ -43,7 +43,7 @@ namespace SLD.Tezos.Client.Flow
 			{
 				flow.Update(progress);
 
-				cancelSource.Cancel(); 
+				cancelSource.Cancel();
 			}
 		}
 
@@ -65,7 +65,7 @@ namespace SLD.Tezos.Client.Flow
 
 					retryAfter = await GetNextEvent(flow);
 				}
-				catch(TaskCanceledException)
+				catch (TaskCanceledException)
 				{
 					continue;
 				}
@@ -117,6 +117,5 @@ namespace SLD.Tezos.Client.Flow
 
 			return operationStatus.RetryAfter;
 		}
-
 	}
 }

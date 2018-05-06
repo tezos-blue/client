@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace SLD.Tezos.Protocol
@@ -21,15 +22,17 @@ namespace SLD.Tezos.Protocol
 		{
 		}
 
-		public AccountEntry(int index, DateTime time)
+		public AccountEntry(int blockIndex, int operationIndex, DateTime time)
 		{
-			BlockIndex = index;
+			BlockIndex = blockIndex;
+			OperationIndex = operationIndex;
 			TimeGMT = time;
 		}
 
 		public DateTime TimeGMT { get; set; }
 
 		public int BlockIndex { get; set; }
+		public int OperationIndex { get; set; }
 
 		public decimal NetworkFee { get; set; }
 		public decimal StorageFee { get; set; }
@@ -43,7 +46,7 @@ namespace SLD.Tezos.Protocol
 
 		public override string ToString()
 		{
-			return $"{BlockIndex}: {Items.Count} items | {Balance}";
+			return $"{BlockIndex}: {Items.Count()} items | {Balance}";
 		}
 	}
 

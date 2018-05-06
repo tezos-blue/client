@@ -474,6 +474,8 @@ namespace SLD.Tezos.Simulation
 
 		private void OnBlockCreated(Block block)
 		{
+			int operationIndex = 0;
+
 			foreach (var task in block.Operations)
 			{
 				OperationEvent sourceEvent = null, destinationEvent = null;
@@ -494,7 +496,7 @@ namespace SLD.Tezos.Simulation
 							MonitorAccount(taskOriginate.Client.InstanceID, destination);
 
 							// Add entries
-							var sourceEntry = new AccountEntry(block.Index, block.Time)
+							var sourceEntry = new AccountEntry(block.Index, operationIndex, block.Time)
 							{
 								Balance = source.Balance,
 								OperationID = taskOriginate.OperationID,
@@ -514,7 +516,7 @@ namespace SLD.Tezos.Simulation
 
 							source.Entries.Add(sourceEntry);
 
-							var destinationEntry = new AccountEntry(block.Index, block.Time)
+							var destinationEntry = new AccountEntry(block.Index, operationIndex, block.Time)
 							{
 								Balance = destination.Balance,
 								OperationID = taskOriginate.OperationID,
@@ -572,7 +574,7 @@ namespace SLD.Tezos.Simulation
 							destination.Balance += taskTransfer.TransferAmount;
 
 							// Add entries
-							var sourceEntry = new AccountEntry(block.Index, block.Time)
+							var sourceEntry = new AccountEntry(block.Index, operationIndex, block.Time)
 							{
 								Balance = source.Balance,
 								OperationID = taskTransfer.OperationID,
@@ -591,7 +593,7 @@ namespace SLD.Tezos.Simulation
 
 							source.Entries.Add(sourceEntry);
 
-							var destinationEntry = new AccountEntry(block.Index, block.Time)
+							var destinationEntry = new AccountEntry(block.Index, operationIndex, block.Time)
 							{
 								Balance = destination.Balance,
 								OperationID = taskTransfer.OperationID,
@@ -639,7 +641,7 @@ namespace SLD.Tezos.Simulation
 							source.Balance += taskActivate.Amount;
 
 							// Add entries
-							var sourceEntry = new AccountEntry(block.Index, block.Time)
+							var sourceEntry = new AccountEntry(block.Index, operationIndex, block.Time)
 							{
 								Balance = source.Balance,
 								OperationID = taskActivate.OperationID,
@@ -675,6 +677,8 @@ namespace SLD.Tezos.Simulation
 				}
 
 				Cache.Update(task, TaskProgress.Confirmed, sourceEvent, destinationEvent);
+
+				operationIndex++;
 			}
 		}
 

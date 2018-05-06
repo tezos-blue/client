@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client
@@ -239,7 +240,7 @@ namespace SLD.Tezos.Client
 			Assert.AreEqual(expectedSourceBalance, entry.Balance);
 
 			Assert.IsNotNull(entry.Items);
-			Assert.AreEqual(1, entry.Items.Count);
+			Assert.AreEqual(1, entry.Items.Count());
 
 			var item = entry.Items[0];
 
@@ -264,7 +265,7 @@ namespace SLD.Tezos.Client
 				Assert.AreEqual(transferAmount, entry.Balance);
 
 				Assert.IsNotNull(entry.Items);
-				Assert.AreEqual(1, entry.Items.Count);
+				Assert.AreEqual(1, entry.Items.Count());
 
 				item = entry.Items[0];
 
@@ -321,7 +322,7 @@ namespace SLD.Tezos.Client
 			Assert.AreEqual(FaucetAmount, entry.Balance);
 
 			Assert.IsNotNull(entry.Items);
-			Assert.AreEqual(1, entry.Items.Count);
+			Assert.AreEqual(1, entry.Items.Count());
 
 			var item = entry.Items[0];
 
@@ -391,7 +392,7 @@ namespace SLD.Tezos.Client
 			Assert.AreEqual(expectedSourceBalance, entry.Balance);
 
 			Assert.IsNotNull(entry.Items);
-			Assert.AreEqual(1, entry.Items.Count);
+			Assert.AreEqual(1, entry.Items.Count());
 
 			var item = entry.Items[0];
 
@@ -414,7 +415,7 @@ namespace SLD.Tezos.Client
 				Assert.AreEqual(expectedDestinationBalance, entry.Balance);
 
 				Assert.IsNotNull(entry.Items);
-				Assert.AreEqual(1, entry.Items.Count);
+				Assert.AreEqual(1, entry.Items.Count());
 
 				item = entry.Items[0];
 

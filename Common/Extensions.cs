@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 
 namespace SLD.Tezos
 {
@@ -39,6 +40,12 @@ namespace SLD.Tezos
 
 		public static string ToSafeString(this TimeSpan timespan)
 			=> timespan.ToString("c");
+
+		public static string ToSafeString(this decimal amount)
+			=> amount.ToString("g", CultureInfo.InvariantCulture);
+
+		public static decimal ToDecimal(this string amount)
+			=> decimal.Parse(amount, CultureInfo.InvariantCulture);
 
 		#endregion Safe strings
 
