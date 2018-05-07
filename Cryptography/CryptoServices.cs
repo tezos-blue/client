@@ -140,7 +140,7 @@ namespace SLD.Tezos.Cryptography
 
 		#region Brain
 
-		private static readonly byte[] BrainSalt = { 0, 8, 15 };
+		private static readonly byte[] BrainSalt = { 0, 8, 15, 69, 11, 13, 4, 12, 100, 255, 7 };
 
 		public static bool IsValidBrain(string mnemonic)
 			=> !string.IsNullOrEmpty(mnemonic);
@@ -149,7 +149,7 @@ namespace SLD.Tezos.Cryptography
 		{
 			byte[] publicKey, privateKey;
 
-			using (var rgb = new PasswordDeriveBytes(mnemonic, BrainSalt))
+			using (var rgb = DeriveBytes(mnemonic, BrainSalt))
 			{
 				var seed = rgb.GetBytes(Ed25519.PrivateKeySeedSizeInBytes);
 
@@ -259,17 +259,17 @@ namespace SLD.Tezos.Cryptography
 
 		#region Symmetric Encryption
 
-		private static readonly byte[] SymmetricSalt = { 1, 2, 3, 4 };
+		private static readonly byte[] SymmetricSalt = { 1, 2, 3, 4, 17, 12, 17, 4, 3, 2, 1 };
 
 		public static byte[] Encrypt(byte[] data, string openPhrase)
 		{
-			using (var rgb = new PasswordDeriveBytes(openPhrase, SymmetricSalt))
+			using (var rgb = DeriveBytes(openPhrase, SymmetricSalt))
 			{
 				return Encrypt(data, rgb);
 			}
 		}
 
-		public static byte[] Encrypt(byte[] data, PasswordDeriveBytes rgb)
+		public static byte[] Encrypt(byte[] data, DeriveBytes rgb)
 		{
 			var algorithm = new AesManaged();
 
@@ -289,13 +289,13 @@ namespace SLD.Tezos.Cryptography
 
 		public static byte[] Decrypt(byte[] data, string openPhrase)
 		{
-			using (var rgb = new PasswordDeriveBytes(openPhrase, SymmetricSalt))
+			using (var rgb = DeriveBytes(openPhrase, SymmetricSalt))
 			{
 				return Decrypt(data, rgb);
 			}
 		}
 
-		public static byte[] Decrypt(byte[] data, PasswordDeriveBytes rgb)
+		public static byte[] Decrypt(byte[] data, DeriveBytes rgb)
 		{
 			var algorithm = new AesManaged();
 
@@ -314,5 +314,15 @@ namespace SLD.Tezos.Cryptography
 		}
 
 		#endregion Symmetric Encryption
+
+		#region Derive Bytes
+
+		private const int DeriveIterations = 1000;
+
+		public static DeriveBytes DeriveBytes(string password, byte[] salt) => new Rfc2898DeriveBytes(password, salt, DeriveIterations);
+
+		public static DeriveBytes DeriveBytes(byte[] data, byte[] salt) => new Rfc2898DeriveBytes(data, salt, DeriveIterations);
+
+		#endregion Derive Bytes
 	}
 }
