@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Tezos.Blue.Engine</id>
+    <version>0.3</version>
+    <authors>Andreas Hassmann</authors>
+    <owners>Schloss Lautereck Design UG</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>tezos.blue engine and shared assemblies</description>
+    <title>tezos.blue engine and common assemblies</title>
+    <iconUrl>http://tezos.blue/images/logo-round-128.png</iconUrl>
+    <tags>tezos mobile cross platform client</tags>
+    <releaseNotes>initial</releaseNotes>
+
+    <!-- Copyright information -->
+    <copyright>Copyright ©2018 Schloss Lautereck Design</copyright>
+
+    <dependencies>
+      <group targetFramework=".NETStandard2.0" >
+        <dependency id="NETStandard.Library" version="2.0.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <!--Common-->
+    <file src="bin\netstandard2.0\*.dll" target="lib\netstandard2.0" />
+    <file src="..\..\Simulation\bin\netstandard2.0\Tezos.Simulation.dll" target="lib\netstandard2.0" />
+  </files>
+</package>
