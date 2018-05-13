@@ -50,7 +50,7 @@ namespace SLD.Tezos.Client
 		}
 
 		[TestMethod]
-		public async Task Monitor_AcknowledgeLost()
+		public void Monitor_AcknowledgeLost()
 		{
 			var connection = new TestConnection();
 			var task = new OperationTask();
@@ -101,6 +101,8 @@ namespace SLD.Tezos.Client
 			}
 
 			#region Unused
+
+#pragma warning disable 67
 
 			public event Action<NetworkEvent> EventReceived;
 
