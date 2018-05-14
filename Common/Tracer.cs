@@ -64,7 +64,7 @@ namespace SLD.Tezos
 
 		private static void TraceLine(string output)
 		{
-			Debug.WriteLine(output);
+			System.Diagnostics.Trace.WriteLine(output);
 		}
 
 		private static void WriteException(Exception e, TezosTraceWriter writer)
