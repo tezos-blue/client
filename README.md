@@ -20,8 +20,6 @@ It also means having full access to the capabilities of Tezos, while not having 
 Finally, this library enables developers to write cross-platform code for all operation systems supported by the .NET Standard 2.0
 
 ## Security
-Upfront: This library is currently far from secure. Please read the following as a commitment to be fulfilled.
-
 To build trust with users of applications built upon the Client.Engine, a two stage proof is proposed:
 
 1. It is proven by code reviews that no secret entered into the Engine will ever leave it without being heavily encrypted by the owner personally.
