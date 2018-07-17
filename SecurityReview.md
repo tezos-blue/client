@@ -1,7 +1,6 @@
 # Guide for Security Reviewers
-The basic security architecture is in place. But, to be honest, the expertise over here, when it comes to hardcore security, might very well prove to be inadequate.
-
-I invite and welcome your expert view on this security concept and its implementation. Please help to harden the security of identities entrusted to tezos.blue.
+The basic security architecture is in place. 
+We invite and welcome your expert view on this security concept and its implementation. Please help to harden the security of identities entrusted to tezos.blue.
 
 Feel free to raise issues, voice concerns, make suggestions or send pull requests.
 Here or via hello@tezos.blue
