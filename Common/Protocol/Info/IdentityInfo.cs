@@ -10,6 +10,8 @@
 		public decimal Balance;
 
 		public AccountState State;
+
+		public string DelegateID;
 	}
 
 	public class IdentityInfo : IdentityAccountInfo

@@ -9,7 +9,7 @@ namespace SLD.Tezos.Client
 
 	partial class Engine
 	{
-		public async Task<ProtectedTaskflow<CreateContractTask>> CreateAccount(string name, Identity managerIdentity, TokenStore source, decimal transferAmount, string stereotype = null)
+		public async Task<ProtectedTaskflow<CreateContractTask>> CreateDelegatedAccount(string name, Identity managerIdentity, TokenStore source, string delegateID, decimal transferAmount, string stereotype = null)
 		{
 			Trace($"Create Account '{name}' for {managerIdentity}, transferring {transferAmount} from {source}");
 
@@ -17,9 +17,10 @@ namespace SLD.Tezos.Client
 			var task = new CreateContractTask
 			{
 				Name = name,
-				Stereotype = stereotype ?? Account.DefaultStereotype,
+				Stereotype = stereotype ?? Account.DelegatedStereotype,
 
 				ManagerID = managerIdentity.AccountID,
+				DelegateID = delegateID,
 
 				SourceID = source.AccountID,
 				SourceManagerPublicKey = managerIdentity.PublicKey.ToString(),

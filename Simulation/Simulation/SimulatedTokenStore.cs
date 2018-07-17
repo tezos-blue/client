@@ -11,6 +11,7 @@ namespace SLD.Tezos.Simulation
 		public string Name;
 		public string AccountID;
 		public string Stereotype;
+		public string DelegateID;
 
 		internal SimulatedIdentity Manager;
 		internal HashSet<ConnectionEndpoint> Listeners = new HashSet<ConnectionEndpoint>();

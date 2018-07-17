@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Globalization;
 
 namespace SLD.Tezos
 {
@@ -66,5 +67,31 @@ namespace SLD.Tezos
 		}
 
 		#endregion Flow
+
+		#region Linq
+
+		public static int IndexOf<T>(this IEnumerable<T> enumerable, T item)
+		{
+			if (enumerable == null || item == null)
+			{
+				return -1;
+			}
+
+			int i = 0;
+
+			foreach (var found in enumerable)
+			{
+				if (ReferenceEquals(found, item))
+				{
+					return i;
+				}
+
+				i++;
+			}
+
+			return -1;
+		}
+
+		#endregion Linq
 	}
 }

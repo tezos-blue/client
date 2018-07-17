@@ -15,7 +15,7 @@ namespace SLD.Tezos.Client
 		internal void InjectNetworkEvent(NetworkEvent networkEvent)
 			=> OnNetworkEvent(networkEvent);
 
-		private async void OnNetworkEvent(NetworkEvent networkEvent)
+		private void OnNetworkEvent(NetworkEvent networkEvent)
 		{
 			switch (networkEvent)
 			{
@@ -26,7 +26,11 @@ namespace SLD.Tezos.Client
 
 						if (identity != null)
 						{
-							var account = new Account(originate.Name, originate.AccountID);
+							var account = new Account(originate.Name, originate.AccountID)
+							{
+								Stereotype = originate.Stereotype,
+								DelegateID = originate.DelegateID,
+							};
 
 							identity.ExpectOrigination(
 								account,
@@ -56,16 +60,20 @@ namespace SLD.Tezos.Client
 								.FirstOrDefault(a => a.AccountID == originate.AccountID) is Account account)
 							{
 								// OriginatePendingEvent received before
-								await account.CloseOperation(originate.OperationID, originate.Entry);
+								account.CloseOperation(originate.OperationID, originate.Entry);
 							}
 							else
 							{
 								// switched on later
-								account = new Account(originate.Name, originate.AccountID);
+								account = new Account(originate.Name, originate.AccountID)
+								{
+									Stereotype = originate.Stereotype,
+									DelegateID = originate.DelegateID,
+								};
 
-								await identity.AddAccount(account);
+								identity.AddAccount(account);
 
-								account.Entries.Insert(0, originate.Entry);
+								account.AddEntry(originate.Entry);
 							}
 
 							account.Balance = originate.Balance;
@@ -89,7 +97,7 @@ namespace SLD.Tezos.Client
 							if (identity.Accounts
 								.FirstOrDefault(a => a.AccountID == opTimeout.AccountID) is Account account)
 							{
-								await account.CloseOperation(opTimeout.OperationID);
+								account.CloseOperation(opTimeout.OperationID);
 								account.State = TokenStoreState.UnheardOf;
 							}
 
@@ -107,7 +115,7 @@ namespace SLD.Tezos.Client
 						{
 							account.Balance = changeBalance.Balance;
 							account.UpdateState(changeBalance.State);
-							await account.CloseOperation(changeBalance.OperationID, changeBalance.Entry);
+							account.CloseOperation(changeBalance.OperationID, changeBalance.Entry);
 						}
 
 						OperationTaskflow.Update(changeBalance.OperationID, TaskProgress.Confirmed);
@@ -136,7 +144,7 @@ namespace SLD.Tezos.Client
 
 						if (accounts.TryGetValue(opTimeout.AccountID, out TokenStore account))
 						{
-							await account.CloseOperation(opTimeout.OperationID);
+							account.CloseOperation(opTimeout.OperationID);
 
 							OperationTaskflow.Update(opTimeout.OperationID, TaskProgress.Timeout);
 						}
@@ -165,7 +173,7 @@ namespace SLD.Tezos.Client
 
 						if (accounts.TryGetValue(opTimeout.IdentityID, out TokenStore account))
 						{
-							await account.CloseOperation(opTimeout.OperationID);
+							account.CloseOperation(opTimeout.OperationID);
 
 							OperationTaskflow.Update(opTimeout.OperationID, TaskProgress.Timeout);
 						}

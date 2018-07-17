@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -101,6 +100,8 @@ namespace SLD.Tezos.Client
 					new PublicKey(provider.GetPublicKey(identityID)),
 					provider as IManageIdentities));
 			}
+
+			FirePropertyChanged(nameof(Identities));
 		}
 
 		private async Task InitializeProviders()
@@ -166,11 +167,11 @@ namespace SLD.Tezos.Client
 
 		#region Identities
 
-		private ObservableCollection<Identity> identities = new ObservableCollection<Identity>();
+		private ModelCollection<Identity> identities = new ModelCollection<Identity>();
 
 		public Identity DefaultIdentity => Identities?.FirstOrDefault();
 
-		public IEnumerable<Identity> Identities => identities;
+		public IEnumerable<Identity> Identities => identities.ToArray();
 
 		public async Task<Identity> AddIdentity(string stereotype, string identityName, Passphrase passphrase, bool unlock = false)
 		{
@@ -208,11 +209,21 @@ namespace SLD.Tezos.Client
 				throw new ApplicationException("No identity provider configured");
 			}
 
-			var identity = await provider.ImportIdentity(identityName, keyPair, stereotype);
+			var imported = await provider.ImportIdentity(identityName, keyPair, stereotype);
 
-			var initTask = AddIdentity(identity);
+			// Already known?
+			var found = identities.FirstOrDefault(i => i.AccountID == imported.AccountID);
 
-			return identity;
+			if (found == null)
+			{
+				// New Identity
+				var initTask = AddIdentity(imported);
+				return imported;
+			}
+			else
+			{
+				return found;
+			}
 		}
 
 		public Task PurgeAll()
@@ -220,7 +231,8 @@ namespace SLD.Tezos.Client
 			accounts.Clear();
 			identities.Clear();
 
-			FirePropertyChanged("DefaultIdentity");
+			FirePropertyChanged(nameof(DefaultIdentity));
+			FirePropertyChanged(nameof(Identities));
 
 			return configuration?.LocalStorage?.PurgeAll();
 		}
@@ -238,8 +250,10 @@ namespace SLD.Tezos.Client
 
 			if (identities.Count == 1)
 			{
-				FirePropertyChanged("DefaultIdentity");
+				FirePropertyChanged(nameof(DefaultIdentity));
 			}
+
+			FirePropertyChanged(nameof(Identities));
 
 			// Initialize
 			try
@@ -395,6 +409,8 @@ namespace SLD.Tezos.Client
 
 		public readonly SyncEvent WhenInitialized = new SyncEvent();
 
+		public event Action<bool> Initialized;
+
 		public async Task Start()
 		{
 			Trace($"Start");
@@ -405,10 +421,17 @@ namespace SLD.Tezos.Client
 				ConnectToService());
 
 			// Connected now, get info about identities
-			await InitializeIdentities();
+			Task initialization = InitializeIdentities();
+			Task timeout = Task.Delay(IdentitiesInitializedTimeout);
 
+			var first = await Task.WhenAny(
+				initialization,
+				timeout
+				);
+
+			// Notify
 			Trace($"Initialized");
-
+			Initialized?.Invoke(first == initialization);
 			WhenInitialized.SetComplete();
 		}
 

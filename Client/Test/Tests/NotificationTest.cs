@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace SLD.Tezos.Client.Tests
 {
@@ -31,26 +32,26 @@ namespace SLD.Tezos.Client.Tests
 			await SendTransferPending(Source.AccountID);
 			await SendOriginatePending("New");
 
-			Assert.AreEqual(2, Engine.DefaultIdentity.Accounts.Count);
+			Assert.AreEqual(2, Engine.DefaultIdentity.Accounts.Count());
 			var account = Engine.DefaultIdentity.Accounts[1];
 
 			Assert.AreEqual(TokenStoreState.Creating, account.State);
 
 			// Account
-			Assert.AreEqual(1, account.PendingChanges.Count);
+			Assert.AreEqual(1, account.PendingChanges.Count());
 
 			// Source
-			Assert.AreEqual(1, Source.PendingChanges.Count);
+			Assert.AreEqual(1, Source.PendingChanges.Count());
 
 			await SendOriginate("New");
 			await SendBalanceChanged(Source.AccountID);
 
 			// Account
 			Assert.AreEqual(TokenStoreState.Online, account.State);
-			Assert.AreEqual(0, account.PendingChanges.Count);
+			Assert.AreEqual(0, account.PendingChanges.Count());
 
 			// Source
-			Assert.AreEqual(0, Source.PendingChanges.Count);
+			Assert.AreEqual(0, Source.PendingChanges.Count());
 		}
 
 		[TestMethod]
@@ -59,26 +60,26 @@ namespace SLD.Tezos.Client.Tests
 			await SendOriginatePending("New");
 			await SendTransferPending(Source.AccountID);
 
-			Assert.AreEqual(2, Engine.DefaultIdentity.Accounts.Count);
+			Assert.AreEqual(2, Engine.DefaultIdentity.Accounts.Count());
 			var account = Engine.DefaultIdentity.Accounts[1];
 
 			Assert.AreEqual(TokenStoreState.Creating, account.State);
 
 			// Account
-			Assert.AreEqual(1, account.PendingChanges.Count);
+			Assert.AreEqual(1, account.PendingChanges.Count());
 
 			// Source
-			Assert.AreEqual(1, Source.PendingChanges.Count);
+			Assert.AreEqual(1, Source.PendingChanges.Count());
 
 			await SendBalanceChanged(Source.AccountID);
 			await SendOriginate("New");
 
 			// Account
 			Assert.AreEqual(TokenStoreState.Online, account.State);
-			Assert.AreEqual(0, account.PendingChanges.Count);
+			Assert.AreEqual(0, account.PendingChanges.Count());
 
 			// Source
-			Assert.AreEqual(0, Source.PendingChanges.Count);
+			Assert.AreEqual(0, Source.PendingChanges.Count());
 		}
 
 		[TestMethod]
@@ -87,26 +88,26 @@ namespace SLD.Tezos.Client.Tests
 			await SendOriginatePending("New");
 			await SendTransferPending(Source.AccountID);
 
-			Assert.AreEqual(2, Engine.DefaultIdentity.Accounts.Count);
+			Assert.AreEqual(2, Engine.DefaultIdentity.Accounts.Count());
 			var account = Engine.DefaultIdentity.Accounts[1];
 
 			Assert.AreEqual(TokenStoreState.Creating, account.State);
 
 			// Account
-			Assert.AreEqual(1, account.PendingChanges.Count);
+			Assert.AreEqual(1, account.PendingChanges.Count());
 
 			// Source
-			Assert.AreEqual(1, Source.PendingChanges.Count);
+			Assert.AreEqual(1, Source.PendingChanges.Count());
 
 			await SendOriginate("New");
 			await SendBalanceChanged(Source.AccountID);
 
 			// Account
 			Assert.AreEqual(TokenStoreState.Online, account.State);
-			Assert.AreEqual(0, account.PendingChanges.Count);
+			Assert.AreEqual(0, account.PendingChanges.Count());
 
 			// Source
-			Assert.AreEqual(0, Source.PendingChanges.Count);
+			Assert.AreEqual(0, Source.PendingChanges.Count());
 		}
 
 		[TestMethod]
@@ -115,26 +116,26 @@ namespace SLD.Tezos.Client.Tests
 			await SendTransferPending(Source.AccountID);
 			await SendOriginatePending("New");
 
-			Assert.AreEqual(2, Engine.DefaultIdentity.Accounts.Count);
+			Assert.AreEqual(2, Engine.DefaultIdentity.Accounts.Count());
 			var account = Engine.DefaultIdentity.Accounts[1];
 
 			Assert.AreEqual(TokenStoreState.Creating, account.State);
 
 			// Account
-			Assert.AreEqual(1, account.PendingChanges.Count);
+			Assert.AreEqual(1, account.PendingChanges.Count());
 
 			// Source
-			Assert.AreEqual(1, Source.PendingChanges.Count);
+			Assert.AreEqual(1, Source.PendingChanges.Count());
 
 			await SendBalanceChanged(Source.AccountID);
 			await SendOriginate("New");
 
 			// Account
 			Assert.AreEqual(TokenStoreState.Online, account.State);
-			Assert.AreEqual(0, account.PendingChanges.Count);
+			Assert.AreEqual(0, account.PendingChanges.Count());
 
 			// Source
-			Assert.AreEqual(0, Source.PendingChanges.Count);
+			Assert.AreEqual(0, Source.PendingChanges.Count());
 		}
 
 		private async Task SendTransferPending(string account)

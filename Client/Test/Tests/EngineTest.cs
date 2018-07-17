@@ -40,7 +40,7 @@ namespace SLD.Tezos.Client
 
 			Assert.AreEqual(TokenStoreState.Initializing, identity.State);
 
-			Assert.AreEqual(1, identity.Accounts.Count);
+			Assert.AreEqual(1, identity.Accounts.Count());
 
 			var identityAccount = identity.Accounts[0];
 
@@ -53,10 +53,10 @@ namespace SLD.Tezos.Client
 
 			Assert.AreEqual(TokenStoreState.Online, identityAccount.State);
 
-			Assert.AreEqual(0, identityAccount.PendingChanges.Count);
+			Assert.AreEqual(0, identityAccount.PendingChanges.Count());
 			Assert.IsFalse(identityAccount.HasPendingChanges);
 
-			Assert.IsTrue(identityAccount.Entries == null || identityAccount.Entries.Count == 0);
+			Assert.IsTrue(identityAccount.Entries == null || identityAccount.Entries.Count() == 0);
 		}
 
 		[TestMethod]
@@ -77,6 +77,12 @@ namespace SLD.Tezos.Client
 		public async Task Engine_Originate()
 		{
 			await TestOriginate();
+		}
+
+		[TestMethod]
+		public async Task Engine_Delegate()
+		{
+			await TestDelegate();
 		}
 
 		[TestMethod]
@@ -168,7 +174,7 @@ namespace SLD.Tezos.Client
 			await flow.WhenCompleted;
 			await WhenMessagesDelivered();
 
-			Assert.AreEqual(2, source.Accounts.Count);
+			Assert.AreEqual(2, source.Accounts.Count());
 
 			var destination = source.Accounts[1];
 
@@ -181,7 +187,7 @@ namespace SLD.Tezos.Client
 		private async Task TestOriginate(bool testDestination = true)
 		{
 			var source = Engine.DefaultIdentity;
-			var startAccounts = source.Accounts.Count;
+			var startAccounts = source.Accounts.Count();
 
 			decimal transferAmount = 1;
 			decimal networkFee = Engine.DefaultOperationFee;
@@ -192,14 +198,14 @@ namespace SLD.Tezos.Client
 			await flow.WhenAcknowledged;
 			await WhenMessagesDelivered();
 
-			Assert.AreEqual(startAccounts + 1, source.Accounts.Count);
+			Assert.AreEqual(startAccounts + 1, source.Accounts.Count());
 
 			// Source
 			TokenStore account = null;
 
-			Assert.AreEqual(1, source.PendingChanges.Count);
+			Assert.AreEqual(1, source.PendingChanges.Count());
 			Assert.IsTrue(source.HasPendingChanges);
-			Assert.IsTrue(source.Entries == null || source.Entries.Count == 0);
+			Assert.IsTrue(source.Entries == null || source.Entries.Count() == 0);
 
 			var pending = source.PendingChanges[0];
 			Assert.AreEqual(TokenStore.ChangeTopic.PendingTransfer, pending.Topic);
@@ -212,9 +218,9 @@ namespace SLD.Tezos.Client
 				Assert.IsNotNull(account);
 
 				Assert.AreEqual(TokenStoreState.Creating, account.State);
-				Assert.AreEqual(1, account.PendingChanges.Count);
+				Assert.AreEqual(1, account.PendingChanges.Count());
 				Assert.IsTrue(account.HasPendingChanges);
-				Assert.IsTrue(account.Entries == null || account.Entries.Count == 0);
+				Assert.IsTrue(account.Entries == null || account.Entries.Count() == 0);
 
 				pending = account.PendingChanges[0];
 				Assert.AreEqual(TokenStore.ChangeTopic.PendingTransfer, pending.Topic);
@@ -229,11 +235,11 @@ namespace SLD.Tezos.Client
 			// Source
 			Assert.AreEqual(expectedSourceBalance, source.Balance);
 
-			Assert.AreEqual(0, source.PendingChanges.Count);
+			Assert.AreEqual(0, source.PendingChanges.Count());
 			Assert.IsFalse(source.HasPendingChanges);
 
 			Assert.IsNotNull(source.Entries);
-			Assert.AreEqual(1, source.Entries.Count);
+			Assert.AreEqual(1, source.Entries.Count());
 
 			var entry = source.Entries[0];
 
@@ -254,11 +260,11 @@ namespace SLD.Tezos.Client
 
 				Assert.AreEqual(transferAmount, account.Balance);
 
-				Assert.AreEqual(0, account.PendingChanges.Count);
+				Assert.AreEqual(0, account.PendingChanges.Count());
 				Assert.IsFalse(account.HasPendingChanges);
 
 				Assert.IsNotNull(account.Entries);
-				Assert.AreEqual(1, account.Entries.Count);
+				Assert.AreEqual(1, account.Entries.Count());
 
 				entry = account.Entries[0];
 
@@ -271,6 +277,110 @@ namespace SLD.Tezos.Client
 
 				Assert.AreEqual(AccountEntryItemKind.Origination, item.Kind);
 				Assert.AreEqual(transferAmount, item.Amount);
+			}
+		}
+
+		private async Task TestDelegate(bool testDestination = true)
+		{
+			var source = Engine.DefaultIdentity;
+			var startAccounts = source.Accounts.Count();
+
+			decimal transferAmount = 1;
+			decimal networkFee = Engine.DefaultOperationFee;
+			decimal expectedSourceBalance = source.Balance - transferAmount - networkFee;
+
+			var flow = await Engine.CreateDelegatedAccount("Account", source, source, Engine.DefaultIdentity.AccountID, transferAmount);
+
+			await flow.WhenAcknowledged;
+			await WhenMessagesDelivered();
+
+			Assert.AreEqual(startAccounts + 1, source.Accounts.Count());
+
+			// Source
+			TokenStore account = null;
+
+			Assert.AreEqual(1, source.PendingChanges.Count());
+			Assert.IsTrue(source.HasPendingChanges);
+			Assert.IsTrue(source.Entries == null || source.Entries.Count() == 0);
+
+			var pending = source.PendingChanges[0];
+			Assert.AreEqual(TokenStore.ChangeTopic.PendingTransfer, pending.Topic);
+			Assert.AreEqual(-transferAmount - networkFee, pending.Amount);
+
+			if (testDestination)
+			{
+				// Account
+				account = source.Accounts[1];
+				Assert.IsNotNull(account);
+
+				Assert.AreEqual(TokenStoreState.Creating, account.State);
+				Assert.AreEqual(1, account.PendingChanges.Count());
+				Assert.IsTrue(account.HasPendingChanges);
+				Assert.IsTrue(account.Entries == null || account.Entries.Count() == 0);
+
+				pending = account.PendingChanges[0];
+				Assert.AreEqual(TokenStore.ChangeTopic.PendingTransfer, pending.Topic);
+				Assert.AreEqual(transferAmount, pending.Amount);
+
+				Assert.AreEqual(Account.DelegatedStereotype, account.Stereotype);
+				Assert.AreEqual(Engine.DefaultIdentity.AccountID, (account as Account).DelegateID);
+				Assert.IsTrue(account.IsDelegated);
+			}
+
+			Simulation.CreateBlock();
+
+			await flow.WhenCompleted;
+			await WhenMessagesDelivered();
+
+			// Source
+			Assert.AreEqual(expectedSourceBalance, source.Balance);
+
+			Assert.AreEqual(0, source.PendingChanges.Count());
+			Assert.IsFalse(source.HasPendingChanges);
+
+			Assert.IsNotNull(source.Entries);
+			Assert.AreEqual(1, source.Entries.Count());
+
+			var entry = source.Entries[0];
+
+			Assert.AreEqual(expectedSourceBalance, entry.Balance);
+
+			Assert.IsNotNull(entry.Items);
+			Assert.AreEqual(1, entry.Items.Count());
+
+			var item = entry.Items[0];
+
+			Assert.AreEqual(AccountEntryItemKind.Origination, item.Kind);
+			Assert.AreEqual(-transferAmount, item.Amount);
+
+			if (testDestination)
+			{
+				// Account
+				Assert.AreEqual(TokenStoreState.Online, account.State);
+
+				Assert.AreEqual(transferAmount, account.Balance);
+
+				Assert.AreEqual(0, account.PendingChanges.Count());
+				Assert.IsFalse(account.HasPendingChanges);
+
+				Assert.IsNotNull(account.Entries);
+				Assert.AreEqual(1, account.Entries.Count());
+
+				entry = account.Entries[0];
+
+				Assert.AreEqual(transferAmount, entry.Balance);
+
+				Assert.IsNotNull(entry.Items);
+				Assert.AreEqual(1, entry.Items.Count());
+
+				item = entry.Items[0];
+
+				Assert.AreEqual(AccountEntryItemKind.Origination, item.Kind);
+				Assert.AreEqual(transferAmount, item.Amount);
+
+				Assert.AreEqual(Account.DelegatedStereotype, account.Stereotype);
+				Assert.AreEqual(Engine.DefaultIdentity.AccountID, (account as Account).DelegateID);
+				Assert.IsTrue(account.IsDelegated);
 			}
 		}
 
@@ -293,9 +403,9 @@ namespace SLD.Tezos.Client
 
 			Assert.AreEqual(TokenStoreState.Changing, identityaccount.State);
 
-			Assert.AreEqual(1, identityaccount.PendingChanges.Count);
+			Assert.AreEqual(1, identityaccount.PendingChanges.Count());
 			Assert.IsTrue(identityaccount.HasPendingChanges);
-			Assert.IsTrue(identityaccount.Entries == null || identityaccount.Entries.Count == 0);
+			Assert.IsTrue(identityaccount.Entries == null || identityaccount.Entries.Count() == 0);
 
 			var pending = identityaccount.PendingChanges[0];
 			Assert.AreEqual(TokenStore.ChangeTopic.PendingTransfer, pending.Topic);
@@ -311,11 +421,11 @@ namespace SLD.Tezos.Client
 
 			Assert.AreEqual(FaucetAmount, identityaccount.Balance);
 
-			Assert.AreEqual(0, identityaccount.PendingChanges.Count);
+			Assert.AreEqual(0, identityaccount.PendingChanges.Count());
 			Assert.IsFalse(identityaccount.HasPendingChanges);
 
 			Assert.IsNotNull(identityaccount.Entries);
-			Assert.AreEqual(1, identityaccount.Entries.Count);
+			Assert.AreEqual(1, identityaccount.Entries.Count());
 
 			var entry = identityaccount.Entries[0];
 
@@ -353,9 +463,9 @@ namespace SLD.Tezos.Client
 			await WhenMessagesDelivered();
 
 			// Source
-			Assert.AreEqual(1, source.PendingChanges.Count);
+			Assert.AreEqual(1, source.PendingChanges.Count());
 			Assert.IsTrue(source.HasPendingChanges);
-			Assert.IsTrue(destination.Entries.Count == 1);
+			Assert.IsTrue(destination.Entries.Count() == 1);
 
 			var pending = source.PendingChanges[0];
 			Assert.AreEqual(TokenStore.ChangeTopic.PendingTransfer, pending.Topic);
@@ -364,9 +474,9 @@ namespace SLD.Tezos.Client
 			if (testDestination)
 			{
 				// Destination
-				Assert.AreEqual(1, destination.PendingChanges.Count);
+				Assert.AreEqual(1, destination.PendingChanges.Count());
 				Assert.IsTrue(destination.HasPendingChanges);
-				Assert.AreEqual(1, destination.Entries.Count);
+				Assert.AreEqual(1, destination.Entries.Count());
 
 				pending = destination.PendingChanges[0];
 				Assert.AreEqual(TokenStore.ChangeTopic.PendingTransfer, pending.Topic);
@@ -381,11 +491,11 @@ namespace SLD.Tezos.Client
 			// Source
 			Assert.AreEqual(expectedSourceBalance, source.Balance);
 
-			Assert.AreEqual(0, source.PendingChanges.Count);
+			Assert.AreEqual(0, source.PendingChanges.Count());
 			Assert.IsFalse(source.HasPendingChanges);
 
 			Assert.IsNotNull(source.Entries);
-			Assert.AreEqual(2, source.Entries.Count);
+			Assert.AreEqual(2, source.Entries.Count());
 
 			var entry = source.Entries[1];
 
@@ -404,11 +514,11 @@ namespace SLD.Tezos.Client
 				// Destination
 				Assert.AreEqual(expectedDestinationBalance, destination.Balance);
 
-				Assert.AreEqual(0, destination.PendingChanges.Count);
+				Assert.AreEqual(0, destination.PendingChanges.Count());
 				Assert.IsFalse(destination.HasPendingChanges);
 
 				Assert.IsNotNull(destination.Entries);
-				Assert.AreEqual(2, destination.Entries.Count);
+				Assert.AreEqual(2, destination.Entries.Count());
 
 				entry = destination.Entries[1];
 

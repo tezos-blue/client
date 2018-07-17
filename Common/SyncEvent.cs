@@ -13,6 +13,9 @@ namespace SLD.Tezos
 		public TaskAwaiter<T> GetAwaiter()
 			=> WhenComplete.GetAwaiter();
 
+		public bool IsCompleted
+			=> tcs.Task.IsCompleted;
+
 		public bool SetComplete(T result)
 		{
 			return tcs.TrySetResult(result);

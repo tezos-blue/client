@@ -2,13 +2,14 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Tezos.Blue.Engine</id>
-    <version>0.3</version>
+    <version>0.3.2.9999</version>
     <authors>Andreas Hassmann</authors>
     <owners>Schloss Lautereck Design UG</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>tezos.blue engine and shared assemblies</description>
     <title>tezos.blue engine and common assemblies</title>
     <iconUrl>http://tezos.blue/images/logo-round-128.png</iconUrl>
+    <projectUrl>https://github.com/tezos-blue/client</projectUrl>
     <tags>tezos mobile cross platform client</tags>
     <releaseNotes>initial</releaseNotes>
 
@@ -17,6 +18,15 @@
 
     <dependencies>
       <group targetFramework=".NETStandard2.0" >
+        <dependency id="NETStandard.Library" version="2.0.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="MonoAndroid">
+        <dependency id="NETStandard.Library" version="2.0.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="Xamarin.iOS10">
+        <dependency id="NETStandard.Library" version="2.0.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="uap">
         <dependency id="NETStandard.Library" version="2.0.1" exclude="Build,Analyzers" />
       </group>
     </dependencies>

@@ -45,6 +45,6 @@ You will find a good entry point into the general idea there.
 
 Version 0.3 will focus on security entirely. Your critical view and input during the coming weeks is highly welcome.
 
-http://tezos.blue
+https://tezos.blue
 
 

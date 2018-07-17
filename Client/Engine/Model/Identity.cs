@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -69,6 +68,7 @@ namespace SLD.Tezos.Client.Model
 					var account = new Account(info.Name, info.AccountID)
 					{
 						Stereotype = info.Stereotype,
+						DelegateID = info.DelegateID,
 					};
 
 					account.Balance = info.Balance;
@@ -81,7 +81,7 @@ namespace SLD.Tezos.Client.Model
 				{
 					engine.Cache(account);
 
-					var task = AddAccount(account);
+					AddAccount(account);
 				}
 			}
 
@@ -103,32 +103,34 @@ namespace SLD.Tezos.Client.Model
 
 		#region Accounts
 
-		private ObservableCollection<TokenStore> accounts = new ObservableCollection<TokenStore>();
+		private ModelCollection<TokenStore> accounts = new ModelCollection<TokenStore>();
 
-		public IReadOnlyList<TokenStore> Accounts => accounts;
+		public TokenStore[] Accounts => accounts.ToArray();
 
 		public TokenStore this[string accountID]
 			=> accounts.FirstOrDefault(account => account.AccountID == accountID);
 
-		internal async Task AddAccount(Account account)
+		internal void AddAccount(Account account)
 		{
 			Trace($"Add {account}");
 
 			account.Changed += OnAccountChanged;
 			account.SetManager(this);
 
-			await accounts.AddSynchronized(account);
+			accounts.Add(account);
+
+			FirePropertyChanged(nameof(Accounts));
 		}
 
-		internal async void ExpectOrigination(Account account, string operationID, string contraAccountID, decimal amount)
+		internal void ExpectOrigination(Account account, string operationID, string contraAccountID, decimal amount)
 		{
 			Trace($"Account originating | {account}");
 
 			account.State = TokenStoreState.Creating;
 
-			await AddAccount(account);
+			AddAccount(account);
 
-			await account.AddPending(new Change(ChangeTopic.PendingTransfer)
+			account.AddPending(new Change(ChangeTopic.PendingTransfer)
 			{
 				OperationID = operationID,
 				Amount = amount,
@@ -143,7 +145,9 @@ namespace SLD.Tezos.Client.Model
 			await connection.RemoveStaleAccount(account.AccountID, account.ManagerID);
 
 			account.Changed -= OnAccountChanged;
-			await accounts.RemoveSynchronized(account);
+			accounts.Remove(account);
+
+			FirePropertyChanged(nameof(Accounts));
 		}
 
 		internal IEnumerable<TokenStore> GetAvailableTransferSources()
@@ -217,6 +221,6 @@ namespace SLD.Tezos.Client.Model
 		public byte[] BackupData
 			=> provider.GetBackupData(AccountID);
 
-		#endregion
+		#endregion Backup
 	}
 }

@@ -28,7 +28,4 @@
     <ProjectReference Include="..\..\Common\Common.csproj" />
     <ProjectReference Include="..\..\Cryptography\Cryptography.csproj" />
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="nuget pack $(ProjectDir)Engine.nuspec -OutputDirectory $(SolutionDir)..\..\Package" />
-  </Target>
 </Project>

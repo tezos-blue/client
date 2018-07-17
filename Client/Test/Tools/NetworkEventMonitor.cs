@@ -9,7 +9,7 @@ namespace SLD.Tezos.Client.Tools
 
 	internal class NetworkEventMonitor
 	{
-		private ConnectionEndpoint endpoint;
+		private readonly ConnectionEndpoint endpoint;
 		private List<NetworkEvent> received = new List<NetworkEvent>();
 
 		public NetworkEventMonitor(ConnectionEndpoint endpoint)

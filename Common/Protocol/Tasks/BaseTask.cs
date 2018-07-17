@@ -45,10 +45,14 @@
 	public class ProtectedTask : TransactionTask
 	{
 		public string ChainID;
+		public string BranchID;
+
 		public string SourceManagerPublicKey;
 		public string Operation { get; set; }
 		public string SignedOperation { get; set; }
 		public string Signature { get; set; }
+
+		public string Contents { get; set; }
 
 		public bool HasSource => !string.IsNullOrEmpty(SourceID);
 

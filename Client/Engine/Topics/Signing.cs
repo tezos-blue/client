@@ -8,6 +8,8 @@ namespace SLD.Tezos.Client
 	using Model;
 	using Protocol;
 	using Security;
+	using Cryptography;
+	using System.IO;
 
 	/// <summary>
 	/// Result of a signing process
@@ -124,7 +126,11 @@ namespace SLD.Tezos.Client
 			var provider = signProviders
 				.FirstOrDefault(p => p.Contains(signingIdentity.AccountID));
 
-			if (provider == null) return false;
+			if (provider == null)
+			{
+				Trace($"No provider found for {signingIdentity}");
+				return false;
+			}
 
 			// Fetch operation data to sign later.
 			// This prevents tampering with the operation during approval
@@ -151,6 +157,8 @@ namespace SLD.Tezos.Client
 
 				var userResult = await approval.GetUserResult();
 
+				Trace($"Approval result: {userResult}");
+
 				if (userResult != SigningResult.Approved)
 				{
 					// Cancel or timeout
@@ -174,10 +182,24 @@ namespace SLD.Tezos.Client
 			// Sign
 			Trace("Sign CreateRequest");
 
-			if (await provider.Sign(signingIdentity.AccountID, operationData, out byte[] signature))
+			var dataToHash = new byte[1 + operationData.Length];
+			dataToHash[0] = 3;
+			operationData.CopyTo(dataToHash, 1);
+
+			var hashedData = CryptoServices.Hash(dataToHash, 32);
+
+			if (await provider.Sign(signingIdentity.AccountID, hashedData, out byte[] signature))
 			{
 				// Success
-				Guard.ApplySignature(task, operationData, signature);
+				task.Signature = CryptoServices.EncodePrefixed(HashType.Signature, signature);
+
+				using (var buffer = new MemoryStream())
+				{
+					buffer.Write(operationData, 0, operationData.Length);
+					buffer.Write(signature, 0, signature.Length);
+
+					task.SignedOperation = buffer.ToArray().ToHexString();
+				}
 
 				approval?.Close(SigningResult.Signed);
 				return true;

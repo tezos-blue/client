@@ -110,9 +110,12 @@ namespace SLD.Tezos.Client.Flow
 		{
 			var operationStatus = await connection.GetOperationStatus(flow.Task);
 
-			foreach (var operationEvent in operationStatus.Events)
+			if (operationStatus.Events != null)
 			{
-				callback(operationEvent);
+				foreach (var operationEvent in operationStatus.Events)
+				{
+					callback(operationEvent);
+				} 
 			}
 
 			return operationStatus.RetryAfter;

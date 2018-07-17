@@ -8,6 +8,7 @@ namespace SLD.Tezos.Client.Model
 	public class Account : TokenStore, ISerializable
 	{
 		public const string DefaultStereotype = "Account";
+		public const string DelegatedStereotype = "DelegatedAccount";
 
 		private Account()
 		{
@@ -55,6 +56,27 @@ namespace SLD.Tezos.Client.Model
 
 
 		#endregion Manager
+
+		#region Delegate
+
+		string _DelegateID;
+
+		public string DelegateID
+		{
+			get => _DelegateID;
+
+			set
+			{
+				_DelegateID = value;
+
+				FirePropertyChanged(nameof(DelegateID));
+				FirePropertyChanged(nameof(IsDelegated));
+			}
+		}
+
+		public override bool IsDelegated => !string.IsNullOrWhiteSpace(_DelegateID);
+
+		#endregion
 
 		#region Serialization
 

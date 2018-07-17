@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -108,6 +107,11 @@ namespace SLD.Tezos.Client.Model
 		#endregion Manager
 
 		public abstract bool IsLive { get; }
+
+		public virtual bool IsDelegated => false;
+
+		public bool IsIdentityAccount
+			=> AccountID == ManagerID;
 
 		public override string ToString()
 		{
@@ -288,13 +292,15 @@ namespace SLD.Tezos.Client.Model
 
 		#region Pending Operations
 
-		public ObservableCollection<Change> PendingChanges { get; private set; } = new ObservableCollection<Change>();
+		private ModelCollection<Change> pendingChanges = new ModelCollection<Change>();
 
-		public bool HasPendingChanges => PendingChanges.Count > 0;
+		public Change[] PendingChanges => pendingChanges.ToArray();
 
-		public decimal AmountPending => PendingChanges.Sum(c => c.Amount);
+		public bool HasPendingChanges => pendingChanges.Count > 0;
 
-		internal async void ExpectOperation(string operationID, string contraAccountID, decimal amount)
+		public decimal AmountPending => pendingChanges.Sum(c => c.Amount);
+
+		internal void ExpectOperation(string operationID, string contraAccountID, decimal amount)
 		{
 			var change = new Change(ChangeTopic.PendingTransfer)
 			{
@@ -303,57 +309,56 @@ namespace SLD.Tezos.Client.Model
 				Amount = amount,
 			};
 
-			await AddPending(change);
+			AddPending(change);
 		}
 
-		internal async Task AddPending(Change change)
+		internal void AddPending(Change change)
 		{
 			Trace($"Add pending: {change}");
 
-			await PendingChanges.AddSynchronized(change);
+			pendingChanges.Add(change);
 
-			if (PendingChanges.Count == 1)
+			if (pendingChanges.Count == 1)
 			{
 				FirePropertyChanged(nameof(HasPendingChanges));
 			}
 
+			FirePropertyChanged(nameof(PendingChanges));
 			FirePropertyChanged(nameof(AmountPending));
 		}
 
-		internal async Task CloseOperation(string operationID, AccountEntry entry = null)
+		internal void CloseOperation(string operationID, AccountEntry entry = null)
 		{
 			Trace($"Close pending: {operationID}");
 
-			var cancelled = PendingChanges
+			var cancelled = pendingChanges
 				.FirstOrDefault(c => c.OperationID == operationID);
 
 			if (cancelled != null)
 			{
-				await PendingChanges.RemoveSynchronized(cancelled);
+				pendingChanges.Remove(cancelled);
 
-				if (PendingChanges.Count == 0)
+				if (pendingChanges.Count == 0)
 				{
 					FirePropertyChanged(nameof(HasPendingChanges));
 				}
 
 				FirePropertyChanged(nameof(AmountPending));
+				FirePropertyChanged(nameof(PendingChanges));
 			}
 
-			if (entry != null)
-			{
-				Entries.Add(entry);
-
-				EntryAdded?.Invoke(entry);
-			}
+			AddEntry(entry);
 		}
 
 		#endregion Pending Operations
 
 		#region Entries
 
+		private ModelCollection<AccountEntry> entries = new ModelCollection<AccountEntry>();
+
 		public event Action<AccountEntry> EntryAdded;
 
-		public ObservableCollection<AccountEntry> Entries { get; private set; } = new ObservableCollection<AccountEntry>();
+		public AccountEntry[] Entries => entries.ToArray();
 
 		public bool IsEntriesComplete { get; private set; }
 
@@ -370,7 +375,7 @@ namespace SLD.Tezos.Client.Model
 
 				var entries = await connection.GetAccountEntries(AccountID);
 
-				Entries = new ObservableCollection<AccountEntry>(entries);
+				this.entries = new ModelCollection<AccountEntry>(entries);
 
 				IsEntriesComplete = true;
 
@@ -381,6 +386,21 @@ namespace SLD.Tezos.Client.Model
 			{
 				Trace(e);
 			}
+		}
+
+		internal void AddEntry(AccountEntry entry)
+		{
+			if (entry != null)
+			{
+				entries.Add(entry);
+
+				if (EntryAdded != null)
+				{
+					var task = ExecuteSynchronized(() => EntryAdded(entry));
+				}
+			}
+
+			FirePropertyChanged(nameof(Entries));
 		}
 
 		#endregion Entries

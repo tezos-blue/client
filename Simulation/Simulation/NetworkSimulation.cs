@@ -183,6 +183,7 @@ namespace SLD.Tezos.Simulation
 						Name = account.Name,
 						Stereotype = account.Stereotype,
 						Balance = GetBalance(account.AccountID),
+						DelegateID = account.DelegateID,
 					})
 					.ToArray();
 
@@ -291,6 +292,8 @@ namespace SLD.Tezos.Simulation
 
 			SimulatedAccount account = CreateAccount(manager, 0);
 
+			account.DelegateID = task.DelegateID;
+
 			task.DestinationID = account.AccountID;
 
 			blockchain.Add(task);
@@ -312,9 +315,11 @@ namespace SLD.Tezos.Simulation
 				Name = task.Name,
 				ManagerID = task.ManagerID,
 				AccountID = account.AccountID,
+				Stereotype = task.Stereotype,
 				Amount = task.TransferAmount,
 				ContraAccountID = source.AccountID,
 				OperationID = task.OperationID,
+				DelegateID = task.DelegateID,
 			};
 
 			manager.Notify(destinationEvent);
@@ -558,6 +563,9 @@ namespace SLD.Tezos.Simulation
 								OperationID = taskOriginate.OperationID,
 								Entry = destinationEntry,
 								State = AccountState.Live,
+								DelegateID = taskOriginate.DelegateID,
+								Stereotype = taskOriginate.Stereotype,
+								BlockIndex = block.Index,
 							};
 
 							manager.Notify(destinationEvent);

@@ -68,6 +68,8 @@
 	{
 		public string ManagerID;
 		public string Name;
+		public string Stereotype;
+		public string DelegateID;
 
 		public override string ToString()
 		{
@@ -79,6 +81,8 @@
 	{
 		public string ManagerID;
 		public string Name;
+		public string Stereotype;
+		public string DelegateID;
 
 		public override string ToString()
 		{

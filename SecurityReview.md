@@ -1,6 +1,5 @@
 # Guide for Security Reviewers
-The basic security architecture is in place. 
-We invite and welcome your expert view on this security concept and its implementation. Please help to harden the security of identities entrusted to tezos.blue.
+I invite and welcome your expert view on this security concept and its implementation. Please help to harden the security of identities entrusted to tezos.blue.
 
 Feel free to raise issues, voice concerns, make suggestions or send pull requests.
 Here or via hello@tezos.blue
@@ -130,6 +129,5 @@ Realized in the [Cryptography](https://github.com/tezos-blue/client/tree/master/
 
 [CryptoServices.cs](https://github.com/tezos-blue/client/blob/master/Cryptography/CryptoServices.cs)
 
-Thanks for your time and knowledge.
 
 

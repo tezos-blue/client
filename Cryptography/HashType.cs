@@ -49,7 +49,10 @@ namespace SLD.Tezos.Cryptography
 
 		// 20
 		public static readonly HashType PublicKeyHash = new HashType("PublicKeyHash", 20, new byte[] { 6, 161, 159 });
-		public static readonly HashType Account = new HashType("Account", 20, new byte[] { 3, 99, 29 });
+		public static readonly HashType PublicKeyHash2 = new HashType("PublicKeyHash2", 20, new byte[] { 6, 161, 161 });
+		public static readonly HashType PublicKeyHash3 = new HashType("PublicKeyHash3", 20, new byte[] { 6, 161, 164 });
+
+		public static readonly HashType Account = new HashType("Account", 20, new byte[] { 2, 90, 121 });
 
 		// 16
 		public static readonly HashType CryptoboxPublicKey = new HashType("CryptoboxPublicKey", 16, new byte[]{ 153, 103 });

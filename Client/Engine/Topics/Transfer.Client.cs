@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace SLD.Tezos.Client
 {
@@ -51,13 +52,15 @@ namespace SLD.Tezos.Client
 					flow.Task = await Connection.Transfer(task);
 					flow.SetPending(this);
 				}
-				catch
+				catch (Exception e)
 				{
+					Trace(e);
 					flow.Update(TaskProgress.Failed);
 				}
 			}
 			else
 			{
+				Trace("Sign cancelled");
 				flow.Update(TaskProgress.Cancelled);
 			}
 
