@@ -14,6 +14,8 @@ namespace SLD.Tezos.Client.Connections
 
 		Task<RegisterIdentityTask> RegisterIdentity(RegisterIdentityTask task);
 
+		Task<IdentityInfo> GetIdentityInfo(string identityID);
+
 		#endregion Identities
 
 		#region Accounts

@@ -198,6 +198,41 @@ namespace SLD.Tezos.Simulation
 			return task;
 		}
 
+		public IdentityInfo GetIdentityInfo(string identityID)
+		{
+			Trace($"Get Identity Info: {identityID}");
+
+			// Return info in any case, even if the identity has not been seen before
+			var info = new IdentityInfo
+			{
+				AccountID = identityID,
+			};
+
+			// Find identity in database
+			var identity = FindIdentity(identityID);
+
+			if (identity != null)
+			{
+				info.Balance = GetBalance(identityID);
+				info.Name = identity.Name;
+				info.Stereotype = identity.Stereotype;
+
+				// Add managed accounts to info
+				info.Accounts = identity.ManagedAccounts.Select(
+					account => new IdentityAccountInfo
+					{
+						AccountID = account.AccountID,
+						Name = account.Name,
+						Stereotype = account.Stereotype,
+						Balance = GetBalance(account.AccountID),
+						DelegateID = account.DelegateID,
+					})
+					.ToArray();
+			}
+
+			return info;
+		}
+
 		public void SetBalance(string accountID, decimal balance)
 		{
 			var account = GetAccount(accountID);

@@ -90,6 +90,21 @@ namespace SLD.Tezos.Client.Model
 			return TokenStoreState.Online;
 		}
 
+		internal void Refresh(IdentityInfo info)
+		{
+			RefreshInfo(info);
+
+			foreach (var accountInfo in info.Accounts)
+			{
+				var account = this[accountInfo.AccountID];
+
+				if (account != null)
+				{
+					account.RefreshInfo(accountInfo);
+				}
+			}
+		}
+
 		#region Balance
 
 		public decimal TotalBalance => Accounts.Sum(account => account.Balance);
@@ -220,7 +235,6 @@ namespace SLD.Tezos.Client.Model
 
 		public byte[] BackupData
 			=> provider.GetBackupData(AccountID);
-
 		#endregion Backup
 	}
 }

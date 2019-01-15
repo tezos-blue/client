@@ -83,6 +83,37 @@ namespace SLD.Tezos.Client.Tests
 		}
 
 		[TestMethod]
+		public async Task Notify_Originate_Double()
+		{
+			await SendOriginatePending("New");
+			await SendTransferPending(Source.AccountID);
+
+			await SendOriginatePending("New");
+			await SendTransferPending(Source.AccountID);
+
+			Assert.AreEqual(2, Engine.DefaultIdentity.Accounts.Count());
+			var account = Engine.DefaultIdentity.Accounts[1];
+
+			Assert.AreEqual(TokenStoreState.Creating, account.State);
+
+			// Account
+			Assert.AreEqual(1, account.PendingChanges.Count());
+
+			// Source
+			Assert.AreEqual(1, Source.PendingChanges.Count());
+
+			await SendBalanceChanged(Source.AccountID);
+			await SendOriginate("New");
+
+			// Account
+			Assert.AreEqual(TokenStoreState.Online, account.State);
+			Assert.AreEqual(0, account.PendingChanges.Count());
+
+			// Source
+			Assert.AreEqual(0, Source.PendingChanges.Count());
+		}
+
+		[TestMethod]
 		public async Task Notify_Originate_DSDS()
 		{
 			await SendOriginatePending("New");

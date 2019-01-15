@@ -58,6 +58,7 @@ namespace SLD.Tezos.Client
 				{
 					Connection = Connection,
 					LocalStorage = LocalStorage,
+					InTestMode = true,
 				});
 		}
 	}

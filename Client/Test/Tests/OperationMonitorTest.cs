@@ -171,6 +171,11 @@ namespace SLD.Tezos.Client
 				throw new NotImplementedException();
 			}
 
+			public Task<IdentityInfo> GetIdentityInfo(string identityID)
+			{
+				throw new NotImplementedException();
+			}
+
 			#endregion Unused
 		}
 	}

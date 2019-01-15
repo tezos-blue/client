@@ -132,9 +132,15 @@ namespace SLD.Tezos.Client
 				return false;
 			}
 
+			Trace($"Operation: {task.Operation}");
+
 			// Fetch operation data to sign later.
 			// This prevents tampering with the operation during approval
 			var operationData = task.Operation.HexToByteArray();
+
+			// Check validity of operation data
+			// This protects against forgery due to a compromised node
+			ValidateOperation(task, operationData);
 
 			// Approval mechanism registered?
 			if (ApprovalRequired != null)

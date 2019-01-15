@@ -26,19 +26,26 @@ namespace SLD.Tezos.Client
 
 						if (identity != null)
 						{
-							var account = new Account(originate.Name, originate.AccountID)
+							var found = identity.Accounts
+								.Where(a => a.AccountID == originate.AccountID)
+								.FirstOrDefault();
+
+							if (found == null)
 							{
-								Stereotype = originate.Stereotype,
-								DelegateID = originate.DelegateID,
-							};
+								var account = new Account(originate.Name, originate.AccountID)
+								{
+									Stereotype = originate.Stereotype,
+									DelegateID = originate.DelegateID,
+								};
 
-							identity.ExpectOrigination(
-								account,
-								originate.OperationID,
-								originate.ContraAccountID,
-								originate.Amount);
+								identity.ExpectOrigination(
+									account,
+									originate.OperationID,
+									originate.ContraAccountID,
+									originate.Amount);
 
-							OperationTaskflow.Update(originate.OperationID, TaskProgress.Acknowledged);
+								OperationTaskflow.Update(originate.OperationID, TaskProgress.Acknowledged); 
+							}
 						}
 					}
 					break;
@@ -126,14 +133,15 @@ namespace SLD.Tezos.Client
 					{
 						if (accounts.TryGetValue(transactionPending.AccountID, out TokenStore account))
 						{
-							account.ExpectOperation(
+							if (account.ExpectOperation(
 								transactionPending.OperationID,
 								transactionPending.ContraAccountID,
-								transactionPending.Amount);
+								transactionPending.Amount))
+							{
+								account.State = TokenStoreState.Changing;
 
-							account.State = TokenStoreState.Changing;
-
-							OperationTaskflow.Update(transactionPending.OperationID, TaskProgress.Acknowledged);
+								OperationTaskflow.Update(transactionPending.OperationID, TaskProgress.Acknowledged);
+							}
 						}
 					}
 					break;
@@ -155,14 +163,15 @@ namespace SLD.Tezos.Client
 					{
 						if (accounts.TryGetValue(activationPending.IdentityID, out TokenStore account))
 						{
-							account.ExpectOperation(
+							if (account.ExpectOperation(
 								activationPending.OperationID,
 								null,
-								activationPending.Amount);
+								activationPending.Amount))
+							{
+								account.State = TokenStoreState.Changing;
 
-							account.State = TokenStoreState.Changing;
-
-							OperationTaskflow.Update(activationPending.OperationID, TaskProgress.Acknowledged);
+								OperationTaskflow.Update(activationPending.OperationID, TaskProgress.Acknowledged);
+							}
 						}
 					}
 					break;

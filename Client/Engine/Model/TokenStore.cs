@@ -223,6 +223,14 @@ namespace SLD.Tezos.Client.Model
 			}
 		}
 
+		internal void RefreshInfo(IdentityAccountInfo info)
+		{
+			Trace($"Refresh AccountInfo");
+
+			Balance = info.Balance;
+			Name = info.Name;
+		}
+
 		#region Balance
 
 		private decimal _Balance;
@@ -300,8 +308,13 @@ namespace SLD.Tezos.Client.Model
 
 		public decimal AmountPending => pendingChanges.Sum(c => c.Amount);
 
-		internal void ExpectOperation(string operationID, string contraAccountID, decimal amount)
+		internal bool ExpectOperation(string operationID, string contraAccountID, decimal amount)
 		{
+			if (pendingChanges.Any(c => c.OperationID == operationID && c.ContraAccountID == contraAccountID))
+			{
+				return false;
+			}
+
 			var change = new Change(ChangeTopic.PendingTransfer)
 			{
 				OperationID = operationID,
@@ -310,6 +323,8 @@ namespace SLD.Tezos.Client.Model
 			};
 
 			AddPending(change);
+
+			return true;
 		}
 
 		internal void AddPending(Change change)

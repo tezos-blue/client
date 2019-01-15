@@ -27,5 +27,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Common\Common.csproj" />
     <ProjectReference Include="..\..\Cryptography\Cryptography.csproj" />
+    <ProjectReference Include="..\..\OpCode\OpCode.csproj" />
   </ItemGroup>
 </Project>

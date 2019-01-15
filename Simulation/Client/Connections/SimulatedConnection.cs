@@ -212,6 +212,13 @@ namespace SLD.Tezos.Client.Connections
 			return simulation.RegisterIdentity(PrepareTask(task));
 		}
 
+		public async Task<IdentityInfo> GetIdentityInfo(string identityID)
+		{
+			await CallService();
+
+			return simulation.GetIdentityInfo(identityID);
+		}
+
 		#endregion Identities
 
 		#region Accounts

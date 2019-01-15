@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace SLD.Tezos.Protocol
 {
+	// Only add to end, never retire
 	public enum AccountEntryItemKind
 	{
 		Invalid,
@@ -12,6 +13,8 @@ namespace SLD.Tezos.Protocol
 		Internal,
 		Delegation,
 		Activation,
+		Freeze,
+		Aggregate,
 	}
 
 	public class AccountEntry : TezosObject
@@ -36,8 +39,10 @@ namespace SLD.Tezos.Protocol
 
 		public decimal NetworkFee { get; set; }
 		public decimal StorageFee { get; set; }
+		public decimal ServiceFee { get; set; }
 
-		public decimal Fees => NetworkFee + StorageFee;
+		public decimal Fees => NetworkFee + StorageFee + ServiceFee;
+
 		public decimal Balance { get; set; }
 
 		public string OperationID { get; set; }

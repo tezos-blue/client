@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Tezos.Blue.Engine</id>
-    <version>0.3.2.9999</version>
+    <version>0.4.0.9999</version>
     <authors>Andreas Hassmann</authors>
     <owners>Schloss Lautereck Design UG</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>

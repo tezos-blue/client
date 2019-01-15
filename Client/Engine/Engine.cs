@@ -24,6 +24,8 @@ namespace SLD.Tezos.Client
 		public string InstanceID { get; set; }
 
 		public string ApplicationVersion { get; set; }
+
+		public bool InTestMode { get; set; }
 	}
 
 	public partial class Engine : ClientObject
@@ -373,6 +375,24 @@ namespace SLD.Tezos.Client
 			await Task.WhenAll(tasks);
 		}
 
+		private async Task RefreshIdentities()
+		{
+			Trace($"Refresh identities");
+
+			async Task RefreshIdentity(Identity identity)
+			{
+				var info = await Connection.GetIdentityInfo(identity.AccountID);
+
+				identity.Refresh(info);
+			}
+
+			var tasks = Identities.Select(i => RefreshIdentity(i));
+
+			await Task.WhenAll(tasks);
+		}
+
+
+
 		#endregion Accounts
 
 		#region ConnectionState
@@ -441,7 +461,8 @@ namespace SLD.Tezos.Client
 
 			LockAll();
 
-			await RefreshAccounts();
+			//await RefreshAccounts();
+			await RefreshIdentities();
 		}
 
 		public void Suspend()

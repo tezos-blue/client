@@ -46,7 +46,7 @@ namespace SLD.Tezos
 			=> amount.ToString("g", CultureInfo.InvariantCulture);
 
 		public static decimal ToDecimal(this string amount)
-			=> decimal.Parse(amount, CultureInfo.InvariantCulture);
+			=> amount == null ? 0 : decimal.Parse(amount, CultureInfo.InvariantCulture);
 
 		#endregion Safe strings
 

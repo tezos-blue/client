@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Tezos.Client.OpCode</AssemblyName>
+    <RootNamespace>SLD.Tezos.Client</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cryptography\Cryptography.csproj" />
+  </ItemGroup>
+
+</Project>
